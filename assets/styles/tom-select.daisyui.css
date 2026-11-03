@@ -53,6 +53,22 @@ html .ts-wrapper.single .ts-control::after {
     display: none;
 }
 
+/*
+ * The chosen item of a single select stays on one line, cut short with "…" (or, drawn in HTML - options_as_html - cut
+ * off) where the room for the arrow begins: without min-width 0 a long label is as wide as its longest unbroken part
+ * and runs under the arrow.
+ */
+html .ts-wrapper.single .ts-control {
+    flex-wrap: nowrap;
+}
+
+html .ts-wrapper.single .ts-control > .item {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 html .ts-control input {
     color: inherit;
     font-size: inherit;
@@ -90,6 +106,8 @@ html .ts-dropdown {
     color: var(--color-base-content);
     font-size: 0.875rem;
     line-height: 1.25rem;
+    /* The wrapper is a daisyUI select, which keeps its text on one line; a long option wraps in the list. */
+    white-space: normal;
 }
 
 html .ts-dropdown .option,
