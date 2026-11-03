@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Component\Crud;
 
+use Byfareska\Crud\Action\ActionButton;
+use Byfareska\Crud\Action\RecordActions;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Attribute\AsCrudFormSection;
 use Byfareska\Crud\Driver\CrudDrivers;
@@ -163,6 +165,7 @@ class CrudForm implements ScopedComponent
         protected readonly ?OwnRecords $ownRecords = null,
         #[AutowireIterator(CrudSaveButton::TAG)]
         protected readonly iterable $saveButtons = [],
+        protected readonly ?RecordActions $recordActions = null,
     ) {
     }
 
@@ -279,6 +282,21 @@ class CrudForm implements ScopedComponent
                 AfterSave::Return => false,
             },
         ));
+    }
+
+    /**
+     * What can be done with the record being edited (RecordAction) - its details, deleting it... - for the buttons
+     * next to the title; none on the add form.
+     *
+     * @return list<ActionButton>
+     */
+    public function getActions(): array
+    {
+        $this->getDefinition();
+
+        return $this->before instanceof RecordView && $this->recordActions instanceof RecordActions
+            ? $this->recordActions->buttons($this->before)
+            : [];
     }
 
     /**

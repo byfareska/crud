@@ -1116,7 +1116,7 @@ The list and the form are drawn in blocks, the same in every theme, so a templat
 | Template | Blocks |
 | --- | --- |
 | `components/Crud/List.html.twig` | `list_toolbar`, `list_filters`, `list_above_rows`, `list_bulk_bar`, `list_table` (in it `list_columns`, `list_row`, `list_cell`, `list_row_actions`, `list_empty`), `list_footer`, `list_preview` |
-| `components/Crud/Form.html.twig` | `form_fillers`, `form_fields`, `form_actions` |
+| `components/Crud/Form.html.twig` | `form_head` (the title row: the way back, the actions of the record, the save buttons), `form_actions` (the save buttons, at its far end), `form_fillers`, `form_fields` |
 | `components/Panel/Sidebar.html.twig` | `sidebar_brand` (the name, a logo), `sidebar_sections`, `sidebar_footer` |
 | `panel/dashboard.html.twig` | `dashboard_head`, `dashboard_actions` (more buttons next to its own), `dashboard_grid` |
 | `panel/layout.html.twig` | `page_title`, `content`, `main_class`, `topbar_start`, `topbar_actions`, `user_menu_items` (entries of the user's menu above "sign out") - filled by any page extending it |

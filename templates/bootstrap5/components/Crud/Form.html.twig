@@ -5,13 +5,49 @@
     with an error (focus-first). The fields are drawn by the layout of the resource (crud_layout); what it does not
     place comes after it.
 
-    Its parts are blocks - form_fillers, form_fields, form_actions - the same in every theme: a theme of the
+    Its parts are blocks - form_head, form_actions, form_fillers, form_fields - the same in every theme: a theme of the
     application, or the template of a form of a resource's own (CrudForm), extends this one and changes one of them.
+    The title row (form_head) is drawn here, not by the page, so the save buttons in it (form_actions) are part of the
+    component; they reach the form by its id.
 #}
 {% form_theme form with crud_form_themes() %}
 {% set crud = this.definition %}
 {% set layout = this.layout %}
+{% set operation = enum('Byfareska\\Crud\\Resource\\CrudOperation') %}
+{% set form_id = form.vars.id %}
+{% set id = this.id %}
+{% set actions = this.actions %}
+{% set save_actions %}
+    {% block form_actions %}
+    {# The other buttons of AsCrud "afterSave": they save, then lead elsewhere (AfterSave). #}
+    {% for then in this.saveChoices %}
+        <button class="btn btn-sm btn-outline-primary" type="button" data-action="live#action:prevent" data-live-action-param="files|save" data-live-then-param="{{ then.value }}" data-loading="addAttribute(disabled)">{{ ('ui.action.save_' ~ then.value)|trans }}</button>
+    {% endfor %}
+    {# The buttons of the application's own (CrudSaveButton): they save, then lead where they say. #}
+    {% for button in this.saveButtons %}
+        <button class="btn btn-sm btn-outline-primary" type="button" data-action="live#action:prevent" data-live-action-param="files|save" data-live-then-param="{{ button.name }}" data-loading="addAttribute(disabled)">{{ button.label|trans }}</button>
+    {% endfor %}
+    <button class="btn btn-sm btn-primary" type="submit" form="{{ form_id }}" data-loading="addAttribute(disabled)">{{ crud_icon('check-lg', 'me-1') }} {{ 'ui.action.save'|trans }}</button>
+    {% endblock %}
+{% endset %}
 <div {{ attributes.defaults({'data-controller': 'focus-first show-if'}) }}>
+    {% block form_head %}
+    {% set title = crud.key(id is null ? 'new' : 'edit')|trans %}
+    {# The way out of the form, with the same keys as on the details page; the save buttons last, on the far side. #}
+    <twig:Ui:PageHead :title="title" :meta="crud.key('title')|trans" :icon="crud.icon" :breadcrumbs="crud.own ? [] : [{label: crud.key('title')|trans, href: crud_return_url(crud)}]">
+        <twig:block name="actions">
+            {# One's own record (AsCrud::$own) has no list: the way out is its details, below. #}
+            {% if not (crud.own and crud.can(operation.Read)) %}
+                <a class="btn btn-sm btn-outline-secondary" href="{{ crud_return_url(crud, id) }}">{{ crud_icon('arrow-left', 'me-1') }} {{ crud.own ? 'ui.action.cancel'|trans : 'crud.action.list'|trans }}</a>
+            {% endif %}
+            {# What can be done with the record - see RecordAction: its details, deleting it... #}
+            {% for action in actions %}
+                {{ crud_action(action, 'bar') }}
+            {% endfor %}
+            {{ save_actions }}
+        </twig:block>
+    </twig:Ui:PageHead>
+    {% endblock %}
     {# Something pasted fills the fields in (CrudFormFiller); one the layout places is drawn there instead. #}
     {% block form_fillers %}
     {% for name, filler in layout.fillers|filter((filler, name) => not layout.places(name)) %}
@@ -21,6 +57,7 @@
     <section class="card border-0 shadow-sm">
         <div class="card-body">
             {{ form_start(form, {attr: {
+                id: form_id,
                 novalidate: 'novalidate',
                 'data-model': 'norender|*',
                 'data-action': 'live#action:prevent',
@@ -30,21 +67,6 @@
                 {{ form_errors(form) }}
                 {{ crud_layout(layout) }}
                 {{ form_rest(form) }}
-                {% endblock %}
-
-                {% block form_actions %}
-                <div class="d-flex flex-wrap gap-2 pt-3 border-top">
-                    <button class="btn btn-primary" type="submit" data-loading="addAttribute(disabled)">{{ crud_icon('check-lg', 'me-1') }} {{ 'ui.action.save'|trans }}</button>
-                    {# The other buttons of AsCrud "afterSave": they save, then lead elsewhere (AfterSave). #}
-                    {% for then in this.saveChoices %}
-                        <button class="btn btn-outline-primary" type="button" data-action="live#action:prevent" data-live-action-param="files|save" data-live-then-param="{{ then.value }}" data-loading="addAttribute(disabled)">{{ ('ui.action.save_' ~ then.value)|trans }}</button>
-                    {% endfor %}
-                    {# The buttons of the application's own (CrudSaveButton): they save, then lead where they say. #}
-                    {% for button in this.saveButtons %}
-                        <button class="btn btn-outline-primary" type="button" data-action="live#action:prevent" data-live-action-param="files|save" data-live-then-param="{{ button.name }}" data-loading="addAttribute(disabled)">{{ button.label|trans }}</button>
-                    {% endfor %}
-                    <a class="btn btn-outline-secondary" href="{{ crud_return_url(crud, this.id) }}">{{ 'ui.action.cancel'|trans }}</a>
-                </div>
                 {% endblock %}
             {{ form_end(form) }}
         </div>
