@@ -1,0 +1,29 @@
+{#
+    How an action of a record (an ActionButton) is drawn in each place - crud_action(button, place), see
+    Byfareska\Crud\Twig\ActionButtonRenderer. Each block gets "button"; its attributes are escaped by crud_attrs().
+    Its colour is button.tone (ActionTone), a colour of the daisyUI theme: adding success, editing warning, deleting
+    error, looking info, the main thing primary, anything else neutral. The classes are written out whole: Tailwind
+    finds only those it sees here.
+#}
+
+{# A button of a row of the list, showing its icon: outlined in its colour. #}
+{% block action_row %}
+    {% set tones = {primary: 'btn-primary', secondary: '', success: 'btn-success', warning: 'btn-warning', danger: 'btn-error', info: 'btn-info'} %}
+    <{{ button.tag }} class="btn btn-sm btn-square btn-outline {{ tones[button.tone.value] }}"{{ crud_attrs(button.attributes) }} title="{{ button.label|trans }}" aria-label="{{ button.label|trans }}">{{ crud_icon(button.icon) }}</{{ button.tag }}>
+{% endblock %}
+
+{# An item of the menu of a row: its icon in its colour, its text red only when it destroys. #}
+{% block action_menu %}
+    {% set tones = {primary: 'text-primary', secondary: '', success: 'text-success', warning: 'text-warning', danger: 'text-error', info: 'text-info'} %}
+    <{{ button.tag }} class="flex w-full items-center gap-2 text-start{{ button.danger ? ' text-error' : '' }}"{{ crud_attrs(button.attributes) }}>{{ crud_icon(button.icon, tones[button.tone.value]) }}<span class="flex-1">{{ button.label|trans }}</span></{{ button.tag }}>
+{% endblock %}
+
+{# A button among those of a record: the details page, the edit form, the preview drawer. The main one is filled. #}
+{% block action_bar %}
+    {% set tones = {primary: 'btn-primary', secondary: 'btn-neutral', success: 'btn-success', warning: 'btn-warning', danger: 'btn-error', info: 'btn-info'} %}
+    {% if button.primary %}
+        <{{ button.tag }} class="btn btn-sm {{ tones[button.tone.value] }}"{{ crud_attrs(button.attributes) }}>{{ crud_icon(button.icon) }} {{ button.label|trans }}</{{ button.tag }}>
+    {% else %}
+        <{{ button.tag }} class="btn btn-sm {{ button.tone.value == 'secondary' ? '' : 'btn-outline ' ~ tones[button.tone.value] }}"{{ crud_attrs(button.attributes) }}>{{ crud_icon(button.icon) }} {{ button.label|trans }}</{{ button.tag }}>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,147 @@
+{#
+    How the layout of a #[AsCrud] resource is drawn - see CrudLayoutRenderer. A resource's own template can replace any
+    of these blocks, or one group of its own with crud_<resource>_layout_<name>.
+
+    Every block gets: layout (CrudLayoutView: view LayoutPage::Form or ::Detail, compact in the preview drawer), node,
+    crud, label and help (translation keys; help is null when there is no such text).
+#}
+
+{# The heading of a group: its icon, its name and how many errors the form has in it. #}
+{% macro heading(layout, node, label, tag = 'h3') %}
+    {% set errors = layout.errors(node) %}
+    {# A legend floated: drawn inside its fieldset, not on its border. #}
+    <{{ tag }} class="mb-3 flex items-center gap-2 text-sm font-semibold{{ tag == 'legend' ? ' float-left w-full' }}">
+        {% if node.icon %}{{ crud_icon(node.icon) }}{% endif %}
+        <span>{{ label|trans }}</span>
+        {% if errors %}<span class="rounded-full bg-red-600 px-1.5 text-xs text-white" title="{{ 'crud.layout.errors'|trans({count: errors}) }}">{{ errors }}</span>{% endif %}
+    </{{ tag }}>
+{% endmacro %}
+
+{#
+    The classes of a cell of the grid of 12: its Span (12ths per breakpoint), or an equal share of `count` from the
+    breakpoint up; below that, the whole width. Written out whole, so Tailwind finds them.
+#}
+{% macro col(span, breakpoint, count) %}
+    {%- set spans = {
+        '': {1: 'col-span-1', 2: 'col-span-2', 3: 'col-span-3', 4: 'col-span-4', 5: 'col-span-5', 6: 'col-span-6', 7: 'col-span-7', 8: 'col-span-8', 9: 'col-span-9', 10: 'col-span-10', 11: 'col-span-11', 12: 'col-span-12'},
+        sm: {1: 'sm:col-span-1', 2: 'sm:col-span-2', 3: 'sm:col-span-3', 4: 'sm:col-span-4', 5: 'sm:col-span-5', 6: 'sm:col-span-6', 7: 'sm:col-span-7', 8: 'sm:col-span-8', 9: 'sm:col-span-9', 10: 'sm:col-span-10', 11: 'sm:col-span-11', 12: 'sm:col-span-12'},
+        md: {1: 'md:col-span-1', 2: 'md:col-span-2', 3: 'md:col-span-3', 4: 'md:col-span-4', 5: 'md:col-span-5', 6: 'md:col-span-6', 7: 'md:col-span-7', 8: 'md:col-span-8', 9: 'md:col-span-9', 10: 'md:col-span-10', 11: 'md:col-span-11', 12: 'md:col-span-12'},
+        lg: {1: 'lg:col-span-1', 2: 'lg:col-span-2', 3: 'lg:col-span-3', 4: 'lg:col-span-4', 5: 'lg:col-span-5', 6: 'lg:col-span-6', 7: 'lg:col-span-7', 8: 'lg:col-span-8', 9: 'lg:col-span-9', 10: 'lg:col-span-10', 11: 'lg:col-span-11', 12: 'lg:col-span-12'},
+        xl: {1: 'xl:col-span-1', 2: 'xl:col-span-2', 3: 'xl:col-span-3', 4: 'xl:col-span-4', 5: 'xl:col-span-5', 6: 'xl:col-span-6', 7: 'xl:col-span-7', 8: 'xl:col-span-8', 9: 'xl:col-span-9', 10: 'xl:col-span-10', 11: 'xl:col-span-11', 12: 'xl:col-span-12'},
+        xxl: {1: '2xl:col-span-1', 2: '2xl:col-span-2', 3: '2xl:col-span-3', 4: '2xl:col-span-4', 5: '2xl:col-span-5', 6: '2xl:col-span-6', 7: '2xl:col-span-7', 8: '2xl:col-span-8', 9: '2xl:col-span-9', 10: '2xl:col-span-10', 11: '2xl:col-span-11', 12: '2xl:col-span-12'}
+    } -%}
+    {%- set widths = span ? span.widths : {(breakpoint.value): max(1, 12 // max(1, count))} -%}
+    {{- (widths[''] is defined ? [] : ['col-span-12'])|merge(widths|map((width, at) => spans[at][width]))|join(' ') -}}
+{% endmacro %}
+
+{# The tab bar and the panes; in the drawer the tabs are one under another. #}
+{% block layout_tabs %}
+    {% if layout.compact %}
+        {% for tab in tabs %}{{ crud_layout_part(layout, tab) }}{% endfor %}
+    {% else %}
+        {# Worked with the keyboard too: ← / → and Tab from one tab of a form into the next - see the tabs controller. #}
+        <div data-controller="tabs">
+            <div class="mb-4 flex gap-4 overflow-x-auto border-b border-gray-200 dark:border-white/10" role="tablist">
+                {% for tab in tabs %}
+                    {% set active = layout.isActive(tab) %}
+                    {% set errors = layout.errors(tab) %}
+                    {% set badge = layout.badge(tab) %}
+                    <button type="button" role="tab" id="{{ layout.domId(tab) }}-tab"
+                        class="-mb-px flex items-center gap-2 border-b-2 border-transparent px-1 py-2 text-sm font-medium whitespace-nowrap text-gray-500 hover:text-gray-700 aria-selected:border-indigo-600 aria-selected:text-indigo-600 dark:text-gray-400 dark:hover:text-gray-200 dark:aria-selected:border-indigo-400 dark:aria-selected:text-indigo-400{{ errors ? ' text-red-600 dark:text-red-400' }}"
+                        aria-controls="{{ layout.domId(tab) }}" aria-selected="{{ active ? 'true' : 'false' }}"{{ active ? '' : ' tabindex="-1"' }}
+                                                data-tabs-target="tab" data-action="tabs#select keydown->tabs#walk" data-tabs-name-param="{{ tab.name }}"
+                    >
+                        {% if tab.icon %}{{ crud_icon(tab.icon) }}{% endif %}
+                        <span>{{ layout.label(tab)|trans }}</span>
+                        {% if badge is not null %}<span class="rounded-full bg-gray-100 px-1.5 text-xs dark:bg-white/10">{{ badge }}</span>{% endif %}
+                        {% if errors %}<span class="rounded-full bg-red-600 px-1.5 text-xs text-white" title="{{ 'crud.layout.errors'|trans({count: errors}) }}">{{ errors }}</span>{% endif %}
+                    </button>
+                {% endfor %}
+            </div>
+            <div>
+                {% for tab in tabs %}{{ crud_layout_part(layout, tab, {active: layout.isActive(tab)}) }}{% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block layout_tab %}
+    {% if layout.compact %}
+        <section class="mb-6 {{ node.class }}">
+            {{ _self.heading(layout, node, label) }}
+            {{ crud_layout(layout, node.children) }}
+        </section>
+    {% else %}
+        <div class="{{ active ? 'active' }} {{ node.class }}" id="{{ layout.domId(node) }}" role="tabpanel" aria-labelledby="{{ layout.domId(node) }}-tab" data-tabs-target="pane"{{ active ? '' : ' hidden' }}{% if node.showIf and layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form %} data-show-if="{{ node.showIf }}"{% endif %}>
+            {% if help %}<p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ help|trans }}</p>{% endif %}
+            {{ crud_layout(layout, node.children) }}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{# Columns side by side; one left alone on a page takes the whole width, and in the drawer every one does. #}
+{% block layout_columns %}
+    <div class="grid grid-cols-12 gap-6">
+        {% for column in columns %}
+            {{ crud_layout_part(layout, column, {alone: columns|length == 1, count: columns|length}) }}
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block layout_column %}
+    <div class="{{ alone or layout.compact ? 'col-span-12' : _self.col(node.span, constant('BREAKPOINT', node), count ?? 1) }} {{ node.class }}">
+        {% if label %}
+            {{ _self.heading(layout, node, label) }}
+            {% if help %}<p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ help|trans }}</p>{% endif %}
+        {% endif %}
+        {{ crud_layout(layout, node.children) }}
+    </div>
+{% endblock %}
+
+{#
+    A form fieldset is a <fieldset>, a group of details a <section>. One that folds is a <details>: open while it
+    holds an error, and always in the drawer. .crud-fieldset: what the show-if controller hides.
+#}
+{% block layout_fieldset %}
+    {% set foldable = node.foldable and not layout.compact %}
+    {% set tag = foldable ? 'details' : (layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form ? 'fieldset' : 'section') %}
+    {% set open = not node.collapsed or layout.errors(node) > 0 %}
+    <{{ tag }} class="crud-fieldset mb-6{{ label ? ' rounded-lg border border-gray-200 p-4 dark:border-white/10' : '' }} {{ node.class }}"{{ foldable and open ? ' open' }}{% if node.showIf and layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form %} data-show-if="{{ node.showIf }}"{% endif %}>
+        {% if label %}
+            {{ _self.heading(layout, node, label, foldable ? 'summary' : (tag == 'fieldset' ? 'legend' : 'h3')) }}
+            {% if help %}<p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ help|trans }}</p>{% endif %}
+        {% endif %}
+        {{ crud_layout(layout, node.children) }}
+    </{{ tag }}>
+{% endblock %}
+
+{% block layout_row %}
+    <div class="grid grid-cols-12 gap-x-4">
+        {% for field in node.children %}
+            <div class="{{ layout.compact ? 'col-span-12' : _self.col(node.spanOf(field), node.breakpoint, node.children|length) }} {{ field.class }}">{{ crud_layout_part(layout, field) }}</div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{#
+    A field of the form (a section another part adds is one too, and a filler of the form), a section under the
+    details, or a value of the record.
+#}
+{% block layout_field %}
+    {% set inForm = layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form %}
+    {% if inForm and layout.filler(node.name) %}
+        {{ include('@CrudTheme/crud/_filler.html.twig', {filler: layout.filler(node.name), crud: crud}) }}
+    {% elseif inForm %}
+        {{ form_row(layout.form[node.name], node.label ? {} : {label: false}) }}
+    {% elseif layout.section(node.name) %}
+        {% set section = layout.section(node.name) %}
+        {# A section under the details of every resource is told which one (AsCrudDetailsSection::EVERY), as on the page. #}
+        {{ component(section.component, {id: layout.id}|merge(section.resource == '*' ? {resource: crud.name} : {})) }}
+    {% else %}
+        {% set row = layout.row(node.name) %}
+        <dl class="mb-4">
+            {% if node.label %}<dt class="text-sm text-gray-500 dark:text-gray-400">{{ row.column.label|trans }}</dt>{% endif %}
+            <dd class="mt-0.5">{{ crud_value(crud, row.column, row.value, layout.item, 'detail') }}</dd>
+        </dl>
+    {% endif %}
+{% endblock %}

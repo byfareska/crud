@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests (PHP ${{ matrix.php }}, ${{ matrix.dependencies }} deps)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.4', '8.5']
+        dependencies: [highest]
+        include:
+          - php: '8.4'
+            dependencies: lowest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, pdo_sqlite
+          coverage: none
+      - uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
+      # The lowest versions of some dependencies (event-dispatcher-contracts 3.4) trigger deprecations of PHP itself.
+      - run: vendor/bin/phpunit ${{ matrix.dependencies == 'lowest' && '--do-not-fail-on-deprecation' || '' }}
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: intl
+          coverage: none
+      - run: composer validate --strict
+      - uses: ramsey/composer-install@v3
+      - name: Optional dependencies (deptrac)
+        run: vendor/bin/deptrac --no-progress
+      - name: Code style (phpcs)
+        run: vendor/bin/phpcs
+      - name: Static analysis (phpstan)
+        run: vendor/bin/phpstan analyse --no-progress
+      - name: Rector
+        run: vendor/bin/rector process --dry-run --no-progress-bar
+      - run: composer audit

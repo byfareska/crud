@@ -1,0 +1,34 @@
+{#
+    How the values of the CRUD pages are printed. For every value the first block that exists is used, from "this field
+    of this resource" down to "anything" - the order and the variables a block gets are described in
+    Byfareska\Crud\Twig\CrudValueRenderer. A resource overrides or adds blocks in a template of its own:
+    #[AsCrud(theme: 'crud/product_values.html.twig')].
+#}
+
+{# By kind of value #}
+{% block type_empty %}<span class="text-gray-400 dark:text-gray-500">—</span>{% endblock %}
+
+{% block type_bool %}
+    {%- if value -%}
+        <span class="inline-flex rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 ring-1 ring-green-600/20 ring-inset dark:bg-green-500/10 dark:text-green-400">{{ 'crud.value.yes'|trans }}</span>
+    {%- else -%}
+        <span class="inline-flex rounded-full bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-gray-500/10 ring-inset dark:bg-white/5 dark:text-gray-400">{{ 'crud.value.no'|trans }}</span>
+    {%- endif -%}
+{% endblock %}
+
+{% block type_list %}{% for entry in value %}{{ crud_list_entry(crud, column, entry, item, view) }}{% endfor %}{% endblock %}
+
+{# An entry of a list; one that says what it is (a TypedValue) is printed by type_<kind>_entry or type_<kind> instead. #}
+{% block list_entry %}<span class="me-1 inline-flex rounded-md bg-gray-100 px-1.5 py-0.5 text-xs dark:bg-white/10">{{ value }}</span>{% endblock %}
+
+{# In the zone the panel shows times in (ChartTimezone), whatever zone the server formats in (crud_wall_clock). #}
+{% block type_date %}<time datetime="{{ value|date('c', false) }}">{{ 'crud.value.datetime'|trans({at: value|crud_wall_clock}) }}</time>{% endblock %}
+
+{# A day, no time (a Doctrine "date" column): "2024-05-01". #}
+{% block type_day %}<time datetime="{{ value }}">{{ 'crud.value.day'|trans({at: value|crud_wall_clock}) }}</time>{% endblock %}
+
+{# By the "type" of a column. Only where a link does not get in the way: a cell of the list opens the preview. #}
+{% block type_email_detail %}<a class="text-indigo-600 hover:underline dark:text-indigo-400" href="mailto:{{ value }}">{{ value }}</a>{% endblock %}
+
+{# Anything else #}
+{% block value %}{{ value }}{% endblock %}

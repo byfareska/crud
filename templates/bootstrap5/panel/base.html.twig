@@ -1,0 +1,38 @@
+{#
+    Every page of the panel. Bootstrap 5.3 and Bootstrap Icons come with the application's assets
+    (panel/_assets.html.twig): this theme has no stylesheet of its own.
+#}
+<!DOCTYPE html>
+<html lang="{{ app.locale|replace({"_": "-"}) }}" dir="{{ panel_dir(app.locale) }}" data-bs-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        {# The colour scheme chosen before (theme controller) - else the system's - set before the first paint. A theme of
+           yours changes the key it is remembered under (theme_storage_key, as data-theme-storage-key-value of the
+           controller) or gives the script a nonce of a Content Security Policy (theme_script_attributes:
+           ` nonce="{{ csp_nonce('script') }}"`). #}
+        {# Defined here, drawn only where they are asked for (block()). #}
+        {% if false %}{% block theme_storage_key %}panel-theme{% endblock %}{% block theme_script_attributes %}{% endblock %}{% block theme_dark_schemes %}["dark"]{% endblock %}{% endif %}
+        {% block theme_script %}
+        <script{{ block('theme_script_attributes') }}>
+            (function () {
+                var theme = null;
+                try { theme = localStorage.getItem({{ block('theme_storage_key')|trim|json_encode|raw }}); } catch (e) {}
+                theme = theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+                // Whether it is dark - of a scheme of its own too (the block theme_dark_schemes, theme controller "dark").
+                var dark = {{ block('theme_dark_schemes')|trim|raw }};
+                document.documentElement.setAttribute('data-color-scheme', dark.indexOf(theme) >= 0 ? 'dark' : 'light');
+            })();
+        </script>
+        {% endblock %}
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="turbo-prefetch" content="false">
+        <title>{% block title %}{{ panel_brand() }}{% endblock %}</title>
+        {% block assets %}{{ include('@CrudTheme/panel/_assets.html.twig') }}{% endblock %}
+    </head>
+    {# data-scope: the panel of the page, for the command palette (kept across Turbo visits) - in any layout extending this one. #}
+    <body class="{% block body_class %}bg-body-tertiary{% endblock %}" data-scope="{{ panel_scope().name }}">
+        {% block body %}{% endblock %}
+    </body>
+</html>

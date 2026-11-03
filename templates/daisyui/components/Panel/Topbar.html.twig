@@ -1,0 +1,26 @@
+{# The top bar: the menu button (small screens), the command palette, the way to the other panels and the user's menu. #}
+<header {{ attributes.defaults({class: 'navbar sticky top-0 z-30 min-h-0 gap-2 border-b border-base-300 bg-base-100/90 px-4 py-2 backdrop-blur'}) }}>
+    {% if sidebar %}
+        <button class="btn btn-ghost btn-square btn-sm lg:hidden" type="button" commandfor="side-nav" command="show-modal" aria-label="{{ 'panel.topbar.open_menu'|trans }}">{{ crud_icon('list', 'text-lg') }}</button>
+    {% endif %}
+    {% block start %}{% endblock %}
+    {% if palette %}
+        <button class="btn btn-sm w-full max-w-xs justify-start gap-2 border-base-300 bg-base-100 font-normal text-base-content/60" type="button" commandfor="command-palette" command="show-modal" aria-label="{{ 'panel.topbar.open_palette'|trans }}">
+            {{ crud_icon('search') }}
+            <span class="hidden flex-1 text-start sm:inline">{{ 'panel.topbar.search'|trans }}</span>
+        </button>
+    {% endif %}
+    <div class="ms-auto flex items-center gap-2">
+        {% block actions %}{% endblock %}
+        <twig:Panel:PanelSwitch :panels="this.panels" />
+        <twig:Panel:ThemeToggle />
+        {# What the TopbarWidgetSources add. #}
+        {% for widget in this.shown %}
+            {{ component(widget.component, widget.props) }}
+        {% endfor %}
+        <twig:Panel:UserMenu>
+            {# The layout's block "user_menu_items" (more entries of the menu, above "sign out"). #}
+            <twig:block name="items">{{ userMenuItems }}</twig:block>
+        </twig:Panel:UserMenu>
+    </div>
+</header>

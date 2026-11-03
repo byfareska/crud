@@ -1,0 +1,6 @@
+{% props icon, title %}
+<section {{ attributes.defaults({class: 'text-center text-body-secondary py-5'}) }}>
+    {{ crud_icon(icon, 'fs-1 d-block mb-2') }}
+    <div class="fw-semibold text-body">{{ title }}</div>
+    <p class="mb-0">{% block content %}{% endblock %}</p>
+</section>

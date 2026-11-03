@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Salva
+        save_new: 'Salva e aggiungi un altro'
+        save_edit: 'Salva e continua a modificare'
+        cancel: Annulla
+        confirm: Conferma
+        close: Chiudi
+    list:
+        shown_html: '{shown, plural, =0 {Visualizzati <strong>0</strong> di {total, number}} =1 {Visualizzato <strong>{from, number}</strong> di {total, number}} other {Visualizzati <strong>{from, number}–{to, number}</strong> di {total, number}}}'
+        shown_more_html: 'Visualizzati <strong>{from, number}–{to, number}</strong> di oltre {total, number}'
+        per_page: 'Per pagina'
+    timezone:
+        region:
+            africa: Africa
+            america: America
+            antarctica: Antartide
+            arctic: Artico
+            asia: Asia
+            atlantic: Atlantico
+            australia: Australia
+            europe: Europa
+            indian: Oceano Indiano
+            pacific: Pacifico
+            other: Altro
+    time_ago:
+        now: proprio ora
+        minutes: '{count} min fa'
+        hours: '{count, plural, one {# ora fa} other {# ore fa}}'
+        days: '{count, plural, one {ieri} other {# giorni fa}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Generale
+            users: Utenti
+            sales: Vendite
+            content: Contenuti
+            system: Sistema
+        number: '{value, number}'
+    pagination:
+        previous: Pagina precedente
+        next: Pagina successiva
+        previous_tip: Pagina precedente
+        next_tip: Pagina successiva
+        jump: Vai alla pagina
+        jump_hint: Digita un numero di pagina
+
+crud:
+    palette:
+        list: Elenco
+        create: Aggiungi un nuovo record
+        own: La tua pagina
+    total_html: 'Totale: <strong>{count, number}</strong>'
+    total_more_html: 'Totale: <strong>più di {count, number}</strong>'
+    search: Cerca
+    clear_filters: Cancella i filtri
+    sort_tip: 'Ordina: la colonna cliccata passa per prima; in sequenza: crescente, decrescente, disattivato'
+    empty: Nessun risultato.
+    selected: 'Selezionati: {count, number}'
+    select: 'Seleziona'
+    select_page: 'Seleziona tutto in questa pagina'
+    select_all_matching: 'Seleziona tutti i {count, number} che corrispondono ai filtri'
+    all_matching_selected: 'Selezionati tutti i {count, number} che corrispondono ai filtri'
+    clear_selection: 'Annulla selezione'
+    actions: Azioni
+    filter:
+        title: 'Filtri'
+        more: 'Altri filtri'
+        query: Cerca
+        any: Tutti
+        'yes': 'Sì'
+        'no': 'No'
+        from: 'Da'
+        to: 'A'
+        clear: 'Cancella'
+        time: 'Ora'
+        comparison:
+            label: 'Confronto di {field}'
+            eq: 'uguale a'
+            neq: 'diverso da'
+            contains: 'contiene'
+            not_contains: 'non contiene'
+            starts: 'inizia con'
+            ends: 'finisce con'
+            gt: 'maggiore di'
+            gte: 'maggiore o uguale a'
+            lt: 'minore di'
+            lte: 'minore o uguale a'
+            between: 'tra'
+            in: 'è uno di'
+            not_in: 'non è nessuno di'
+            empty: 'è vuoto'
+            filled: 'non è vuoto'
+    confirm_delete:
+        message: Eliminare questo record?
+        hint: L’operazione non può essere annullata.
+    confirm_bulk_delete:
+        message: 'Eliminare i record selezionati ({count, number})?'
+    action:
+        details: Dettagli
+        edit: Modifica
+        delete: Elimina
+        duplicate: 'Duplica'
+        list: Elenco
+    layout:
+        errors: '{count, plural, one {# errore} other {# errori}}'
+    toast:
+        created: Aggiunto
+        updated: Modifiche salvate
+        deleted: Eliminato
+        delete_failed: Impossibile eliminare
+        bulk_deleted: 'Eliminati: {count, number}'
+        bulk_delete_failed: 'Non eliminati: {count, number}'
+        gone: Questo record non esiste più
+        bulk_failed: 'L’azione non è stata eseguita'
+        action_failed: 'Impossibile eseguire l’azione'
+        done: 'Fatto'
+    value:
+        'yes': 'Sì'
+        'no': 'No'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Non trovato.
+        forbidden: Non hai il permesso di farlo.
+        taken: Un record del genere esiste già.
+        in_use: Questo record è usato da altri record e non può essere eliminato.
+        changed: 'Qualcun altro ha modificato questo record nel frattempo. Riaprilo per vedere le modifiche.'
+        retry: 'Il database è occupato. Non è stato salvato nulla: riprova.'
+        refused: 'Il database ha rifiutato questo record.'
+        input_required: 'Questa risposta è obbligatoria.'
+        input_choice: 'Scegli una delle opzioni.'
+        input_number: 'Inserisci un numero.'
+        input_date: 'Inserisci una data valida.'
+
+panel:
+    login:
+        title: Accedi
+        username: Nome utente
+        password: Password
+        submit: Accedi
+    scope:
+        panel: Pannello
+        admin: Amministrazione
+    nav:
+        main_menu: Menu principale
+        close_menu: Chiudi il menu
+        dashboard: Dashboard
+        section:
+            start: Inizio
+            main: Principale
+            account: Account
+    dashboard:
+        subtitle: I tuoi widget – trascinali, ridimensionali, aggiungine altri.
+        subtitle_own: La tua disposizione dei widget.
+        empty_title: Non ci sono widget nella dashboard
+        empty_text: Aggiungi il primo con «Aggiungi widget».
+        add: Aggiungi widget
+        edit: Modifica
+        done: Fatto
+        more: Altro
+        reset: Ripristina la predefinita
+        reset_confirm: Ripristinare la dashboard predefinita? La tua disposizione andrà persa.
+        share: Rendila predefinita per tutti
+        share_confirm: Rendere questa disposizione predefinita per tutti?
+        share_hint: La vedrà chiunque non abbia una propria disposizione.
+        remove: 'Rimuovi il widget «{title}»'
+        settings: 'Impostazioni: {title}'
+        toast:
+            failed: Impossibile salvare la dashboard
+            shared: La disposizione è ora quella predefinita per tutti
+        gallery:
+            title: Aggiungi un widget
+            search: Cerca widget
+            add: Aggiungi
+            size: Dimensione
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {nella dashboard} other {# volte nella dashboard}}'
+            empty: Non ci sono widget da aggiungere.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Orologio
+            description: Un orologio analogico o digitale, con una seconda città accanto.
+            setting:
+                style: Quadrante
+                zone: Seconda città
+            style:
+                analog: Analogico
+                digital: Digitale
+            city:
+                none: Nessuna
+                utc: UTC
+                london: Londra
+                warsaw: Varsavia
+                berlin: Berlino
+                kyiv: Kiev
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: San Paolo
+                dubai: Dubai
+                kolkata: Calcutta
+                shanghai: Shanghai
+                tokyo: Tokyo
+                sydney: Sydney
+        quick_actions:
+            title: Azioni rapide
+            description: Riquadri che portano all’aggiunta di record, come i Comandi rapidi di iOS – scegli quali.
+            setting: Quali azioni (nessuna = tutte)
+            empty: Non ci sono azioni che puoi usare.
+        note:
+            title: Nota
+            description: Un foglietto adesivo salvato mentre scrivi. Ognuno ha il proprio.
+            placeholder: Scrivi qualcosa…
+            saving: Salvataggio…
+            saved: Salvato
+    topbar:
+        open_menu: Apri il menu
+        open_palette: Apri la palette dei comandi
+        search: Cerca o digita un comando…
+    palette:
+        label: Palette dei comandi
+        placeholder: Cerca o digita un comando…
+        search_label: Cerca nel pannello
+        empty: 'Nessun risultato per «{query}»'
+        navigate: naviga
+        open: apri
+        close: chiudi
+        hint_html: 'Prova il nome di un record, oppure <b>&gt;</b> per i comandi'
+        verb:
+            go: Vai a
+            open: Apri
+            run: Esegui
+        group:
+            recent: Recenti
+            suggested: Suggeriti
+            navigation: Navigazione
+            commands: Comandi
+        item:
+            panel_switch:
+                description: Vai a un altro pannello
+            dashboard_edit:
+                name: Modifica la dashboard
+                description: Sposta e ridimensiona i widget
+                keywords: 'dashboard, widget, disposizione, layout, riordina'
+            dashboard_add:
+                name: Aggiungi un widget
+                description: Scegli un widget dalla galleria
+                keywords: 'dashboard, nuovo widget, galleria'
+            dashboard_reset:
+                name: Ripristina la dashboard predefinita
+                description: Dimentica la tua disposizione dei widget
+                keywords: 'dashboard, ripristina, reset, predefinita'
+            theme:
+                name: Passa dal tema chiaro a quello scuro
+                description: Cambia l’aspetto del pannello
+                keywords: 'modalità scura, modalità chiara, colori, dark, light, tema'
+    theme:
+        toggle: Cambia tema
+        toggle_long: Passa dal tema chiaro a quello scuro
+        choose: Tema
+        choose_long: Scegli il tema dei colori
+        auto: Sistema
+    user_menu:
+        impersonating: Hai effettuato l’accesso come questo utente
+        exit_impersonation: Torna al tuo account
+        label: Menu utente
+        logout: Esci
+        anonymous: Non hai effettuato l’accesso

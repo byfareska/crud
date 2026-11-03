@@ -1,0 +1,57 @@
+{#
+    How an action of a record (an ActionButton) is drawn in each place - crud_action(button, place), see
+    Byfareska\Crud\Twig\ActionButtonRenderer. Each block gets "button"; its attributes are escaped by crud_attrs().
+    Its colour is button.tone (ActionTone) - adding green, editing amber, deleting red, looking sky blue, the main
+    thing indigo, anything else grey. The classes are written out whole: Tailwind finds only those it sees here.
+#}
+
+{# A button of a row of the list, showing its icon: outlined in its colour. #}
+{% block action_row %}
+    {% set tones = {
+        primary: 'text-indigo-600 ring-indigo-600/30 hover:bg-indigo-50 dark:text-indigo-400 dark:ring-indigo-400/30 dark:hover:bg-indigo-400/10',
+        secondary: 'text-gray-500 ring-gray-300 hover:bg-gray-100 dark:text-gray-400 dark:ring-white/15 dark:hover:bg-white/10',
+        success: 'text-green-600 ring-green-600/30 hover:bg-green-50 dark:text-green-400 dark:ring-green-400/30 dark:hover:bg-green-400/10',
+        warning: 'text-amber-600 ring-amber-500/40 hover:bg-amber-50 dark:text-amber-400 dark:ring-amber-400/30 dark:hover:bg-amber-400/10',
+        danger: 'text-red-600 ring-red-600/30 hover:bg-red-50 dark:text-red-400 dark:ring-red-400/30 dark:hover:bg-red-400/10',
+        info: 'text-sky-600 ring-sky-600/30 hover:bg-sky-50 dark:text-sky-400 dark:ring-sky-400/30 dark:hover:bg-sky-400/10',
+    } %}
+    <{{ button.tag }} class="inline-flex items-center justify-center rounded-lg p-1.5 ring-1 ring-inset disabled:opacity-50 {{ tones[button.tone.value] }}"{{ crud_attrs(button.attributes) }} title="{{ button.label|trans }}" aria-label="{{ button.label|trans }}">{{ crud_icon(button.icon) }}</{{ button.tag }}>
+{% endblock %}
+
+{# An item of the menu of a row: its icon in its colour, its text red only when it destroys. #}
+{% block action_menu %}
+    {% set tones = {
+        primary: 'text-indigo-600 dark:text-indigo-400',
+        secondary: '',
+        success: 'text-green-600 dark:text-green-400',
+        warning: 'text-amber-600 dark:text-amber-400',
+        danger: 'text-red-600 dark:text-red-400',
+        info: 'text-sky-600 dark:text-sky-400',
+    } %}
+    <{{ button.tag }} class="flex w-full items-center gap-2 px-3 py-2 text-start text-sm hover:bg-gray-100 dark:hover:bg-white/10{{ button.danger ? ' text-red-600 dark:text-red-400' : ' text-gray-700 dark:text-gray-200' }}"{{ crud_attrs(button.attributes) }}>{{ crud_icon(button.icon, tones[button.tone.value]) }}<span class="flex-1">{{ button.label|trans }}</span></{{ button.tag }}>
+{% endblock %}
+
+{# A button among those of a record: the details page, the edit form, the preview drawer. The main one is filled. #}
+{% block action_bar %}
+    {% set filled = {
+        primary: 'bg-indigo-600 text-white hover:bg-indigo-500 dark:bg-indigo-500 dark:hover:bg-indigo-400',
+        secondary: 'bg-gray-600 text-white hover:bg-gray-500 dark:bg-gray-500 dark:hover:bg-gray-400',
+        success: 'bg-green-600 text-white hover:bg-green-500 dark:bg-green-500 dark:hover:bg-green-400',
+        warning: 'bg-amber-400 text-gray-950 hover:bg-amber-300 dark:bg-amber-400 dark:hover:bg-amber-300',
+        danger: 'bg-red-600 text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-400',
+        info: 'bg-sky-600 text-white hover:bg-sky-500 dark:bg-sky-500 dark:hover:bg-sky-400',
+    } %}
+    {% set outlined = {
+        primary: 'text-indigo-700 ring-indigo-600/40 hover:bg-indigo-50 dark:text-indigo-300 dark:ring-indigo-400/40 dark:hover:bg-indigo-400/10',
+        secondary: 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-white/10 dark:hover:bg-white/20',
+        success: 'text-green-700 ring-green-600/40 hover:bg-green-50 dark:text-green-300 dark:ring-green-400/40 dark:hover:bg-green-400/10',
+        warning: 'text-amber-700 ring-amber-500/50 hover:bg-amber-50 dark:text-amber-300 dark:ring-amber-400/40 dark:hover:bg-amber-400/10',
+        danger: 'text-red-700 ring-red-600/40 hover:bg-red-50 dark:text-red-300 dark:ring-red-400/40 dark:hover:bg-red-400/10',
+        info: 'text-sky-700 ring-sky-600/40 hover:bg-sky-50 dark:text-sky-300 dark:ring-sky-400/40 dark:hover:bg-sky-400/10',
+    } %}
+    {% if button.primary %}
+        <{{ button.tag }} class="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold shadow-xs disabled:opacity-50 {{ filled[button.tone.value] }}"{{ crud_attrs(button.attributes) }}>{{ crud_icon(button.icon) }} {{ button.label|trans }}</{{ button.tag }}>
+    {% else %}
+        <{{ button.tag }} class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold shadow-xs ring-1 ring-inset disabled:opacity-50 dark:bg-white/10 {{ outlined[button.tone.value] }}"{{ crud_attrs(button.attributes) }}>{{ crud_icon(button.icon) }} {{ button.label|trans }}</{{ button.tag }}>
+    {% endif %}
+{% endblock %}

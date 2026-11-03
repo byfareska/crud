@@ -1,0 +1,11 @@
+{% props href, icon, label, badge = null, badgeVariant = null, active = false %}
+{% set badgeClasses = {
+    danger: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300',
+    warning: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300',
+    success: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300',
+    info: 'bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300',
+} %}
+<a {{ attributes.defaults({class: 'flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium ' ~ (active ? 'bg-gray-100 text-indigo-600 dark:bg-white/10 dark:text-white' : 'text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5'), href: href, 'data-nav-link': true}) }}{% if active %} aria-current="page"{% endif %}>
+    {{ crud_icon(icon) }} <span class="flex-1">{{ label }}</span>
+    {% if badge %}<span class="rounded-full px-2 py-0.5 text-xs {{ badgeClasses[badgeVariant] ?? 'bg-gray-100 dark:bg-white/10' }}">{{ badge }}</span>{% endif %}
+</a>

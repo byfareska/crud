@@ -1,0 +1,9 @@
+{# Light or dark. "theme:toggle" is also dispatched on window by the command palette. #}
+<button {{ attributes.defaults({
+    class: 'btn btn-link nav-link px-2 py-2',
+    type: 'button',
+    title: 'panel.theme.toggle'|trans,
+    'aria-label': 'panel.theme.toggle_long'|trans,
+    'data-controller': 'theme',
+    'data-action': 'theme#toggle theme:toggle@window->theme#toggle',
+}) }}>{{ crud_icon('circle-half') }}</button>

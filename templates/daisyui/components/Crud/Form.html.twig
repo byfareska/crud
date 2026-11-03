@@ -1,0 +1,50 @@
+{#
+    The add / edit form of a #[AsCrud] resource. Fields are synced without re-rendering (norender), so nothing is
+    validated - and no password field is emptied - before the form is saved. Files chosen in the form are sent with
+    the save (files|save). The focus starts in the first field and, after a refused save, moves to the first field
+    with an error (focus-first). The fields are drawn by the layout of the resource (crud_layout); what it does not
+    place comes after it.
+
+    Its parts are blocks - form_fillers, form_fields, form_actions - the same in every theme: a theme of the
+    application, or the template of a form of a resource's own (CrudForm), extends this one and changes one of them.
+#}
+{% form_theme form with crud_form_themes() %}
+{% set crud = this.definition %}
+{% set layout = this.layout %}
+<div {{ attributes.defaults({'data-controller': 'focus-first show-if'}) }}>
+    {# Something pasted fills the fields in (CrudFormFiller); one the layout places is drawn there instead. #}
+    {% block form_fillers %}
+    {% for name, filler in layout.fillers|filter((filler, name) => not layout.places(name)) %}
+        {{ include('@CrudTheme/crud/_filler.html.twig', {filler: filler, crud: crud}) }}
+    {% endfor %}
+    {% endblock %}
+    <section class="card card-border bg-base-100 p-6 shadow-xs">
+            {{ form_start(form, {attr: {
+                novalidate: 'novalidate',
+                'data-model': 'norender|*',
+                'data-action': 'live#action:prevent',
+                'data-live-action-param': 'files|save',
+            }}) }}
+                {% block form_fields %}
+                {{ form_errors(form) }}
+                {{ crud_layout(layout) }}
+                {{ form_rest(form) }}
+                {% endblock %}
+
+                {% block form_actions %}
+                <div class="flex flex-wrap gap-2 border-t border-base-300 pt-4">
+                    <button class="btn btn-sm btn-primary" type="submit" data-loading="addAttribute(disabled)">{{ crud_icon('check-lg') }} {{ 'ui.action.save'|trans }}</button>
+                    {# The other buttons of AsCrud "afterSave": they save, then lead elsewhere (AfterSave). #}
+                    {% for then in this.saveChoices %}
+                        <button class="btn btn-sm btn-primary btn-outline" type="button" data-action="live#action:prevent" data-live-action-param="files|save" data-live-then-param="{{ then.value }}" data-loading="addAttribute(disabled)">{{ ('ui.action.save_' ~ then.value)|trans }}</button>
+                    {% endfor %}
+                    {# The buttons of the application's own (CrudSaveButton): they save, then lead where they say. #}
+                    {% for button in this.saveButtons %}
+                        <button class="btn btn-sm btn-primary btn-outline" type="button" data-action="live#action:prevent" data-live-action-param="files|save" data-live-then-param="{{ button.name }}" data-loading="addAttribute(disabled)">{{ button.label|trans }}</button>
+                    {% endfor %}
+                    <a class="btn btn-sm" href="{{ crud_return_url(crud, this.id) }}">{{ 'ui.action.cancel'|trans }}</a>
+                </div>
+                {% endblock %}
+            {{ form_end(form) }}
+    </section>
+</div>

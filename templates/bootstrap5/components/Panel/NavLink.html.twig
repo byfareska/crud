@@ -1,0 +1,16 @@
+{% props href, icon, label, badge = null, badgeVariant = null, active = false, nested = false %}
+{#
+    A link of the menu. At the top a pill of Bootstrap's .nav-pills - the page open is the filled one; under another
+    link (nested) a plain, smaller one without the icon.
+#}
+{% if nested %}
+    <a {{ attributes.defaults({class: 'nav-link py-1 d-flex align-items-center gap-2' ~ (active ? ' link-body-emphasis fw-semibold' : ' link-secondary'), href: href}) }}{% if active %} aria-current="page"{% endif %}>
+        <span class="flex-grow-1">{{ label }}</span>
+        {% if badge %}<span class="badge rounded-pill {{ badgeVariant ? 'text-bg-' ~ badgeVariant : 'bg-primary-subtle text-primary-emphasis' }}">{{ badge }}</span>{% endif %}
+    </a>
+{% else %}
+    <a {{ attributes.defaults({class: 'nav-link d-flex align-items-center gap-2' ~ (active ? ' active' : ' link-body-emphasis'), href: href}) }}{% if active %} aria-current="page"{% endif %}>
+        {{ crud_icon(icon) }} <span class="flex-grow-1">{{ label }}</span>
+        {% if badge %}<span class="badge rounded-pill ms-auto {{ badgeVariant ? 'text-bg-' ~ badgeVariant : (active ? 'text-bg-light' : 'bg-primary-subtle text-primary-emphasis') }}">{{ badge }}</span>{% endif %}
+    </a>
+{% endif %}

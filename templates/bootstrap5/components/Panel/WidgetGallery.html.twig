@@ -1,0 +1,57 @@
+{#
+    "Add a widget": every widget the user may have, by category, with a size to pick and a search field. Part of the
+    dashboard-grid controller of the page (targets and actions).
+#}
+{% set categories = this.categories %}
+<twig:Ui:Modal id="widget-gallery" size="lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title h5">{{ 'panel.dashboard.gallery.title'|trans }}</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'ui.action.close'|trans }}"></button>
+        </div>
+        <div class="modal-body">
+            <input class="form-control mb-3" type="search" autocomplete="off"
+                   placeholder="{{ 'panel.dashboard.gallery.search'|trans }}" aria-label="{{ 'panel.dashboard.gallery.search'|trans }}"
+                   data-overlay-target="autofocus" data-dashboard-grid-target="search" data-action="input->dashboard-grid#filter">
+            {% for category, widgets in categories %}
+                <section class="mb-3" data-dashboard-grid-target="galleryCategory">
+                    <h3 class="h6 text-uppercase text-body-secondary">{{ category|trans }}</h3>
+                    <div class="row row-cols-1 row-cols-md-2 g-2">
+                        {% for view in widgets %}
+                            {% set widget = view.widget %}
+                            {% set title = widget.title|trans %}
+                            {% set description = widget.description|trans %}
+                            <div class="col" data-dashboard-grid-target="galleryItem" data-widget="{{ widget.key }}"
+                                 data-search="{{ (title ~ ' ' ~ description ~ ' ' ~ category|trans)|lower }}">
+                                <div class="card h-100">
+                                    <div class="card-body d-flex flex-column gap-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            {{ crud_icon(widget.icon, '', {style: 'color: ' ~ (widget.accent)}) }}
+                                            <span class="fw-semibold flex-grow-1">{{ title }}</span>
+                                            {% if view.placed > 0 %}<span class="badge text-bg-secondary">{{ 'panel.dashboard.gallery.placed'|trans({count: view.placed}) }}</span>{% endif %}
+                                        </div>
+                                        <p class="small text-body-secondary mb-0 flex-grow-1">{{ description }}</p>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="btn-group btn-group-sm" role="radiogroup" aria-label="{{ 'panel.dashboard.gallery.size'|trans }}">
+                                                {% for name, size in view.sizes %}
+                                                    {% set radio = 'size-' ~ widget.key ~ '-' ~ name %}
+                                                    <input class="btn-check" type="radio" id="{{ radio }}" name="size-{{ widget.key }}" value="{{ name }}" data-w="{{ size.w }}" data-h="{{ size.h }}" {{ name == view.size ? 'checked' }}>
+                                                    <label class="btn btn-outline-secondary" for="{{ radio }}" title="{{ 'panel.dashboard.gallery.size_tip'|trans({w: size.w, h: size.h}) }}">{{ ('panel.dashboard.gallery.sizes.' ~ name)|trans }}</label>
+                                                {% endfor %}
+                                            </div>
+                                            <button class="btn btn-sm btn-success ms-auto" type="button" data-action="dashboard-grid#add" data-widget="{{ widget.key }}">
+                                                {{ crud_icon('plus-lg') }} {{ 'panel.dashboard.gallery.add'|trans }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% else %}
+                <p class="text-body-secondary">{{ 'panel.dashboard.gallery.empty'|trans }}</p>
+            {% endfor %}
+        </div>
+    </div>
+</twig:Ui:Modal>

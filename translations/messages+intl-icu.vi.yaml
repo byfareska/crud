@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Lưu
+        save_new: 'Lưu và thêm mục khác'
+        save_edit: 'Lưu và tiếp tục chỉnh sửa'
+        cancel: Hủy
+        confirm: Xác nhận
+        close: Đóng
+    list:
+        shown_html: '{shown, plural, =0 {Đang hiển thị <strong>0</strong> trên {total, number}} =1 {Đang hiển thị <strong>{from, number}</strong> trên {total, number}} other {Đang hiển thị <strong>{from, number}–{to, number}</strong> trên {total, number}}}'
+        shown_more_html: 'Đang hiển thị <strong>{from, number}–{to, number}</strong> trong hơn {total, number}'
+        per_page: 'Mỗi trang'
+    timezone:
+        region:
+            africa: Châu Phi
+            america: Châu Mỹ
+            antarctica: Châu Nam Cực
+            arctic: Bắc Cực
+            asia: Châu Á
+            atlantic: Đại Tây Dương
+            australia: Châu Úc
+            europe: Châu Âu
+            indian: Ấn Độ Dương
+            pacific: Thái Bình Dương
+            other: Khác
+    time_ago:
+        now: vừa xong
+        minutes: '{count} phút trước'
+        hours: '{count, plural, other {# giờ trước}}'
+        days: '{count, plural, =1 {hôm qua} other {# ngày trước}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Chung
+            users: Người dùng
+            sales: Bán hàng
+            content: Nội dung
+            system: Hệ thống
+        number: '{value, number}'
+    pagination:
+        previous: Trang trước
+        next: Trang sau
+        previous_tip: Trang trước
+        next_tip: Trang sau
+        jump: Đến trang
+        jump_hint: Nhập số trang
+
+crud:
+    palette:
+        list: Danh sách
+        create: Thêm bản ghi mới
+        own: Trang của bạn
+    total_html: 'Tổng: <strong>{count, number}</strong>'
+    total_more_html: 'Tổng: <strong>hơn {count, number}</strong>'
+    search: Tìm kiếm
+    clear_filters: Xóa bộ lọc
+    sort_tip: 'Sắp xếp: cột được nhấp sẽ lên đầu; lần lượt: tăng dần, giảm dần, tắt'
+    empty: Không có kết quả.
+    selected: 'Đã chọn: {count, number}'
+    select: 'Chọn'
+    select_page: 'Chọn tất cả trên trang này'
+    select_all_matching: 'Chọn tất cả {count, number} mục khớp với bộ lọc'
+    all_matching_selected: 'Đã chọn tất cả {count, number} mục khớp với bộ lọc'
+    clear_selection: 'Bỏ chọn'
+    actions: Thao tác
+    filter:
+        title: 'Bộ lọc'
+        more: 'Thêm bộ lọc'
+        query: Tìm kiếm
+        any: Tất cả
+        'yes': 'Có'
+        'no': 'Không'
+        from: 'Từ'
+        to: 'Đến'
+        clear: 'Xóa'
+        time: 'Giờ'
+        comparison:
+            label: 'Cách so sánh {field}'
+            eq: 'bằng'
+            neq: 'khác'
+            contains: 'chứa'
+            not_contains: 'không chứa'
+            starts: 'bắt đầu bằng'
+            ends: 'kết thúc bằng'
+            gt: 'lớn hơn'
+            gte: 'lớn hơn hoặc bằng'
+            lt: 'nhỏ hơn'
+            lte: 'nhỏ hơn hoặc bằng'
+            between: 'trong khoảng'
+            in: 'là một trong'
+            not_in: 'không là cái nào trong'
+            empty: 'trống'
+            filled: 'không trống'
+    confirm_delete:
+        message: Xóa bản ghi này?
+        hint: Không thể hoàn tác thao tác này.
+    confirm_bulk_delete:
+        message: 'Xóa các bản ghi đã chọn ({count, number})?'
+    action:
+        details: Chi tiết
+        edit: Sửa
+        delete: Xóa
+        duplicate: 'Nhân bản'
+        list: Danh sách
+    layout:
+        errors: '{count, plural, other {# lỗi}}'
+    toast:
+        created: Đã thêm
+        updated: Đã lưu thay đổi
+        deleted: Đã xóa
+        delete_failed: Không thể xóa
+        bulk_deleted: 'Đã xóa: {count, number}'
+        bulk_delete_failed: 'Không xóa được: {count, number}'
+        gone: Bản ghi này không còn tồn tại
+        bulk_failed: 'Thao tác chưa được thực hiện'
+        action_failed: 'Không thể thực hiện'
+        done: 'Đã xong'
+    value:
+        'yes': 'Có'
+        'no': 'Không'
+        datetime: '{at, time, short} {at, date, medium}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Không tìm thấy.
+        forbidden: Bạn không được phép làm điều này.
+        taken: Bản ghi như vậy đã tồn tại.
+        in_use: Bản ghi này đang được các bản ghi khác sử dụng và không thể xóa.
+        changed: 'Người khác đã thay đổi bản ghi này trong lúc đó. Hãy mở lại để xem các thay đổi.'
+        retry: 'Cơ sở dữ liệu đang bận. Chưa có gì được lưu - hãy thử lại.'
+        refused: 'Cơ sở dữ liệu đã từ chối bản ghi này.'
+        input_required: 'Câu trả lời này là bắt buộc.'
+        input_choice: 'Hãy chọn một trong các tùy chọn.'
+        input_number: 'Hãy nhập một số.'
+        input_date: 'Hãy nhập ngày hợp lệ.'
+
+panel:
+    login:
+        title: Đăng nhập
+        username: Tên người dùng
+        password: Mật khẩu
+        submit: Đăng nhập
+    scope:
+        panel: Bảng
+        admin: Quản trị
+    nav:
+        main_menu: Menu chính
+        close_menu: Đóng menu
+        dashboard: Bảng điều khiển
+        section:
+            start: Bắt đầu
+            main: Chính
+            account: Tài khoản
+    dashboard:
+        subtitle: Tiện ích của bạn – kéo, đổi kích thước, thêm tiện ích khác.
+        subtitle_own: Bố cục tiện ích của riêng bạn.
+        empty_title: Không có tiện ích nào trên bảng điều khiển
+        empty_text: Thêm tiện ích đầu tiên bằng “Thêm tiện ích”.
+        add: Thêm tiện ích
+        edit: Sửa
+        done: Xong
+        more: Thêm
+        reset: Khôi phục mặc định
+        reset_confirm: Khôi phục bảng điều khiển mặc định? Bố cục riêng của bạn sẽ bị xóa.
+        share: Đặt làm mặc định cho mọi người
+        share_confirm: Đặt bố cục này làm mặc định cho mọi người?
+        share_hint: Tất cả những ai chưa có bố cục riêng sẽ thấy nó.
+        remove: 'Gỡ tiện ích “{title}”'
+        settings: 'Cài đặt: {title}'
+        toast:
+            failed: Không thể lưu bảng điều khiển
+            shared: Bố cục này giờ là mặc định cho mọi người
+        gallery:
+            title: Thêm tiện ích
+            search: Tìm tiện ích
+            add: Thêm
+            size: Kích thước
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {trên bảng điều khiển} other {# lần trên bảng điều khiển}}'
+            empty: Không có tiện ích nào để thêm.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Đồng hồ
+            description: Đồng hồ kim hoặc số, kèm một thành phố thứ hai bên cạnh.
+            setting:
+                style: Mặt đồng hồ
+                zone: Thành phố thứ hai
+            style:
+                analog: Kim
+                digital: Số
+            city:
+                none: Không có
+                utc: UTC
+                london: Luân Đôn
+                warsaw: Warszawa
+                berlin: Berlin
+                kyiv: Kyiv
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Kolkata
+                shanghai: Thượng Hải
+                tokyo: Tokyo
+                sydney: Sydney
+        quick_actions:
+            title: Thao tác nhanh
+            description: Các ô dẫn đến việc thêm bản ghi, giống Phím tắt của iOS – chọn những ô bạn muốn.
+            setting: Thao tác nào (không chọn = tất cả)
+            empty: Không có thao tác nào bạn có thể dùng.
+        note:
+            title: Ghi chú
+            description: Một tờ giấy nhớ được lưu khi bạn gõ. Mỗi người có một tờ riêng.
+            placeholder: Viết gì đó…
+            saving: Đang lưu…
+            saved: Đã lưu
+    topbar:
+        open_menu: Mở menu
+        open_palette: Mở bảng lệnh
+        search: Tìm kiếm hoặc nhập lệnh…
+    palette:
+        label: Bảng lệnh
+        placeholder: Tìm kiếm hoặc nhập lệnh…
+        search_label: Tìm kiếm trong bảng
+        empty: 'Không tìm thấy gì cho “{query}”'
+        navigate: di chuyển
+        open: mở
+        close: đóng
+        hint_html: 'Thử tên của một bản ghi, hoặc <b>&gt;</b> để dùng lệnh'
+        verb:
+            go: Đến
+            open: Mở
+            run: Chạy
+        group:
+            recent: Gần đây
+            suggested: Gợi ý
+            navigation: Điều hướng
+            commands: Lệnh
+        item:
+            panel_switch:
+                description: Chuyển sang bảng khác
+            dashboard_edit:
+                name: Sửa bảng điều khiển
+                description: Di chuyển và đổi kích thước tiện ích
+                keywords: 'dashboard, bảng điều khiển, tiện ích, widget, bố cục, sắp xếp lại'
+            dashboard_add:
+                name: Thêm tiện ích
+                description: Chọn một tiện ích từ thư viện
+                keywords: 'dashboard, bảng điều khiển, tiện ích mới, widget, thư viện'
+            dashboard_reset:
+                name: Khôi phục bảng điều khiển mặc định
+                description: Bỏ bố cục tiện ích của riêng bạn
+                keywords: 'dashboard, bảng điều khiển, đặt lại, reset, mặc định'
+            theme:
+                name: Chuyển giữa giao diện sáng và tối
+                description: Thay đổi giao diện của bảng
+                keywords: 'chế độ tối, chế độ sáng, màu sắc, dark, light, theme'
+    theme:
+        toggle: Đổi giao diện
+        toggle_long: Chuyển giữa giao diện sáng và tối
+        choose: Giao diện
+        choose_long: Chọn giao diện màu
+        auto: Theo hệ thống
+    user_menu:
+        impersonating: Bạn đang đăng nhập với tư cách người dùng này
+        exit_impersonation: Quay lại tài khoản của bạn
+        label: Menu người dùng
+        logout: Đăng xuất
+        anonymous: Bạn chưa đăng nhập

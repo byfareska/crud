@@ -1,0 +1,5 @@
+{#
+    An icon (crud_icon(name, class, attributes)): Bootstrap Icons by name. A theme of another set of icons - an SVG
+    sprite, Material Symbols - replaces this file alone: every icon of the panel is drawn by it.
+#}
+<i class="bi bi-{{ name }}{{ class ? ' ' ~ class }}"{{ crud_attrs(attributes) }} aria-hidden="true"></i>

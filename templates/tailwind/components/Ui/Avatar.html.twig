@@ -1,0 +1,8 @@
+{# Somebody's picture, or the first letters of their name. Decoration next to the name it stands by. #}
+{% props name = '', src = null, size = '2rem' %}
+{% set initials = name|split(' ')|filter(part => part != '')|slice(0, 2)|map(part => part|first|upper)|join %}
+{%- if src -%}
+    <img {{ attributes.defaults({class: 'rounded-full object-cover', src: src, alt: '', loading: 'lazy', decoding: 'async', width: 32, height: 32, style: 'width: ' ~ size ~ '; height: ' ~ size, 'aria-hidden': 'true'}) }}>
+{%- else -%}
+    <span {{ attributes.defaults({class: 'inline-flex shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300', style: 'width: ' ~ size ~ '; height: ' ~ size, 'aria-hidden': 'true'}) }}>{{ initials }}</span>
+{%- endif -%}

@@ -1,0 +1,18 @@
+{#
+    A dialog (Bootstrap modal). Open it with data-bs-toggle="modal" data-bs-target="#id", or openOverlay() in a
+    controller; the default block is the content of .modal-dialog (a .modal-content). Its events: overlay:show,
+    overlay:shown, overlay:hidden; data-overlay-target="autofocus" gets the focus once it is shown.
+#}
+{% props id, size = null, centered = true %}
+<div {{ attributes.defaults({
+    class: 'modal fade',
+    id: id,
+    tabindex: '-1',
+    'aria-hidden': 'true',
+    'data-controller': 'overlay',
+    'data-action': 'overlay:shown->overlay#focus',
+}) }}>
+    <div class="modal-dialog{{ centered ? ' modal-dialog-centered' }}{{ size ? ' modal-' ~ size }}">
+        {% block content %}{% endblock %}
+    </div>
+</div>

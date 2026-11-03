@@ -1,0 +1,63 @@
+{#
+    The menu of the panel of the page: its sections and pages (NavigationSources). From "lg" up it stands beside the
+    page; below, the same menu is a drawer (<dialog id="side-nav">) opened from the top bar. Blocks of a theme of yours
+    (extending this one): "sidebar_brand" (the name and the logo), "sidebar_sections", "sidebar_footer".
+#}
+{% set nav %}
+    {% block sidebar_brand %}
+    <a class="mb-4 flex items-center gap-2 px-2 text-lg font-semibold" href="{{ path(panel_scope().homeRoute) }}">
+        <span class="inline-flex size-7 items-center justify-center rounded-lg bg-indigo-600 text-sm text-white">{{ panel_brand()|first|upper }}</span> {{ panel_brand() }}
+    </a>
+    {% endblock %}
+    {% block sidebar_sections %}
+    {% for title, links in this.sections %}
+        <nav class="mb-4" aria-label="{{ title|trans }}" data-panel-nav>
+            <div class="mb-1 px-2 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">{{ title|trans }}</div>
+            <ul class="flex flex-col gap-0.5">
+                {% for link in links %}
+                    <li>
+                        {# An address of its own (NavigationItem url), a badge, more attributes (target, data-*): NavigationSource / NavigationExtension. #}
+                        {{ _self.link(link) }}
+                        {# The items under it (NavigationItem parent), however deep. #}
+                        {{ _self.children(link) }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endfor %}
+    {% endblock %}
+    {% block sidebar_footer %}{% endblock %}
+{% endset %}
+<aside {{ attributes.defaults({
+    class: 'sticky top-0 hidden h-screen w-64 shrink-0 overflow-y-auto border-e border-gray-200 bg-white p-4 lg:block dark:border-white/10 dark:bg-gray-900',
+    'aria-label': 'panel.nav.main_menu'|trans,
+}) }}>
+    {{ nav }}
+</aside>
+<dialog id="side-nav" closedby="any" aria-label="{{ 'panel.nav.main_menu'|trans }}" data-controller="overlay"
+        class="fixed inset-y-0 start-0 end-auto m-0 h-dvh max-h-none w-72 max-w-[85vw] bg-white p-4 text-gray-900 shadow-xl backdrop:bg-gray-950/50 lg:hidden dark:bg-gray-900 dark:text-gray-100">
+    <button type="button" class="absolute top-3 end-3 rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10" commandfor="side-nav" command="close" aria-label="{{ 'panel.nav.close_menu'|trans }}">{{ crud_icon('x-lg') }}</button>
+    {{ nav }}
+</dialog>
+
+{# A link of the menu: its label translated with its parameters (or as it is), its badge in its variant. #}
+{% macro link(link) %}
+    {{ component('Panel:NavLink', {
+        href: link.url ?? path(link.route, link.parameters),
+        icon: link.icon,
+        label: link.translate ? link.label|trans(link.labelParameters) : link.label,
+        badge: link.badge,
+        badgeVariant: link.badgeVariant,
+        active: link.active,
+    }|merge(link.attributes)) }}
+{% endmacro %}
+
+{# The links under a link (NavigationItem parent), and theirs under them. #}
+{% macro children(link) %}
+    {% import _self as menu %}
+    {% if link.children is not empty %}
+        <ul class="ms-6 mt-0.5 flex flex-col gap-0.5">
+            {% for child in link.children %}<li>{{ menu.link(child) }}{{ menu.children(child) }}</li>{% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}

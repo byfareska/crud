@@ -1,0 +1,45 @@
+{#
+    Pager for a live component: every control writes the page number to the parent's `model` LiveProp. Between the
+    arrows there are at most seven places: more pages collapse to first / neighbours / last; the last gap is a "jump to
+    page" field (not bound with data-model: the component would write the current page into it). Using it scrolls the
+    closest ancestor matching `scrollTo` into view.
+#}
+{% props page, pageCount, model = 'page', scrollTo = '[data-scroll-anchor]' %}
+{% set gapOnRight = pageCount > 7 and page < pageCount - 3 %}
+{% if pageCount <= 7 %}
+    {% set items = pageCount > 0 ? 1..pageCount : [] %}
+{% elseif page <= 4 %}
+    {% set items = (1..5)|merge(['gap', pageCount]) %}
+{% elseif not gapOnRight %}
+    {% set items = [1, 'gap']|merge((pageCount - 4)..pageCount) %}
+{% else %}
+    {% set items = [1, 'gap', page - 1, page, page + 1, 'gap', pageCount] %}
+{% endif %}
+<ul {{ attributes.defaults({
+    class: 'pagination pagination-sm mb-0',
+    'data-controller': 'scroll-to',
+    'data-scroll-to-selector-value': scrollTo,
+    'data-action': 'click->scroll-to#scroll live-set:set->scroll-to#scroll',
+}) }}>
+    <li class="page-item{{ page <= 1 ? ' disabled' }}" title="{{ 'ui.pagination.previous_tip'|trans }}">
+        <button type="button" class="page-link" aria-label="{{ 'ui.pagination.previous'|trans }}" data-action="live#update" data-model="{{ model }}" data-value="{{ page - 1 }}"{{ page <= 1 ? ' disabled' }}>{{ crud_icon('chevron-left') }}</button>
+    </li>
+    {% for item in items %}
+        {% if item == 'gap' %}
+            <li class="page-item">
+                {% if loop.revindex == 2 or not gapOnRight %}
+                    <input class="page-link text-center" style="width: 3.5rem" type="number" min="1" max="{{ pageCount }}" placeholder="…" aria-label="{{ 'ui.pagination.jump'|trans }}" title="{{ 'ui.pagination.jump_hint'|trans }}" id="{{ model }}-jump" data-controller="live-set" data-live-set-model-value="{{ model }}" data-action="input->live-set#later change->live-set#now">
+                {% else %}
+                    <span class="page-link">…</span>
+                {% endif %}
+            </li>
+        {% else %}
+            <li class="page-item{{ item == page ? ' active' }}">
+                <button type="button" class="page-link"{% if item == page %} aria-current="page"{% endif %} data-action="live#update" data-model="{{ model }}" data-value="{{ item }}">{{ item }}</button>
+            </li>
+        {% endif %}
+    {% endfor %}
+    <li class="page-item{{ page >= pageCount ? ' disabled' }}" title="{{ 'ui.pagination.next_tip'|trans }}">
+        <button type="button" class="page-link" aria-label="{{ 'ui.pagination.next'|trans }}" data-action="live#update" data-model="{{ model }}" data-value="{{ page + 1 }}"{{ page >= pageCount ? ' disabled' }}>{{ crud_icon('chevron-right') }}</button>
+    </li>
+</ul>

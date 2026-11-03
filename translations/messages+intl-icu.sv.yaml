@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Spara
+        save_new: 'Spara och lägg till en till'
+        save_edit: 'Spara och fortsätt redigera'
+        cancel: Avbryt
+        confirm: Bekräfta
+        close: Stäng
+    list:
+        shown_html: '{shown, plural, =0 {Visar <strong>0</strong> av {total, number}} =1 {Visar <strong>{from, number}</strong> av {total, number}} other {Visar <strong>{from, number}–{to, number}</strong> av {total, number}}}'
+        shown_more_html: 'Visar <strong>{from, number}–{to, number}</strong> av fler än {total, number}'
+        per_page: 'Per sida'
+    timezone:
+        region:
+            africa: Afrika
+            america: Amerika
+            antarctica: Antarktis
+            arctic: Arktis
+            asia: Asien
+            atlantic: Atlanten
+            australia: Australien
+            europe: Europa
+            indian: Indiska oceanen
+            pacific: Stilla havet
+            other: Övrigt
+    time_ago:
+        now: just nu
+        minutes: 'för {count} min sedan'
+        hours: '{count, plural, one {för # timme sedan} other {för # timmar sedan}}'
+        days: '{count, plural, one {i går} other {för # dagar sedan}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Allmänt
+            users: Användare
+            sales: Försäljning
+            content: Innehåll
+            system: System
+        number: '{value, number}'
+    pagination:
+        previous: Föregående sida
+        next: Nästa sida
+        previous_tip: Föregående sida
+        next_tip: Nästa sida
+        jump: Gå till sida
+        jump_hint: Skriv ett sidnummer
+
+crud:
+    palette:
+        list: Lista
+        create: Lägg till en ny post
+        own: Din sida
+    total_html: 'Totalt: <strong>{count, number}</strong>'
+    total_more_html: 'Totalt: <strong>fler än {count, number}</strong>'
+    search: Sök
+    clear_filters: Rensa filter
+    sort_tip: 'Sortera: den klickade kolumnen kommer först; i tur och ordning: stigande, fallande, av'
+    empty: Inga resultat.
+    selected: 'Valda: {count, number}'
+    select: 'Välj'
+    select_page: 'Välj alla på den här sidan'
+    select_all_matching: 'Välj alla {count, number} som matchar filtren'
+    all_matching_selected: 'Alla {count, number} som matchar filtren är valda'
+    clear_selection: 'Rensa val'
+    actions: Åtgärder
+    filter:
+        title: 'Filter'
+        more: 'Fler filter'
+        query: Sök
+        any: Alla
+        'yes': 'Ja'
+        'no': 'Nej'
+        from: 'Från'
+        to: 'Till'
+        clear: 'Rensa'
+        time: 'Tid'
+        comparison:
+            label: 'Jämförelse för {field}'
+            eq: 'lika med'
+            neq: 'inte lika med'
+            contains: 'innehåller'
+            not_contains: 'innehåller inte'
+            starts: 'börjar med'
+            ends: 'slutar med'
+            gt: 'större än'
+            gte: 'större än eller lika med'
+            lt: 'mindre än'
+            lte: 'mindre än eller lika med'
+            between: 'mellan'
+            in: 'är en av'
+            not_in: 'är ingen av'
+            empty: 'är tom'
+            filled: 'är inte tom'
+    confirm_delete:
+        message: Radera den här posten?
+        hint: Det går inte att ångra.
+    confirm_bulk_delete:
+        message: 'Ta bort de valda posterna ({count, number})?'
+    action:
+        details: Detaljer
+        edit: Redigera
+        delete: Radera
+        duplicate: 'Duplicera'
+        list: Lista
+    layout:
+        errors: '{count, plural, one {# fel} other {# fel}}'
+    toast:
+        created: Tillagd
+        updated: Ändringarna har sparats
+        deleted: Raderad
+        delete_failed: Det gick inte att radera
+        bulk_deleted: 'Borttagna: {count, number}'
+        bulk_delete_failed: 'Inte borttagna: {count, number}'
+        gone: Den här posten finns inte längre
+        bulk_failed: 'Åtgärden utfördes inte'
+        action_failed: 'Det gick inte att utföra'
+        done: 'Klart'
+    value:
+        'yes': 'Ja'
+        'no': 'Nej'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Hittades inte.
+        forbidden: Du har inte behörighet att göra detta.
+        taken: En sådan post finns redan.
+        in_use: Den här posten används av andra poster och kan inte raderas.
+        changed: 'Någon annan har ändrat den här posten under tiden. Öppna den igen för att se ändringarna.'
+        retry: 'Databasen är upptagen. Inget sparades - försök igen.'
+        refused: 'Databasen avvisade den här posten.'
+        input_required: 'Det här svaret är obligatoriskt.'
+        input_choice: 'Välj ett av alternativen.'
+        input_number: 'Ange ett tal.'
+        input_date: 'Ange ett giltigt datum.'
+
+panel:
+    login:
+        title: Logga in
+        username: Användarnamn
+        password: Lösenord
+        submit: Logga in
+    scope:
+        panel: Panel
+        admin: Administration
+    nav:
+        main_menu: Huvudmeny
+        close_menu: Stäng menyn
+        dashboard: Översikt
+        section:
+            start: Start
+            main: Huvudsakligt
+            account: Konto
+    dashboard:
+        subtitle: Dina widgetar – dra, ändra storlek, lägg till fler.
+        subtitle_own: Din egen layout av widgetar.
+        empty_title: Det finns inga widgetar på översikten
+        empty_text: Lägg till den första med ”Lägg till widget”.
+        add: Lägg till widget
+        edit: Redigera
+        done: Klar
+        more: Mer
+        reset: Återställ standard
+        reset_confirm: Återställa standardöversikten? Din egen layout glöms bort.
+        share: Gör den till standard för alla
+        share_confirm: Göra den här layouten till standard för alla?
+        share_hint: Alla som inte har en egen layout ser den.
+        remove: 'Ta bort widgeten ”{title}”'
+        settings: 'Inställningar: {title}'
+        toast:
+            failed: Översikten kunde inte sparas
+            shared: Layouten är nu standard för alla
+        gallery:
+            title: Lägg till en widget
+            search: Sök widgetar
+            add: Lägg till
+            size: Storlek
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {på översikten} other {# gånger på översikten}}'
+            empty: Det finns inga widgetar att lägga till.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Klocka
+            description: En analog eller digital klocka, med en andra stad bredvid.
+            setting:
+                style: Urtavla
+                zone: Andra stad
+            style:
+                analog: Analog
+                digital: Digital
+            city:
+                none: Ingen
+                utc: UTC
+                london: London
+                warsaw: Warszawa
+                berlin: Berlin
+                kyiv: Kyiv
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Kolkata
+                shanghai: Shanghai
+                tokyo: Tokyo
+                sydney: Sydney
+        quick_actions:
+            title: Snabbåtgärder
+            description: Rutor som leder till att lägga till poster, som genvägarna i iOS – välj vilka.
+            setting: Vilka åtgärder (inga = alla)
+            empty: Det finns inga åtgärder du kan använda.
+        note:
+            title: Anteckning
+            description: En lapp som sparas medan du skriver. Alla har sin egen.
+            placeholder: Skriv något…
+            saving: Sparar…
+            saved: Sparad
+    topbar:
+        open_menu: Öppna menyn
+        open_palette: Öppna kommandopaletten
+        search: Sök eller skriv ett kommando…
+    palette:
+        label: Kommandopalett
+        placeholder: Sök eller skriv ett kommando…
+        search_label: Sök i panelen
+        empty: 'Inget hittades för ”{query}”'
+        navigate: navigera
+        open: öppna
+        close: stäng
+        hint_html: 'Prova namnet på en post, eller <b>&gt;</b> för kommandon'
+        verb:
+            go: Gå till
+            open: Öppna
+            run: Kör
+        group:
+            recent: Senaste
+            suggested: Förslag
+            navigation: Navigering
+            commands: Kommandon
+        item:
+            panel_switch:
+                description: Gå till en annan panel
+            dashboard_edit:
+                name: Redigera översikten
+                description: Flytta widgetar och ändra deras storlek
+                keywords: 'dashboard, översikt, widgetar, layout, ordna om'
+            dashboard_add:
+                name: Lägg till en widget
+                description: Välj en widget från galleriet
+                keywords: 'dashboard, översikt, ny widget, galleri'
+            dashboard_reset:
+                name: Återställ standardöversikten
+                description: Glöm din egen layout av widgetar
+                keywords: 'dashboard, översikt, återställ, reset, standard'
+            theme:
+                name: Växla mellan ljust och mörkt tema
+                description: Ändra panelens utseende
+                keywords: 'mörkt läge, ljust läge, färger, dark, light, tema'
+    theme:
+        toggle: Byt tema
+        toggle_long: Växla mellan ljust och mörkt tema
+        choose: Tema
+        choose_long: Välj färgtema
+        auto: System
+    user_menu:
+        impersonating: Du är inloggad som den här användaren
+        exit_impersonation: Tillbaka till ditt eget konto
+        label: Användarmeny
+        logout: Logga ut
+        anonymous: Du är inte inloggad

@@ -1,0 +1,8 @@
+{#
+    A record, laid out by its resource - see CrudLayouts::details() and crud_layout(). Used by the preview drawer
+    (compact) and the details page.
+#}
+{% props layout %}
+<div {{ attributes }}>
+    {{ crud_layout(layout) }}
+</div>

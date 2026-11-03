@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Simpan
+        save_new: 'Simpan dan tambah lagi'
+        save_edit: 'Simpan dan lanjutkan mengedit'
+        cancel: Batal
+        confirm: Konfirmasi
+        close: Tutup
+    list:
+        shown_html: '{shown, plural, =0 {Menampilkan <strong>0</strong> dari {total, number}} =1 {Menampilkan <strong>{from, number}</strong> dari {total, number}} other {Menampilkan <strong>{from, number}–{to, number}</strong> dari {total, number}}}'
+        shown_more_html: 'Menampilkan <strong>{from, number}–{to, number}</strong> dari lebih dari {total, number}'
+        per_page: 'Per halaman'
+    timezone:
+        region:
+            africa: Afrika
+            america: Amerika
+            antarctica: Antarktika
+            arctic: Arktik
+            asia: Asia
+            atlantic: Atlantik
+            australia: Australia
+            europe: Eropa
+            indian: Samudra Hindia
+            pacific: Pasifik
+            other: Lainnya
+    time_ago:
+        now: baru saja
+        minutes: '{count} mnt lalu'
+        hours: '{count, plural, other {# jam lalu}}'
+        days: '{count, plural, =1 {kemarin} other {# hari lalu}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Umum
+            users: Pengguna
+            sales: Penjualan
+            content: Konten
+            system: Sistem
+        number: '{value, number}'
+    pagination:
+        previous: Halaman sebelumnya
+        next: Halaman berikutnya
+        previous_tip: Halaman sebelumnya
+        next_tip: Halaman berikutnya
+        jump: Buka halaman
+        jump_hint: Ketik nomor halaman
+
+crud:
+    palette:
+        list: Daftar
+        create: Tambah data baru
+        own: Halaman Anda
+    total_html: 'Total: <strong>{count, number}</strong>'
+    total_more_html: 'Total: <strong>lebih dari {count, number}</strong>'
+    search: Cari
+    clear_filters: Hapus filter
+    sort_tip: 'Urutkan: kolom yang diklik menjadi yang pertama; bergantian: naik, turun, nonaktif'
+    empty: Tidak ada hasil.
+    selected: 'Dipilih: {count, number}'
+    select: 'Pilih'
+    select_page: 'Pilih semua di halaman ini'
+    select_all_matching: 'Pilih semua {count, number} yang cocok dengan filter'
+    all_matching_selected: 'Semua {count, number} yang cocok dengan filter dipilih'
+    clear_selection: 'Hapus pilihan'
+    actions: Tindakan
+    filter:
+        title: 'Filter'
+        more: 'Filter lainnya'
+        query: Cari
+        any: Semua
+        'yes': 'Ya'
+        'no': 'Tidak'
+        from: 'Dari'
+        to: 'Sampai'
+        clear: 'Hapus'
+        time: 'Waktu'
+        comparison:
+            label: 'Cara membandingkan {field}'
+            eq: 'sama dengan'
+            neq: 'tidak sama dengan'
+            contains: 'berisi'
+            not_contains: 'tidak berisi'
+            starts: 'diawali'
+            ends: 'diakhiri'
+            gt: 'lebih dari'
+            gte: 'lebih dari atau sama dengan'
+            lt: 'kurang dari'
+            lte: 'kurang dari atau sama dengan'
+            between: 'antara'
+            in: 'salah satu dari'
+            not_in: 'bukan salah satu dari'
+            empty: 'kosong'
+            filled: 'tidak kosong'
+    confirm_delete:
+        message: Hapus data ini?
+        hint: Tindakan ini tidak dapat dibatalkan.
+    confirm_bulk_delete:
+        message: 'Hapus catatan yang dipilih ({count, number})?'
+    action:
+        details: Detail
+        edit: Ubah
+        delete: Hapus
+        duplicate: 'Duplikat'
+        list: Daftar
+    layout:
+        errors: '{count, plural, other {# kesalahan}}'
+    toast:
+        created: Ditambahkan
+        updated: Perubahan disimpan
+        deleted: Dihapus
+        delete_failed: Tidak dapat menghapus
+        bulk_deleted: 'Dihapus: {count, number}'
+        bulk_delete_failed: 'Tidak dihapus: {count, number}'
+        gone: Data ini sudah tidak ada
+        bulk_failed: 'Tindakan tidak dilakukan'
+        action_failed: 'Tidak dapat dilakukan'
+        done: 'Selesai'
+    value:
+        'yes': 'Ya'
+        'no': 'Tidak'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Tidak ditemukan.
+        forbidden: Anda tidak diizinkan melakukan ini.
+        taken: Data seperti ini sudah ada.
+        in_use: Data ini digunakan oleh data lain dan tidak dapat dihapus.
+        changed: 'Orang lain telah mengubah rekaman ini sementara itu. Buka lagi untuk melihat perubahannya.'
+        retry: 'Basis data sedang sibuk. Tidak ada yang disimpan - coba lagi.'
+        refused: 'Basis data menolak rekaman ini.'
+        input_required: 'Jawaban ini wajib diisi.'
+        input_choice: 'Pilih salah satu opsi.'
+        input_number: 'Masukkan angka.'
+        input_date: 'Masukkan tanggal yang valid.'
+
+panel:
+    login:
+        title: Masuk
+        username: Nama pengguna
+        password: Kata sandi
+        submit: Masuk
+    scope:
+        panel: Panel
+        admin: Administrasi
+    nav:
+        main_menu: Menu utama
+        close_menu: Tutup menu
+        dashboard: Dasbor
+        section:
+            start: Mulai
+            main: Utama
+            account: Akun
+    dashboard:
+        subtitle: Widget Anda – seret, ubah ukuran, tambahkan lagi.
+        subtitle_own: Tata letak widget milik Anda sendiri.
+        empty_title: Tidak ada widget di dasbor
+        empty_text: Tambahkan yang pertama dengan “Tambah widget”.
+        add: Tambah widget
+        edit: Ubah
+        done: Selesai
+        more: Lainnya
+        reset: Kembalikan ke bawaan
+        reset_confirm: Kembalikan dasbor bawaan? Tata letak Anda sendiri akan dilupakan.
+        share: Jadikan bawaan untuk semua orang
+        share_confirm: Jadikan tata letak ini bawaan untuk semua orang?
+        share_hint: Semua orang yang tidak punya tata letak sendiri akan melihatnya.
+        remove: 'Hapus widget “{title}”'
+        settings: 'Pengaturan: {title}'
+        toast:
+            failed: Dasbor tidak dapat disimpan
+            shared: Tata letak ini sekarang menjadi bawaan untuk semua orang
+        gallery:
+            title: Tambah widget
+            search: Cari widget
+            add: Tambah
+            size: Ukuran
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {ada di dasbor} other {# kali di dasbor}}'
+            empty: Tidak ada widget untuk ditambahkan.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Jam
+            description: Jam analog atau digital, dengan kota kedua di sebelahnya.
+            setting:
+                style: Muka jam
+                zone: Kota kedua
+            style:
+                analog: Analog
+                digital: Digital
+            city:
+                none: Tidak ada
+                utc: UTC
+                london: London
+                warsaw: Warsawa
+                berlin: Berlin
+                kyiv: Kyiv
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Kolkata
+                shanghai: Shanghai
+                tokyo: Tokyo
+                sydney: Sydney
+        quick_actions:
+            title: Tindakan cepat
+            description: Petak yang mengarah ke penambahan data, seperti Pintasan di iOS – pilih yang mana.
+            setting: Tindakan mana (tidak ada = semua)
+            empty: Tidak ada tindakan yang dapat Anda gunakan.
+        note:
+            title: Catatan
+            description: Catatan tempel yang tersimpan saat Anda mengetik. Setiap orang punya miliknya sendiri.
+            placeholder: Tulis sesuatu…
+            saving: Menyimpan…
+            saved: Tersimpan
+    topbar:
+        open_menu: Buka menu
+        open_palette: Buka palet perintah
+        search: Cari atau ketik perintah…
+    palette:
+        label: Palet perintah
+        placeholder: Cari atau ketik perintah…
+        search_label: Cari di panel
+        empty: 'Tidak ada hasil untuk “{query}”'
+        navigate: navigasi
+        open: buka
+        close: tutup
+        hint_html: 'Coba nama sebuah data, atau <b>&gt;</b> untuk perintah'
+        verb:
+            go: Buka
+            open: Buka
+            run: Jalankan
+        group:
+            recent: Terbaru
+            suggested: Disarankan
+            navigation: Navigasi
+            commands: Perintah
+        item:
+            panel_switch:
+                description: Pindah ke panel lain
+            dashboard_edit:
+                name: Ubah dasbor
+                description: Pindahkan dan ubah ukuran widget
+                keywords: 'dashboard, dasbor, widget, tata letak, susun ulang'
+            dashboard_add:
+                name: Tambah widget
+                description: Pilih widget dari galeri
+                keywords: 'dashboard, dasbor, widget baru, galeri'
+            dashboard_reset:
+                name: Kembalikan dasbor bawaan
+                description: Lupakan tata letak widget milik Anda
+                keywords: 'dashboard, dasbor, atur ulang, reset, bawaan'
+            theme:
+                name: Beralih antara tema terang dan gelap
+                description: Ubah tampilan panel
+                keywords: 'mode gelap, mode terang, warna, dark, light, tema'
+    theme:
+        toggle: Ganti tema
+        toggle_long: Beralih antara tema terang dan gelap
+        choose: Tema
+        choose_long: Pilih tema warna
+        auto: Sistem
+    user_menu:
+        impersonating: Anda masuk sebagai pengguna ini
+        exit_impersonation: Kembali ke akun Anda sendiri
+        label: Menu pengguna
+        logout: Keluar
+        anonymous: Anda belum masuk

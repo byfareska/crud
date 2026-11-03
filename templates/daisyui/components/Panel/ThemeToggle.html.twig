@@ -1,0 +1,44 @@
+{#
+    The colour theme of the panel, as on daisyui.com: "system" (light or dark as the system is) and every theme of
+    byfareska_crud.color_themes, each shown in its own colours. The choice is remembered in the browser
+    (theme controller, under the key of the block theme_storage_key of panel/base.html.twig). "theme:toggle", which the
+    command palette dispatches on window, goes to the next theme.
+#}
+{% set color_themes = crud_color_themes() %}
+<details {{ attributes.defaults({
+    class: 'relative',
+    'data-dropdown': true,
+    'data-controller': 'dropdown theme',
+    'data-action': 'toggle->dropdown#toggle keydown.esc->dropdown#escape theme:toggle@window->theme#toggle',
+    'data-theme-storage-key-value': 'panel-theme-daisyui',
+    'data-theme-auto-value': 'true',
+    'data-theme-modes-value': color_themes.names|json_encode,
+    'data-theme-dark-value': color_themes.dark|json_encode,
+}) }}>
+    <summary class="btn btn-ghost btn-sm gap-1 px-2 [&::-webkit-details-marker]:hidden" title="{{ 'panel.theme.choose_long'|trans }}" aria-label="{{ 'panel.theme.choose_long'|trans }}">
+        {{ crud_icon('palette') }}<span class="hidden text-sm xl:inline">{{ 'panel.theme.choose'|trans }}</span>{{ crud_icon('chevron-down', 'text-xs opacity-60') }}
+    </summary>
+    <ul class="menu z-50 max-h-[70vh] w-56 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 p-2 shadow-xl" role="menu" data-dropdown-target="menu" data-action="click->dropdown#choose">
+        <li>
+            <button type="button" role="menuitemradio" class="aria-checked:menu-active" data-theme-target="option" data-action="theme#set" data-theme-theme-param="auto">
+                {{ crud_icon('circle-half') }}<span class="flex-1">{{ 'panel.theme.auto'|trans }}</span>
+            </button>
+        </li>
+        <li class="menu-title">{{ 'panel.theme.choose'|trans }}</li>
+        {% for name in color_themes.names %}
+            <li>
+                <button type="button" role="menuitemradio" class="group aria-checked:menu-active" data-theme-target="option" data-action="theme#set" data-theme-theme-param="{{ name }}">
+                    {# The theme drawn in its own colours: base, primary, secondary, accent, neutral. #}
+                    <span data-theme="{{ name }}" class="grid shrink-0 grid-cols-2 gap-0.5 rounded-md bg-base-100 p-1 shadow-sm" aria-hidden="true">
+                        <span class="size-1.5 rounded-full bg-base-content"></span>
+                        <span class="size-1.5 rounded-full bg-primary"></span>
+                        <span class="size-1.5 rounded-full bg-secondary"></span>
+                        <span class="size-1.5 rounded-full bg-accent"></span>
+                    </span>
+                    <span class="flex-1 truncate">{{ name }}</span>
+                    {{ crud_icon('check2', 'invisible group-aria-checked:visible') }}
+                </button>
+            </li>
+        {% endfor %}
+    </ul>
+</details>

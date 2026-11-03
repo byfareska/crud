@@ -1,0 +1,8 @@
+/vendor/
+/composer.lock
+/.phpunit.cache/
+/node_modules/
+/.phpcs-cache
+/.deptrac.cache
+/var/
+/.idea/

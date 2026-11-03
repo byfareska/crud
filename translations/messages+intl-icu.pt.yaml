@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Salvar
+        save_new: 'Guardar e adicionar outro'
+        save_edit: 'Guardar e continuar a editar'
+        cancel: Cancelar
+        confirm: Confirmar
+        close: Fechar
+    list:
+        shown_html: '{shown, plural, =0 {Mostrando <strong>0</strong> de {total, number}} =1 {Mostrando <strong>{from, number}</strong> de {total, number}} other {Mostrando <strong>{from, number}–{to, number}</strong> de {total, number}}}'
+        shown_more_html: 'A mostrar <strong>{from, number}–{to, number}</strong> de mais de {total, number}'
+        per_page: 'Por página'
+    timezone:
+        region:
+            africa: África
+            america: América
+            antarctica: Antártida
+            arctic: Ártico
+            asia: Ásia
+            atlantic: Atlântico
+            australia: Austrália
+            europe: Europa
+            indian: Oceano Índico
+            pacific: Pacífico
+            other: Outras
+    time_ago:
+        now: agora mesmo
+        minutes: 'há {count} min'
+        hours: '{count, plural, one {há # hora} other {há # horas}}'
+        days: '{count, plural, =1 {ontem} other {há # dias}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Geral
+            users: Usuários
+            sales: Vendas
+            content: Conteúdo
+            system: Sistema
+        number: '{value, number}'
+    pagination:
+        previous: Página anterior
+        next: Próxima página
+        previous_tip: Página anterior
+        next_tip: Próxima página
+        jump: Ir para a página
+        jump_hint: Digite um número de página
+
+crud:
+    palette:
+        list: Lista
+        create: Adicionar um novo registro
+        own: Sua página
+    total_html: 'Total: <strong>{count, number}</strong>'
+    total_more_html: 'Total: <strong>mais de {count, number}</strong>'
+    search: Pesquisar
+    clear_filters: Limpar filtros
+    sort_tip: 'Ordenar: a coluna clicada passa a ser a primeira; em sequência: crescente, decrescente, desativado'
+    empty: Nenhum resultado.
+    selected: 'Selecionados: {count, number}'
+    select: 'Selecionar'
+    select_page: 'Selecionar tudo nesta página'
+    select_all_matching: 'Selecionar todos os {count, number} que correspondem aos filtros'
+    all_matching_selected: 'Todos os {count, number} que correspondem aos filtros estão selecionados'
+    clear_selection: 'Limpar seleção'
+    actions: Ações
+    filter:
+        title: 'Filtros'
+        more: 'Mais filtros'
+        query: Pesquisar
+        any: Todos
+        'yes': 'Sim'
+        'no': 'Não'
+        from: 'De'
+        to: 'Até'
+        clear: 'Limpar'
+        time: 'Hora'
+        comparison:
+            label: 'Como comparar {field}'
+            eq: 'igual a'
+            neq: 'diferente de'
+            contains: 'contém'
+            not_contains: 'não contém'
+            starts: 'começa com'
+            ends: 'termina com'
+            gt: 'maior que'
+            gte: 'maior ou igual a'
+            lt: 'menor que'
+            lte: 'menor ou igual a'
+            between: 'entre'
+            in: 'é um de'
+            not_in: 'não é nenhum de'
+            empty: 'está vazio'
+            filled: 'não está vazio'
+    confirm_delete:
+        message: Excluir este registro?
+        hint: Esta ação não pode ser desfeita.
+    confirm_bulk_delete:
+        message: 'Excluir os registros selecionados ({count, number})?'
+    action:
+        details: Detalhes
+        edit: Editar
+        delete: Excluir
+        duplicate: 'Duplicar'
+        list: Lista
+    layout:
+        errors: '{count, plural, one {# erro} other {# erros}}'
+    toast:
+        created: Adicionado
+        updated: Alterações salvas
+        deleted: Excluído
+        delete_failed: Não foi possível excluir
+        bulk_deleted: 'Excluídos: {count, number}'
+        bulk_delete_failed: 'Não excluídos: {count, number}'
+        gone: Este registro não existe mais
+        bulk_failed: 'A ação não foi realizada'
+        action_failed: 'Não foi possível realizar'
+        done: 'Concluído'
+    value:
+        'yes': 'Sim'
+        'no': 'Não'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Não encontrado.
+        forbidden: Você não tem permissão para fazer isso.
+        taken: Já existe um registro assim.
+        in_use: Este registro é usado por outros registros e não pode ser excluído.
+        changed: 'Outra pessoa alterou este registo entretanto. Abra-o novamente para ver as alterações.'
+        retry: 'A base de dados está ocupada. Nada foi guardado - tente novamente.'
+        refused: 'A base de dados recusou este registo.'
+        input_required: 'Esta resposta é obrigatória.'
+        input_choice: 'Escolha uma das opções.'
+        input_number: 'Introduza um número.'
+        input_date: 'Introduza uma data válida.'
+
+panel:
+    login:
+        title: Entrar
+        username: Nome de usuário
+        password: Senha
+        submit: Entrar
+    scope:
+        panel: Painel
+        admin: Administração
+    nav:
+        main_menu: Menu principal
+        close_menu: Fechar menu
+        dashboard: Painel inicial
+        section:
+            start: Início
+            main: Principal
+            account: Conta
+    dashboard:
+        subtitle: Seus widgets – arraste, redimensione, adicione mais.
+        subtitle_own: Seu próprio layout de widgets.
+        empty_title: Não há widgets no painel inicial
+        empty_text: Adicione o primeiro com “Adicionar widget”.
+        add: Adicionar widget
+        edit: Editar
+        done: Concluído
+        more: Mais
+        reset: Restaurar o padrão
+        reset_confirm: Restaurar o painel inicial padrão? Seu próprio layout será esquecido.
+        share: Tornar padrão para todos
+        share_confirm: Tornar este layout o padrão para todos?
+        share_hint: Todos que não têm um layout próprio vão vê-lo.
+        remove: 'Remover o widget “{title}”'
+        settings: 'Configurações: {title}'
+        toast:
+            failed: Não foi possível salvar o painel inicial
+            shared: O layout agora é o padrão para todos
+        gallery:
+            title: Adicionar um widget
+            search: Pesquisar widgets
+            add: Adicionar
+            size: Tamanho
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {no painel inicial} other {# vezes no painel inicial}}'
+            empty: Não há widgets para adicionar.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Relógio
+            description: Um relógio analógico ou digital, com uma segunda cidade ao lado.
+            setting:
+                style: Mostrador
+                zone: Segunda cidade
+            style:
+                analog: Analógico
+                digital: Digital
+            city:
+                none: Nenhuma
+                utc: UTC
+                london: Londres
+                warsaw: Varsóvia
+                berlin: Berlim
+                kyiv: Kiev
+                new_york: Nova York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Calcutá
+                shanghai: Xangai
+                tokyo: Tóquio
+                sydney: Sydney
+        quick_actions:
+            title: Ações rápidas
+            description: Blocos que levam à adição de registros, como os Atalhos do iOS – escolha quais.
+            setting: Quais ações (nenhuma = todas)
+            empty: Não há ações que você possa usar.
+        note:
+            title: Nota
+            description: Um bilhete adesivo salvo enquanto você digita. Cada um tem o seu.
+            placeholder: Escreva algo…
+            saving: Salvando…
+            saved: Salvo
+    topbar:
+        open_menu: Abrir menu
+        open_palette: Abrir a paleta de comandos
+        search: Pesquise ou digite um comando…
+    palette:
+        label: Paleta de comandos
+        placeholder: Pesquise ou digite um comando…
+        search_label: Pesquisar no painel
+        empty: 'Nada encontrado para “{query}”'
+        navigate: navegar
+        open: abrir
+        close: fechar
+        hint_html: 'Tente o nome de um registro, ou <b>&gt;</b> para comandos'
+        verb:
+            go: Ir para
+            open: Abrir
+            run: Executar
+        group:
+            recent: Recentes
+            suggested: Sugeridos
+            navigation: Navegação
+            commands: Comandos
+        item:
+            panel_switch:
+                description: Ir para outro painel
+            dashboard_edit:
+                name: Editar o painel inicial
+                description: Mover e redimensionar os widgets
+                keywords: 'dashboard, painel, widgets, layout, reorganizar'
+            dashboard_add:
+                name: Adicionar um widget
+                description: Escolher um widget da galeria
+                keywords: 'dashboard, painel, novo widget, galeria'
+            dashboard_reset:
+                name: Restaurar o painel inicial padrão
+                description: Esquecer seu próprio layout de widgets
+                keywords: 'dashboard, painel, redefinir, reset, padrão'
+            theme:
+                name: Alternar entre o tema claro e o escuro
+                description: Mudar a aparência do painel
+                keywords: 'modo escuro, modo claro, cores, dark, light, tema'
+    theme:
+        toggle: Alternar tema
+        toggle_long: Alternar entre o tema claro e o escuro
+        choose: Tema
+        choose_long: Escolher o tema de cores
+        auto: Sistema
+    user_menu:
+        impersonating: Você está conectado como este usuário
+        exit_impersonation: Voltar para sua própria conta
+        label: Menu do usuário
+        logout: Sair
+        anonymous: Você não está conectado

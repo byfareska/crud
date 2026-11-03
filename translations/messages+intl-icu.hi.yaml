@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: सहेजें
+        save_new: 'सहेजें और एक और जोड़ें'
+        save_edit: 'सहेजें और संपादन जारी रखें'
+        cancel: रद्द करें
+        confirm: पुष्टि करें
+        close: बंद करें
+    list:
+        shown_html: '{shown, plural, =0 {{total, number} में से <strong>0</strong> दिखाए जा रहे हैं} =1 {{total, number} में से <strong>{from, number}</strong> दिखाया जा रहा है} other {{total, number} में से <strong>{from, number}–{to, number}</strong> दिखाए जा रहे हैं}}'
+        shown_more_html: '{total, number} से अधिक में से <strong>{from, number}–{to, number}</strong> दिखाए जा रहे हैं'
+        per_page: 'प्रति पृष्ठ'
+    timezone:
+        region:
+            africa: अफ़्रीका
+            america: अमेरिका
+            antarctica: अंटार्कटिका
+            arctic: आर्कटिक
+            asia: एशिया
+            atlantic: अटलांटिक
+            australia: ऑस्ट्रेलिया
+            europe: यूरोप
+            indian: हिंद महासागर
+            pacific: प्रशांत
+            other: अन्य
+    time_ago:
+        now: अभी-अभी
+        minutes: '{count} मिनट पहले'
+        hours: '{count, plural, one {# घंटा पहले} other {# घंटे पहले}}'
+        days: '{count, plural, =1 {कल} other {# दिन पहले}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: सामान्य
+            users: उपयोगकर्ता
+            sales: बिक्री
+            content: सामग्री
+            system: सिस्टम
+        number: '{value, number}'
+    pagination:
+        previous: पिछला पृष्ठ
+        next: अगला पृष्ठ
+        previous_tip: पिछला पृष्ठ
+        next_tip: अगला पृष्ठ
+        jump: पृष्ठ पर जाएँ
+        jump_hint: पृष्ठ संख्या लिखें
+
+crud:
+    palette:
+        list: सूची
+        create: नया रिकॉर्ड जोड़ें
+        own: आपका पृष्ठ
+    total_html: 'कुल: <strong>{count, number}</strong>'
+    total_more_html: 'कुल: <strong>{count, number} से अधिक</strong>'
+    search: खोजें
+    clear_filters: फ़िल्टर हटाएँ
+    sort_tip: 'क्रमबद्ध करें: क्लिक किया गया कॉलम पहले आता है; क्रम से: आरोही, अवरोही, बंद'
+    empty: कोई परिणाम नहीं।
+    selected: 'चयनित: {count, number}'
+    select: 'चुनें'
+    select_page: 'इस पृष्ठ पर सभी चुनें'
+    select_all_matching: 'फ़िल्टर से मेल खाने वाले सभी {count, number} चुनें'
+    all_matching_selected: 'फ़िल्टर से मेल खाने वाले सभी {count, number} चुने गए'
+    clear_selection: 'चयन साफ़ करें'
+    actions: कार्रवाइयाँ
+    filter:
+        title: 'फ़िल्टर'
+        more: 'और फ़िल्टर'
+        query: खोजें
+        any: कोई भी
+        'yes': 'हाँ'
+        'no': 'नहीं'
+        from: 'से'
+        to: 'तक'
+        clear: 'साफ़ करें'
+        time: 'समय'
+        comparison:
+            label: '{field} की तुलना कैसे हो'
+            eq: 'बराबर'
+            neq: 'बराबर नहीं'
+            contains: 'शामिल है'
+            not_contains: 'शामिल नहीं है'
+            starts: 'से शुरू'
+            ends: 'पर समाप्त'
+            gt: 'से बड़ा'
+            gte: 'बड़ा या बराबर'
+            lt: 'से छोटा'
+            lte: 'छोटा या बराबर'
+            between: 'के बीच'
+            in: 'इनमें से एक'
+            not_in: 'इनमें से कोई नहीं'
+            empty: 'खाली है'
+            filled: 'खाली नहीं है'
+    confirm_delete:
+        message: यह रिकॉर्ड हटाएँ?
+        hint: इसे पूर्ववत नहीं किया जा सकता।
+    confirm_bulk_delete:
+        message: 'चयनित रिकॉर्ड ({count, number}) हटाएँ?'
+    action:
+        details: विवरण
+        edit: संपादित करें
+        delete: हटाएँ
+        duplicate: 'डुप्लिकेट करें'
+        list: सूची
+    layout:
+        errors: '{count, plural, one {# त्रुटि} other {# त्रुटियाँ}}'
+    toast:
+        created: जोड़ा गया
+        updated: बदलाव सहेजे गए
+        deleted: हटाया गया
+        delete_failed: हटाया नहीं जा सका
+        bulk_deleted: 'हटाए गए: {count, number}'
+        bulk_delete_failed: 'नहीं हटाए गए: {count, number}'
+        gone: यह रिकॉर्ड अब मौजूद नहीं है
+        bulk_failed: 'कार्रवाई नहीं हुई'
+        action_failed: 'यह नहीं हो सका'
+        done: 'हो गया'
+    value:
+        'yes': 'हाँ'
+        'no': 'नहीं'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: नहीं मिला।
+        forbidden: आपको यह करने की अनुमति नहीं है।
+        taken: ऐसा रिकॉर्ड पहले से मौजूद है।
+        in_use: यह रिकॉर्ड अन्य रिकॉर्ड द्वारा उपयोग में है और हटाया नहीं जा सकता।
+        changed: 'इस बीच किसी और ने इस रिकॉर्ड को बदल दिया है। बदलाव देखने के लिए इसे फिर से खोलें।'
+        retry: 'डेटाबेस व्यस्त है। कुछ भी सहेजा नहीं गया - फिर से प्रयास करें।'
+        refused: 'डेटाबेस ने इस रिकॉर्ड को अस्वीकार कर दिया।'
+        input_required: 'यह उत्तर आवश्यक है।'
+        input_choice: 'विकल्पों में से एक चुनें।'
+        input_number: 'एक संख्या दर्ज करें।'
+        input_date: 'एक मान्य तारीख दर्ज करें।'
+
+panel:
+    login:
+        title: साइन इन करें
+        username: उपयोगकर्ता नाम
+        password: पासवर्ड
+        submit: साइन इन करें
+    scope:
+        panel: पैनल
+        admin: प्रशासन
+    nav:
+        main_menu: मुख्य मेनू
+        close_menu: मेनू बंद करें
+        dashboard: डैशबोर्ड
+        section:
+            start: शुरुआत
+            main: मुख्य
+            account: खाता
+    dashboard:
+        subtitle: आपके विजेट – खींचें, आकार बदलें, और जोड़ें।
+        subtitle_own: विजेट का आपका अपना लेआउट।
+        empty_title: डैशबोर्ड पर कोई विजेट नहीं है
+        empty_text: “विजेट जोड़ें” से पहला विजेट जोड़ें।
+        add: विजेट जोड़ें
+        edit: संपादित करें
+        done: हो गया
+        more: और
+        reset: डिफ़ॉल्ट बहाल करें
+        reset_confirm: डिफ़ॉल्ट डैशबोर्ड बहाल करें? आपका अपना लेआउट भुला दिया जाएगा।
+        share: इसे सभी के लिए डिफ़ॉल्ट बनाएँ
+        share_confirm: इस लेआउट को सभी के लिए डिफ़ॉल्ट बनाएँ?
+        share_hint: जिनका अपना लेआउट नहीं है, वे सभी इसे देखेंगे।
+        remove: 'विजेट “{title}” हटाएँ'
+        settings: 'सेटिंग्स: {title}'
+        toast:
+            failed: डैशबोर्ड सहेजा नहीं जा सका
+            shared: यह लेआउट अब सभी के लिए डिफ़ॉल्ट है
+        gallery:
+            title: विजेट जोड़ें
+            search: विजेट खोजें
+            add: जोड़ें
+            size: आकार
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {डैशबोर्ड पर} other {डैशबोर्ड पर # बार}}'
+            empty: जोड़ने के लिए कोई विजेट नहीं है।
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: घड़ी
+            description: एनालॉग या डिजिटल घड़ी, साथ में एक दूसरे शहर के साथ।
+            setting:
+                style: डायल
+                zone: दूसरा शहर
+            style:
+                analog: एनालॉग
+                digital: डिजिटल
+            city:
+                none: कोई नहीं
+                utc: UTC
+                london: लंदन
+                warsaw: वारसॉ
+                berlin: बर्लिन
+                kyiv: कीव
+                new_york: न्यूयॉर्क
+                chicago: शिकागो
+                los_angeles: लॉस एंजिल्स
+                sao_paulo: साओ पाउलो
+                dubai: दुबई
+                kolkata: कोलकाता
+                shanghai: शंघाई
+                tokyo: टोक्यो
+                sydney: सिडनी
+        quick_actions:
+            title: त्वरित कार्रवाइयाँ
+            description: रिकॉर्ड जोड़ने तक ले जाने वाली टाइलें, iOS के शॉर्टकट जैसी – चुनें कौन-सी।
+            setting: कौन-सी कार्रवाइयाँ (कोई नहीं = सभी)
+            empty: ऐसी कोई कार्रवाई नहीं है जिसका आप उपयोग कर सकें।
+        note:
+            title: नोट
+            description: एक चिपचिपा नोट जो लिखते समय सहेजा जाता है। हर किसी का अपना होता है।
+            placeholder: कुछ लिखें…
+            saving: सहेजा जा रहा है…
+            saved: सहेजा गया
+    topbar:
+        open_menu: मेनू खोलें
+        open_palette: कमांड पैलेट खोलें
+        search: खोजें या कोई कमांड लिखें…
+    palette:
+        label: कमांड पैलेट
+        placeholder: खोजें या कोई कमांड लिखें…
+        search_label: पैनल में खोजें
+        empty: '“{query}” के लिए कुछ नहीं मिला'
+        navigate: नेविगेट
+        open: खोलें
+        close: बंद करें
+        hint_html: 'किसी रिकॉर्ड का नाम आज़माएँ, या कमांड के लिए <b>&gt;</b>'
+        verb:
+            go: जाएँ
+            open: खोलें
+            run: चलाएँ
+        group:
+            recent: हाल के
+            suggested: सुझाए गए
+            navigation: नेविगेशन
+            commands: कमांड
+        item:
+            panel_switch:
+                description: किसी दूसरे पैनल पर जाएँ
+            dashboard_edit:
+                name: डैशबोर्ड संपादित करें
+                description: विजेट को खिसकाएँ और उनका आकार बदलें
+                keywords: 'dashboard, डैशबोर्ड, विजेट, widgets, लेआउट, पुनर्व्यवस्थित'
+            dashboard_add:
+                name: विजेट जोड़ें
+                description: गैलरी से कोई विजेट चुनें
+                keywords: 'dashboard, डैशबोर्ड, नया विजेट, widget, गैलरी'
+            dashboard_reset:
+                name: डिफ़ॉल्ट डैशबोर्ड बहाल करें
+                description: विजेट का अपना लेआउट भूल जाएँ
+                keywords: 'dashboard, डैशबोर्ड, रीसेट, reset, डिफ़ॉल्ट'
+            theme:
+                name: हल्की और गहरी थीम के बीच बदलें
+                description: पैनल का रूप बदलें
+                keywords: 'डार्क मोड, लाइट मोड, रंग, dark, light, theme'
+    theme:
+        toggle: थीम बदलें
+        toggle_long: हल्की और गहरी थीम के बीच बदलें
+        choose: थीम
+        choose_long: रंग थीम चुनें
+        auto: सिस्टम
+    user_menu:
+        impersonating: आप इस उपयोगकर्ता के रूप में साइन इन हैं
+        exit_impersonation: अपने खाते पर वापस जाएँ
+        label: उपयोगकर्ता मेनू
+        logout: साइन आउट करें
+        anonymous: आप साइन इन नहीं हैं

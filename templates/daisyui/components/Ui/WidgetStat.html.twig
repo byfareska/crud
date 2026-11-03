@@ -1,0 +1,20 @@
+{#
+    The big number of a widget. delta: the change against the period before (shown with its sign), trend: up | down |
+    flat (told from the delta when not given), good: whether up is good (false for failures).
+#}
+{% props value, caption = null, delta = null, trend = null, good = true %}
+{% set trend = trend ?? (delta is null or delta == 0 ? 'flat' : (delta > 0 ? 'up' : 'down')) %}
+<div {{ attributes }}>
+    <div class="text-3xl leading-none font-semibold">{{ value }}</div>
+    {% if delta is not null or caption %}
+        <div class="mt-1 flex flex-wrap gap-2 text-sm">
+            {% if delta is not null %}
+                <span class="{{ trend == 'flat' ? 'text-base-content/60' : ((trend == 'up') == good ? 'text-success' : 'text-error') }}">
+                    {{ crud_icon(trend == 'flat' ? 'dash' : (trend == 'up' ? 'arrow-up-right' : 'arrow-down-right')) }}
+                    {{- delta > 0 ? '+' }}{{ delta|number_format(0, ',', ' ') -}}
+                </span>
+            {% endif %}
+            {% if caption %}<span class="text-base-content/60">{{ caption }}</span>{% endif %}
+        </div>
+    {% endif %}
+</div>

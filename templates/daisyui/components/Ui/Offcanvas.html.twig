@@ -1,0 +1,25 @@
+{# A drawer (<dialog class="modal"> at the edge). Open it with <button commandfor="id" command="show-modal">; blocks: content, footer. #}
+{% props id, title, subtitle = null, placement = 'end' %}
+<dialog {{ attributes.defaults({
+    class: 'modal ' ~ (placement == 'start' ? 'modal-start' : 'modal-end'),
+    id: id,
+    closedby: 'any',
+    'aria-labelledby': id ~ '-title',
+    'data-controller': 'overlay',
+}) }}>
+    <div class="modal-box flex h-dvh max-h-none w-full max-w-md flex-col rounded-none p-0">
+        <div class="flex items-start gap-3 border-b border-base-300 p-4">
+            <div class="min-w-0 flex-1">
+                <h2 class="truncate text-lg font-semibold" id="{{ id }}-title">{{ title }}</h2>
+                {% if subtitle %}<div class="text-sm text-base-content/60">{{ subtitle }}</div>{% endif %}
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm btn-square" commandfor="{{ id }}" command="close" aria-label="{{ 'ui.action.close'|trans }}">{{ crud_icon('x-lg') }}</button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4">{% block content %}{% endblock %}</div>
+        {% set footer %}{% block footer %}{% endblock %}{% endset %}
+        {% if footer|trim is not empty %}
+            <div class="flex flex-wrap gap-2 border-t border-base-300 p-4">{{ footer }}</div>
+        {% endif %}
+    </div>
+    <button type="button" class="modal-backdrop" commandfor="{{ id }}" command="request-close" tabindex="-1" aria-hidden="true"></button>
+</dialog>

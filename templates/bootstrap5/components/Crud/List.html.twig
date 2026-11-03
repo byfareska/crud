@@ -1,0 +1,390 @@
+{#
+    The list of a #[AsCrud] resource. Columns come from the declaration, filters from the list form of its driver;
+    values are printed by crud_value() (@CrudTheme/crud/values.html.twig); a filter field writes to the `filters`
+    LiveProp under its own name.
+
+    A click on a row opens the preview drawer at once (data-overlay-open) and loads the record into it (live action);
+    the record is part of the address (?preview=...): a page loaded with one opens the drawer by itself.
+    A sortable column heading is a button: a click puts the column first in the order, a click on the first one turns
+    it round, the next takes it out.
+    While a request is under way, what is about to change is faded (data-loading).
+
+    Its parts are blocks - list_toolbar, list_filters, list_above_rows, list_bulk_bar, list_table (list_columns,
+    list_row, list_cell, list_row_actions, list_empty), list_footer, list_preview - the same in every theme: a theme of
+    the application, or the template of a list of a resource's own (CrudList), extends this one and changes one of them:
+    {% extends '@CrudTheme.bootstrap5/components/Crud/List.html.twig' %}, or '@CrudTheme/...' for the theme in use.
+#}
+{% set crud = this.definition %}
+{% set operation = enum('Byfareska\\Crud\\Resource\\CrudOperation') %}
+{% set result = computed.result %}
+{% set actions = this.actions %}
+{% set hasActions = actions is not empty %}
+{% set selectable = this.selectable %}
+{# "previewed": computed.preview would resolve to the preview() action. #}
+{% set preview = computed.previewed %}
+{# Here: inside the drawer "this" is the drawer. #}
+{% set previewActions = preview ? this.recordActions(preview) : [] %}
+{% set hasPreview = this.hasPreview %}
+{% set drawer = 'crud-preview-' ~ crud.name %}
+{# Only for what replaces the rows; "delay" keeps a fast answer from flashing. Models are matched by their full name. #}
+{% set tableLoading = 'delay|model(page)' %}
+{% for field in computed.filterFields %}
+    {% set tableLoading = tableLoading ~ '|model(filters.' ~ field.vars.name ~ ')' %}
+    {% for part in field.children|keys %}
+        {% set tableLoading = tableLoading ~ '|model(filters.' ~ field.vars.name ~ '.' ~ part ~ ')' %}
+    {% endfor %}
+{% endfor %}
+{% set tableLoading = tableLoading ~ '|addClass(opacity-50) delay|action(bulk)|addClass(opacity-50) delay|action(delete)|addClass(opacity-50) delay|action(clearFilters)|addClass(opacity-50) delay|action(sortBy)|addClass(opacity-50)' %}
+{% set sortable = this.sortable %}
+{% set sorting = this.sorting %}
+<div {{ attributes }}>
+    {% set inViewFields = this.inViewFields %}
+    {% set panelFields = this.panelFields %}
+    {% set filtersShown = panelFields is not empty and this.filtersShown %}
+    {# The panel of the filters opens in the browser (filters-panel controller). #}
+    <section class="card border-0 shadow-sm overflow-hidden" data-scroll-anchor data-controller="filters-panel" data-filters-panel-shown-value="{{ filtersShown ? 'true' : 'false' }}" data-filters-panel-open-class="btn-secondary" data-filters-panel-closed-class="btn-outline-secondary">
+        {% set activeFilters = this.activeFilterCount %}
+        {# The head of the list: how many there are, the search, the button of the filters. #}
+        {% block list_toolbar %}
+        <div class="card-body border-bottom d-flex flex-wrap align-items-center gap-2">
+            <span class="fw-semibold">{{ ((result.more ?? false) ? 'crud.total_more_html' : 'crud.total_html')|trans({count: result.total})|raw }}</span>
+            <div class="ms-auto d-flex flex-wrap align-items-center gap-2">
+                {% for field in this.searchFields %}
+                    {% form_theme field with crud_form_themes() %}
+                    {% set invalid = field.vars.errors|length > 0 %}
+                    {% set label = field.vars.label ? field.vars.label|trans : field.vars.name|humanize %}
+                    <div class="input-group input-group-sm" style="width: 16rem"{% if invalid %} title="{{ field.vars.errors|map(error => error.message)|join(' ') }}"{% endif %}>
+                        <span class="input-group-text bg-body">{{ crud_icon('search') }}</span>
+                        {# The value as typed, not as the form normalised it (trimmed) - see CrudList::completeFilters(). #}
+                        {{ form_widget(field, {value: this.filters[field.vars.name] ?? field.vars.value, attr: field.vars.attr|merge({
+                            class: 'form-control form-control-sm' ~ (invalid ? ' is-invalid'),
+                            placeholder: 'crud.search',
+                            'aria-label': label,
+                            'data-model': 'debounce(250)|filters.' ~ field.vars.name,
+                        })}) }}
+                    </div>
+                {% endfor %}
+                {% if panelFields is not empty %}
+                    <button class="btn btn-sm {{ filtersShown ? 'btn-secondary' : 'btn-outline-secondary' }}" type="button" aria-expanded="{{ filtersShown ? 'true' : 'false' }}" aria-controls="crud-filters-{{ crud.name }}" data-filters-panel-target="toggle" data-action="filters-panel#toggle">
+                        {{ crud_icon('funnel', 'me-1') }} {{ (inViewFields is empty ? 'crud.filter.title' : 'crud.filter.more')|trans }}
+                        {% if activeFilters > 0 %}<span class="badge rounded-pill text-bg-primary ms-1">{{ activeFilters }}</span>{% endif %}
+                    </button>
+                {% endif %}
+                {# Without a filter it is gone. #}
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-action="live#action" data-live-action-param="clearFilters"{{ this.filtered ? '' : ' hidden disabled' }}>{{ crud_icon('x-lg', 'me-1') }} {{ 'crud.clear_filters'|trans }}</button>
+            </div>
+        </div>
+        {% endblock %}
+
+        {#
+            The other filters, each under its label: those always in view (#[AsCrud] filtersInView), then those of the
+            panel, hidden while it is closed. A hidden one has no field: something else sets it (#[AsCrud] listHead).
+        #}
+        {% block list_filters %}
+        {% if inViewFields is not empty or panelFields is not empty %}
+            <div class="card-body border-bottom" data-filters-panel-target="box" data-always="{{ inViewFields is not empty ? 'true' : 'false' }}"{{ inViewFields is empty and not filtersShown ? ' hidden' }}>
+                <div class="row g-3" id="crud-filters-{{ crud.name }}">
+                    {% for field in inViewFields|merge(panelFields) %}
+                        {% form_theme field with crud_form_themes() %}
+                        {% set inPanel = loop.index > inViewFields|length %}
+                        <div class="col-12 col-sm-6 col-lg-4 col-xxl-3"{% if inPanel %} data-filters-panel-target="panel"{{ filtersShown ? '' : ' hidden' }}{% endif %}>
+                            {{ _self.filter_field(field, this.filters[field.vars.name] ?? null) }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        {% endblock %}
+
+        {# What the resource shows above its rows (#[AsCrud] listHead), e.g. the folders of the files. #}
+        {% block list_above_rows %}
+        {% if crud.listHead %}
+            {{ component(crud.listHead, {filters: this.filters, resource: crud.name}) }}
+        {% endif %}
+        {% endblock %}
+
+        {# What can be done with the records chosen (AsCrud::$bulkActions), while some are. #}
+        {% block list_bulk_bar %}
+        {% if selectable and (this.allMatching or this.selected is not empty) %}
+            <div class="d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom bg-primary-subtle text-primary-emphasis small">
+                <span class="me-auto">
+                    {{- (this.allMatching ? 'crud.all_matching_selected' : 'crud.selected')|trans({count: this.selectedCount(result)}) -}}
+                    {# The whole page chosen, and the filters match more: all of them, on every page. #}
+                    {% if this.canSelectAllMatching(result) %}
+                        <button class="btn btn-link btn-sm align-baseline p-0 ms-2" type="button" data-action="live#action" data-live-action-param="selectAllMatching">{{ 'crud.select_all_matching'|trans({count: result.total}) }}</button>
+                    {% endif %}
+                </span>
+                {% for action in this.bulkButtons(result) %}{{ crud_action(action, 'bar') }}{% endfor %}
+                <button class="btn btn-sm btn-link text-primary-emphasis" type="button" data-action="live#action" data-live-action-param="clearSelection">{{ 'crud.clear_selection'|trans }}</button>
+            </div>
+        {% endif %}
+        {% endblock %}
+
+        {# The table of the records; its rows and cells are blocks of their own. #}
+        {% block list_table %}
+        {# The cells at the edges inset as far as the card's header and footer (ps-3 / pe-3), with or without the
+           column of the checkboxes and that of the actions. #}
+        {% set edgeStart = selectable ? '' : ' ps-3' %}
+        {% set edgeEnd = hasActions ? '' : ' pe-3' %}
+        <div class="table-responsive" data-loading="{{ tableLoading }}">
+            <table class="table table-hover align-middle mb-0 small">
+                <thead style="--bs-table-bg: var(--bs-tertiary-bg)">
+                    <tr>
+                        {% if selectable %}
+                            {% set pageSelection = this.pageSelection(result) %}
+                            <th class="text-center ps-3" style="width: 1%"><input class="form-check-input" type="checkbox" aria-label="{{ 'crud.select_page'|trans }}"{{ pageSelection ? ' checked' }} data-controller="indeterminate" data-indeterminate-mixed-value="{{ pageSelection is null ? 'true' : 'false' }}" data-action="change->live#action" data-live-action-param="selectPage"></th>
+                        {% endif %}
+                        {# The headings of the columns. #}
+                        {% block list_columns %}
+                        {% for column in crud.columns %}
+                            {% if column.field in sortable %}
+                                {% set order = sorting[column.field] ?? null %}
+                                {# aria-sort belongs to one column only: the one the list is ordered by first. #}
+                                <th{{ crud_attrs({class: ((loop.first ? edgeStart) ~ (loop.last ? edgeEnd))|trim ?: null}) }} aria-sort="{{ order and (order.place ?? 1) == 1 ? (order.descending ? 'descending' : 'ascending') : 'none' }}">
+                                    <button class="btn btn-link p-0 border-0 align-baseline fw-semibold text-decoration-none text-nowrap {{ order ? 'link-body-emphasis' : 'link-secondary' }}" style="font-size: inherit" type="button" title="{{ 'crud.sort_tip'|trans }}" data-action="live#action" data-live-action-param="sortBy" data-live-field-param="{{ column.field }}">{{ column.label|trans }} {{ crud_icon(order ? (order.descending ? 'sort-down' : 'sort-up') : 'arrow-down-up', order ? 'text-primary' : 'text-body-tertiary') }}{% if order and order.place %}<sup>{{ order.place }}</sup>{% endif %}</button>
+                                </th>
+                            {% else %}
+                                <th class="text-nowrap fw-semibold text-body-secondary{{ loop.first ? edgeStart }}{{ loop.last ? edgeEnd }}">{{ column.label|trans }}</th>
+                            {% endif %}
+                        {% endfor %}
+                        {% endblock %}
+                        {% if hasActions %}<th class="pe-3"><span class="visually-hidden">{{ 'crud.actions'|trans }}</span></th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in result.items %}
+                        {% set id = this.idOf(item) %}
+                        {# On every data cell, not on the row: the actions menu must not open the preview. #}
+                        {% set openPreview = hasPreview ? {role: 'button', 'data-overlay-open': drawer, 'data-action': 'click->live#action', 'data-live-action-param': 'preview', 'data-live-id-param': id} : {} %}
+                        {# What the RecordRow services of the resource add: a class, data attributes. #}
+                        {# The row of a record: "item", "id". #}
+                        {% block list_row %}
+                        <tr id="{{ crud.name }}-{{ id }}"{{ crud_attrs(this.rowAttributes(item, result)) }}>
+                            {% if selectable %}
+                                <td class="text-center ps-3"><input class="form-check-input" type="checkbox" value="{{ id }}" aria-label="{{ 'crud.select'|trans }}"{{ this.allMatching or id in this.selected ? ' checked' }}{{ this.allMatching ? ' disabled' }} data-model="selected[]"></td>
+                            {% endif %}
+                            {% for column in crud.columns %}
+                                {# The cell of a column: "column", "value", "item", "id", "loop" (the first leads to the record). #}
+                                {% block list_cell %}
+                                {% set value = item[column.field] ?? null %}
+                                {% set edge = ((loop.first ? edgeStart) ~ (loop.last ? edgeEnd))|trim %}
+                                <td{{ crud_attrs(openPreview|merge({class: edge ?: null})) }}>
+                                    {# Captured, not assigned: an assignment would forget that the output is HTML already. #}
+                                    {% set printed %}{{ crud_value(crud, column, value, item, 'list') }}{% endset %}
+                                    {% if loop.first and openPreview is not empty %}
+                                        {# The keyboard's way to the preview: its click is handled by the cell. #}
+                                        <button class="btn btn-sm btn-link p-0 text-start text-decoration-none fw-semibold link-body-emphasis" type="button">{{ printed }}</button>
+                                    {% elseif loop.first and crud.can(operation.Read) %}
+                                        <a class="fw-semibold link-body-emphasis text-decoration-none" href="{{ path(crud.route('show'), {id: id}) }}">{{ printed }}</a>
+                                    {% elseif loop.first and crud.can(operation.Update) %}
+                                        <a class="fw-semibold link-body-emphasis text-decoration-none" href="{{ path(crud.route('edit'), {id: id}) }}">{{ printed }}</a>
+                                    {% else %}
+                                        {{ printed }}
+                                    {% endif %}
+                                </td>
+                                {% endblock %}
+                            {% endfor %}
+                            {% block list_row_actions %}
+                            {% if hasActions %}
+                                {# Drawn by the theme (@CrudTheme/crud/actions.html.twig) or by an action's own component. #}
+                                {% set rowActions = this.rowActions(item, result) %}
+                                {% set menu = rowActions|filter(action => not action.inline) %}
+                                <td class="text-end text-nowrap pe-3" style="width: 1%">
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                    {% for action in rowActions|filter(action => action.inline) %}
+                                        {{ crud_action(action, 'row') }}
+                                    {% endfor %}
+                                    {% if menu is not empty %}
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" data-bs-popper-config='{"strategy":"fixed"}' aria-expanded="false" aria-label="{{ 'crud.actions'|trans }}">{{ crud_icon('three-dots') }}</button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                {% for action in menu %}
+                                                    <li>{{ crud_action(action, 'menu') }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                    </div>
+                                </td>
+                            {% endif %}
+                            {% endblock %}
+                        </tr>
+                        {% endblock %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% block list_empty %}
+            {% if result.items is empty %}
+                <twig:Ui:EmptyState :icon="crud.icon" :title="'crud.empty'|trans" />
+            {% endif %}
+            {% endblock %}
+        </div>
+        {% endblock %}
+
+        {# Which records of all, the size of a page, the pages. #}
+        {% block list_footer %}
+        <div class="card-footer bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2 small">
+            {# The size of a page, then which records of all: "46–60 of 2 001" on the third page of fifteen. #}
+            {% set from = (result.page - 1) * result.perPage + 1 %}
+            <div class="d-flex align-items-center gap-2 text-body-secondary">
+                {% if this.pageSizes|length > 1 %}
+                    <label for="{{ crud.name }}-per-page">{{ 'ui.list.per_page'|trans }}</label>
+                    <select class="form-select form-select-sm w-auto" id="{{ crud.name }}-per-page" data-controller="live-set" data-live-set-model-value="perPage" data-live-set-keep-value="true" data-action="change->live-set#now">
+                        {% for size in this.pageSizes %}
+                            <option value="{{ size }}"{{ size == this.pageSize ? ' selected' }}>{{ size }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="d-none d-sm-inline">·</span>
+                {% endif %}
+                <span class="d-none d-sm-inline">{{ ((result.more ?? false) ? 'ui.list.shown_more_html' : 'ui.list.shown_html')|trans({shown: result.items|length, from: from, to: from + result.items|length - 1, total: result.total})|raw }}</span>
+            </div>
+            <twig:Ui:Pagination :page="result.page" :pageCount="result.pageCount" />
+        </div>
+        {% endblock %}
+    </section>
+
+    {# The preview drawer of a record. #}
+    {% block list_preview %}
+    {% if hasPreview %}
+        <twig:Ui:Offcanvas
+            :id="drawer"
+            :title="preview.title ?? crud.key('title')|trans"
+            :subtitle="crud.key('title')|trans"
+            data-action="crud-preview:close@window->overlay#close overlay:hidden->live#action"
+            data-live-action-param="closePreview"
+            data-overlay-open-value="{{ preview ? 'true' : 'false' }}"
+            data-loading="action(preview)|addClass(opacity-50)"
+        >
+            {% if preview %}
+                <twig:Crud:Details :layout="crud_details_layout(crud, preview, true)" />
+            {% else %}
+                {# Opened for the first time: the record is still on its way, show where its values will be. #}
+                <div class="placeholder-glow">
+                    {% for column in crud.details ?: crud.columns %}
+                        <dl class="mb-3"><dt class="small text-body-secondary fw-normal">{{ column.label|trans }}</dt><dd><span class="placeholder col-6"></span></dd></dl>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <twig:block name="footer">
+                {# Drawn by the theme, the main one (edit) last. #}
+                {% for action in previewActions|filter(action => not action.primary)|merge(previewActions|filter(action => action.primary)) %}
+                    {{ crud_action(action, 'bar') }}
+                {% endfor %}
+                <button class="btn btn-sm btn-outline-secondary ms-auto" type="button" data-bs-dismiss="offcanvas">{{ 'ui.action.close'|trans }}</button>
+            </twig:block>
+        </twig:Ui:Offcanvas>
+    {% endif %}
+    {% endblock %}
+</div>
+
+{#
+    A filter under its label. "typed": its value in `filters` - as typed, not as the form normalised it (trimmed), see
+    CrudList::completeFilters().
+#}
+{% macro filter_field(field, typed) %}
+    {% if 'crud_comparison' in field.vars.block_prefixes %}
+        {{ _self.comparison_filter(field, typed) }}
+    {% else %}
+        {% set isChoice = 'choice' in field.vars.block_prefixes %}
+        {% set invalid = field.vars.errors|length > 0 %}
+        {# The label of the DTO's form field: a translation key. #}
+        {% set label = field.vars.label ? field.vars.label|trans : field.vars.name|humanize %}
+        <label class="form-label small fw-medium text-body-secondary mb-1" for="{{ field.vars.id }}">{{ label }}</label>
+        {{ form_widget(field, {value: typed ?? field.vars.value, attr: field.vars.attr|merge({
+            class: (isChoice ? 'form-select form-select-sm' : 'form-control form-control-sm') ~ (invalid ? ' is-invalid'),
+            'data-model': 'debounce(250)|filters.' ~ field.vars.name,
+        })}) }}
+        {% if invalid %}<div class="invalid-feedback d-block">{{ field.vars.errors|map(error => error.message)|join(' ') }}</div>{% endif %}
+    {% endif %}
+{% endmacro %}
+
+{#
+    A filter that says how it compares (ComparisonType): its label with the choice of the comparison next to it - none
+    with one - and under them the value or, for "between", where the range starts and ends. Each part writes to
+    `filters.<name>.<part>`; the parts are null until chosen (CrudList::completeFilters()), and then show what the form
+    makes of them. "typed": the filter in `filters`.
+#}
+{% macro comparison_filter(field, typed) %}
+    {% set typed = typed is iterable ? typed : {} %}
+    {% set comparison = typed.comparison ?? field.comparison.vars.value %}
+    {% set between = comparison == 'between' and field.to is defined %}
+    {# Several values at once (in, not_in), or none to type (empty, filled) - the application's own ways among them. #}
+    {% set many_comparisons = field.vars.many_comparisons ?? ['in', 'not_in'] %}
+    {% set presence_comparisons = field.vars.presence_comparisons ?? ['empty', 'filled'] %}
+    {% set many = comparison in many_comparisons and field.values is defined %}
+    {% set presence = comparison in presence_comparisons %}
+    {% set invalid = field.vars.errors|length > 0 %}
+    {% set label = field.vars.label ? field.vars.label|trans : field.vars.name|humanize %}
+    {% set model = 'filters.' ~ field.vars.name ~ '.' %}
+    {% set dates = ('date' in field.value.vars.block_prefixes or 'datetime' in field.value.vars.block_prefixes) and (field.value.vars.widget ?? null) == 'single_text' %}
+    {# A choice of how it compares is made in the browser, the server asked only when there is a value (comparison controller). #}
+    <div data-controller="comparison" data-comparison-many-value="{{ many_comparisons|json_encode }}" data-comparison-presence-value="{{ presence_comparisons|json_encode }}">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+            <label class="form-label small fw-medium text-body-secondary mb-0 text-truncate" for="{{ field.value.vars.id ~ (dates ? '_dates') }}">{{ label }}</label>
+            {% if field.comparison.vars.choices|length > 1 %}
+                {{ form_widget(field.comparison, {value: comparison, attr: {
+                    class: 'form-select form-select-sm w-auto border-0 bg-transparent py-0 ps-1 text-body-secondary fw-medium',
+                    style: 'font-size: .8125rem',
+                    'aria-label': 'crud.filter.comparison.label'|trans({field: label}),
+                    'data-model': 'norender|' ~ model ~ 'comparison',
+                    'data-comparison-target': 'select',
+                    'data-action': 'comparison#change',
+                }}) }}
+            {% endif %}
+        </div>
+        {% if dates %}
+            <div data-comparison-target="single"{{ many or presence ? ' hidden' }}>{{ _self.date_filter(field, typed, between, label, model, invalid) }}</div>
+        {% else %}
+            <div data-comparison-target="single"{{ many or presence ? ' hidden' }}>
+            <div class="d-flex align-items-center gap-1">
+                {% for part in field.to is defined ? ['value', 'to'] : ['value'] %}
+                    {% set child = field[part] %}
+                    {% set isChoice = 'choice' in child.vars.block_prefixes %}
+                    {% if part == 'to' %}<span class="text-body-secondary" data-comparison-target="between"{{ between ? '' : ' hidden' }}>–</span>{% endif %}
+                    {% set hint = (part == 'value' ? 'crud.filter.from' : 'crud.filter.to')|trans %}
+                    {# The value as typed, not as the form normalised it (trimmed) - see CrudList::completeFilters(). #}
+                    {{ form_widget(child, {value: typed[part] ?? child.vars.value, attr: child.vars.attr|merge({
+                        class: (isChoice ? 'form-select form-select-sm' : 'form-control form-control-sm') ~ ' flex-grow-1' ~ (invalid ? ' is-invalid'),
+                        style: 'min-width: 0',
+                        'aria-label': part == 'to' ? label ~ ' – ' ~ hint : label,
+                        'data-model': 'debounce(250)|' ~ model ~ part,
+                        'data-comparison-target': 'value' ~ (field.to is defined ? ' hinted') ~ (part == 'to' ? ' between'),
+                        'data-hint': hint,
+                    })|merge(between ? {placeholder: hint, title: hint} : {})|merge(part == 'to' and not between ? {hidden: 'hidden'} : {})}) }}
+                {% endfor %}
+            </div>
+            </div>
+        {% endif %}
+        {% if field.values is defined %}
+            {# The values of "is one of" / "is none of": the same field, several of it chosen - hidden by a wrapper, as an
+               autocomplete (Tom Select) puts its own field next to the select. #}
+            <div data-comparison-target="many"{{ many ? '' : ' hidden' }}>
+            {{ form_widget(field.values, {attr: field.values.vars.attr|merge({
+                class: 'form-select form-select-sm' ~ (invalid ? ' is-invalid'),
+                'aria-label': label,
+                'data-model': model ~ 'values',
+            })}) }}
+            </div>
+        {% endif %}
+        {% if invalid %}<div class="invalid-feedback d-block">{{ field.vars.errors|map(error => error.message)|join(' ') }}</div>{% endif %}
+    </div>
+{% endmacro %}
+
+{#
+    A date, or "from - to" for the comparison "between", picked in a calendar (date-range controller): the dates go to
+    hidden inputs bound to the filter, the field shows them in words. A date and time (DateTimeType) gets the time too.
+#}
+{% macro date_filter(field, typed, between, label, model, invalid) %}
+    {% set from = typed.value ?? field.value.vars.value %}
+    {% set to = field.to is defined ? typed.to ?? field.to.vars.value : '' %}
+    {% set range = 'crud.filter.from'|trans ~ ' — ' ~ 'crud.filter.to'|trans %}
+    {% set placeholder = between ? range : '' %}
+    <div class="position-relative" data-controller="date-range" data-comparison-target="dates" data-placeholder="{{ range }}" data-date-range-range-value="{{ between ? 'true' : 'false' }}" data-date-range-from-value="{{ from }}" data-date-range-to-value="{{ to }}" data-date-range-locale-value="{{ app.request.locale }}" data-date-range-placeholder-value="{{ placeholder }}" data-date-range-time-value="{{ 'datetime' in field.value.vars.block_prefixes ? 'true' : 'false' }}" data-date-range-labels-value="{{ {from: 'crud.filter.from'|trans, to: 'crud.filter.to'|trans, time: 'crud.filter.time'|trans, dialog: label}|json_encode }}">
+        {{ form_widget(field.value, {type: 'hidden', value: from, attr: {'data-model': model ~ 'value', 'data-date-range-target': 'from', 'data-comparison-target': 'value'}}) }}
+        {% if field.to is defined %}{{ form_widget(field.to, {type: 'hidden', value: to, attr: {'data-model': model ~ 'to', 'data-date-range-target': 'to', 'data-comparison-target': 'value'}}) }}{% endif %}
+        {{ crud_icon('calendar3', 'position-absolute top-50 translate-middle-y text-body-secondary pe-none', {style: 'inset-inline-start: .625rem; font-size: .8125rem'}) }}
+        <input type="text" readonly id="{{ field.value.vars.id }}_dates" class="form-control form-control-sm text-truncate{{ invalid ? ' is-invalid' }}" style="padding-left: 2rem; padding-right: 2rem; cursor: pointer" placeholder="{{ placeholder }}" aria-label="{{ label }}" aria-haspopup="dialog" aria-expanded="false" autocomplete="off" data-live-ignore data-date-range-target="display" data-action="click->date-range#toggle keydown->date-range#key">
+        <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y text-body-secondary px-2 py-0" aria-label="{{ 'crud.filter.clear'|trans }}" title="{{ 'crud.filter.clear'|trans }}" data-date-range-target="clear" data-action="date-range#clear"{{ from or to ? '' : ' hidden' }}>{{ crud_icon('x-lg') }}</button>
+    </div>
+{% endmacro %}

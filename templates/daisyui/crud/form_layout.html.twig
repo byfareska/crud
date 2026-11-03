@@ -1,0 +1,125 @@
+{#
+    The form theme of the CRUD forms (and the filters of the lists) of this theme: Symfony's daisyui_5_layout with the
+    fields as wide as their row and the sizes of the panel. A theme of the application puts a template of this name
+    into its directory to draw the fields otherwise.
+#}
+{% use 'daisyui_5_layout.html.twig' %}
+
+{%- block form_row -%}
+    {%- set row_class = row_class|default('mb-4 flex flex-col') -%}
+    {{- parent() -}}
+{%- endblock form_row -%}
+
+{%- block checkbox_row -%}
+    {%- set row_class = row_class|default('mb-4') -%}
+    {{- parent() -}}
+{%- endblock checkbox_row -%}
+
+{%- block widget_attributes -%}
+    {%- if errors|length -%}{%- set attr = attr|merge({'aria-invalid': 'true'}) -%}{%- endif -%}
+    {{- parent() -}}
+{%- endblock widget_attributes -%}
+
+{% block form_widget_simple -%}
+    {%- if type is not defined or type not in ['hidden', 'range', 'file'] %}
+        {%- set widget_class = widget_class|default('input w-full') -%}
+    {% endif -%}
+    {{- parent() -}}
+{%- endblock form_widget_simple %}
+
+{# A select and a textarea as wide as their row (daisyui_5_layout gives them "mt-2" and no width). #}
+{%- block choice_widget_collapsed -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' select w-full')|trim}) -%}
+    {%- set widget_errors_class = 'select-error' -%}
+    {%- if required and placeholder is none and not placeholder_in_choices and not multiple and (attr.size is not defined or attr.size <= 1) -%}
+        {% set required = false %}
+    {%- endif -%}
+    <select {{ block('widget_attributes') }}{% if multiple %} multiple="multiple"{% endif %}>
+        {%- if placeholder is not none -%}
+            <option value=""{% if placeholder_attr|default({}) %}{% with {attr: placeholder_attr} %}{{ block('attributes') }}{% endwith %}{% endif %}{% if required and value is empty %} selected="selected"{% endif %}>{{ placeholder != '' ? (translation_domain is same as(false) ? placeholder : placeholder|trans({}, translation_domain)) }}</option>
+        {%- endif -%}
+        {%- if preferred_choices|length > 0 -%}
+            {% set options = preferred_choices %}
+            {% set render_preferred_choices = true %}
+            {{- block('choice_widget_options') -}}
+            {%- if choices|length > 0 and separator is not none -%}
+                {%- if separator_html is not defined or separator_html is same as(false) -%}
+                    <option disabled="disabled">{{ separator }}</option>
+                {% else %}
+                    {{ separator|raw }}
+                {% endif %}
+            {%- endif -%}
+        {%- endif -%}
+        {%- set options = choices -%}
+        {%- set render_preferred_choices = false -%}
+        {{- block('choice_widget_options') -}}
+    </select>
+{%- endblock choice_widget_collapsed -%}
+
+{%- block textarea_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' textarea w-full')|trim}) -%}
+    {%- set widget_errors_class = 'textarea-error' -%}
+    <textarea {{ block('widget_attributes') }}>{{ value }}</textarea>
+{%- endblock textarea_widget -%}
+
+{%- block file_widget -%}
+    {%- set widget_class = widget_class|default('file-input w-full') -%}
+    {{- parent() -}}
+{%- endblock file_widget %}
+
+{%- block choice_widget_expanded -%}
+    <div {{ block('widget_container_attributes') }}>
+        {%- for child in form %}
+            <label class="mb-1 flex items-center gap-2 text-sm">
+                {%- set child_attr = child.vars.help ? child.vars.attr|merge({'aria-describedby': child.vars.id ~ '_help'}) : child.vars.attr -%}
+                {{- form_widget(child, {attr: child_attr}) -}}
+                {%- if child.vars.label is not same as(false) -%}
+                    {{- form_label(child, null, {translation_domain: choice_translation_domain, label_attr: {class: 'cursor-pointer'}, element: 'span'}) -}}
+                {%- endif -%}
+            </label>
+            {{- form_help(child) -}}
+        {% endfor -%}
+    </div>
+{%- endblock choice_widget_expanded -%}
+
+{%- block checkbox_widget -%}
+    {%- set widget_class = widget_class|default('checkbox checkbox-sm checkbox-primary') -%}
+    {{- parent() -}}
+{%- endblock checkbox_widget -%}
+
+{%- block radio_widget -%}
+    {%- set widget_class = widget_class|default('radio radio-sm radio-primary') -%}
+    {{- parent() -}}
+{%- endblock radio_widget -%}
+
+{# The currency beside the amount, not above it. #}
+{%- block money_widget -%}
+    {%- set prepend = not (money_pattern starts with '{{') -%}
+    {%- set append = not (money_pattern ends with '}}') -%}
+    {%- if prepend or append -%}
+        <label class="input w-full{{ errors|length ? ' input-error' }}">
+            {%- if prepend -%}<span class="text-base-content/60">{{ money_pattern|form_encode_currency }}</span>{%- endif -%}
+            {%- set widget_class = 'grow' -%}
+            {%- set widget_errors_class = '' -%}
+            {{- block('form_widget_simple') -}}
+            {%- if append -%}<span class="text-base-content/60">{{ money_pattern|form_encode_currency }}</span>{%- endif -%}
+        </label>
+    {%- else -%}
+        {{- block('form_widget_simple') -}}
+    {%- endif -%}
+{%- endblock money_widget -%}
+
+{%- block form_label -%}
+    {%- set label_class = label_class|default('label mb-1 text-sm font-medium text-base-content') -%}
+    {{- parent() -}}
+{%- endblock form_label -%}
+
+{%- block form_help -%}
+    {%- set help_attr = help_attr|merge({class: (help_attr.class|default('mt-1 text-sm text-base-content/60'))|trim}) -%}
+    {{- parent() -}}
+{%- endblock form_help -%}
+
+{%- block form_errors -%}
+    {%- set error_item_class = error_item_class|default('mt-1 text-sm text-error') -%}
+    {{- parent() -}}
+{%- endblock form_errors -%}

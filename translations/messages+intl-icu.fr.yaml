@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Enregistrer
+        save_new: 'Enregistrer et ajouter un autre'
+        save_edit: 'Enregistrer et continuer la modification'
+        cancel: Annuler
+        confirm: Confirmer
+        close: Fermer
+    list:
+        shown_html: '{shown, plural, =0 {Affichage de <strong>0</strong> sur {total, number}} =1 {Affichage de <strong>{from, number}</strong> sur {total, number}} other {Affichage de <strong>{from, number}–{to, number}</strong> sur {total, number}}}'
+        shown_more_html: 'Affichage de <strong>{from, number}–{to, number}</strong> sur plus de {total, number}'
+        per_page: 'Par page'
+    timezone:
+        region:
+            africa: Afrique
+            america: Amérique
+            antarctica: Antarctique
+            arctic: Arctique
+            asia: Asie
+            atlantic: Atlantique
+            australia: Australie
+            europe: Europe
+            indian: Océan Indien
+            pacific: Pacifique
+            other: Autres
+    time_ago:
+        now: à l’instant
+        minutes: 'il y a {count} min'
+        hours: '{count, plural, one {il y a # heure} other {il y a # heures}}'
+        days: '{count, plural, =1 {hier} other {il y a # jours}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Général
+            users: Utilisateurs
+            sales: Ventes
+            content: Contenu
+            system: Système
+        number: '{value, number}'
+    pagination:
+        previous: Page précédente
+        next: Page suivante
+        previous_tip: Page précédente
+        next_tip: Page suivante
+        jump: Aller à la page
+        jump_hint: Saisissez un numéro de page
+
+crud:
+    palette:
+        list: Liste
+        create: Ajouter un enregistrement
+        own: Votre page
+    total_html: 'Total : <strong>{count, number}</strong>'
+    total_more_html: 'Total : <strong>plus de {count, number}</strong>'
+    search: Rechercher
+    clear_filters: Effacer les filtres
+    sort_tip: 'Trier : la colonne cliquée passe en premier ; successivement : croissant, décroissant, désactivé'
+    empty: Aucun résultat.
+    selected: 'Sélectionnés : {count, number}'
+    select: 'Sélectionner'
+    select_page: 'Tout sélectionner sur cette page'
+    select_all_matching: 'Sélectionner les {count, number} résultats correspondant aux filtres'
+    all_matching_selected: 'Les {count, number} résultats correspondant aux filtres sont sélectionnés'
+    clear_selection: 'Effacer la sélection'
+    actions: Actions
+    filter:
+        title: 'Filtres'
+        more: 'Plus de filtres'
+        query: Rechercher
+        any: Tous
+        'yes': 'Oui'
+        'no': 'Non'
+        from: 'Du'
+        to: 'Au'
+        clear: 'Effacer'
+        time: 'Heure'
+        comparison:
+            label: 'Comparaison de {field}'
+            eq: 'égal à'
+            neq: 'différent de'
+            contains: 'contient'
+            not_contains: 'ne contient pas'
+            starts: 'commence par'
+            ends: 'finit par'
+            gt: 'supérieur à'
+            gte: 'supérieur ou égal à'
+            lt: 'inférieur à'
+            lte: 'inférieur ou égal à'
+            between: 'entre'
+            in: 'est l''un de'
+            not_in: 'n''est aucun de'
+            empty: 'est vide'
+            filled: 'n''est pas vide'
+    confirm_delete:
+        message: Supprimer cet enregistrement ?
+        hint: Cette action est irréversible.
+    confirm_bulk_delete:
+        message: 'Supprimer les enregistrements sélectionnés ({count, number}) ?'
+    action:
+        details: Détails
+        edit: Modifier
+        delete: Supprimer
+        duplicate: 'Dupliquer'
+        list: Liste
+    layout:
+        errors: '{count, plural, one {# erreur} other {# erreurs}}'
+    toast:
+        created: Ajouté
+        updated: Modifications enregistrées
+        deleted: Supprimé
+        delete_failed: Impossible de supprimer
+        bulk_deleted: 'Supprimés : {count, number}'
+        bulk_delete_failed: 'Non supprimés : {count, number}'
+        gone: Cet enregistrement n’existe plus
+        bulk_failed: 'L’action n’a pas été effectuée'
+        action_failed: 'Impossible d’effectuer l’action'
+        done: 'Terminé'
+    value:
+        'yes': 'Oui'
+        'no': 'Non'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Introuvable.
+        forbidden: Vous n’êtes pas autorisé à faire cela.
+        taken: Un tel enregistrement existe déjà.
+        in_use: Cet enregistrement est utilisé par d’autres enregistrements et ne peut pas être supprimé.
+        changed: 'Quelqu''un d''autre a modifié cet enregistrement entre-temps. Rouvrez-le pour voir ses modifications.'
+        retry: 'La base de données est occupée. Rien n''a été enregistré - réessayez.'
+        refused: 'La base de données a refusé cet enregistrement.'
+        input_required: 'Cette réponse est obligatoire.'
+        input_choice: 'Choisissez une des options.'
+        input_number: 'Saisissez un nombre.'
+        input_date: 'Saisissez une date valide.'
+
+panel:
+    login:
+        title: Connexion
+        username: Nom d’utilisateur
+        password: Mot de passe
+        submit: Se connecter
+    scope:
+        panel: Panneau
+        admin: Administration
+    nav:
+        main_menu: Menu principal
+        close_menu: Fermer le menu
+        dashboard: Tableau de bord
+        section:
+            start: Accueil
+            main: Principal
+            account: Compte
+    dashboard:
+        subtitle: Vos widgets – faites-les glisser, redimensionnez-les, ajoutez-en d’autres.
+        subtitle_own: Votre propre disposition des widgets.
+        empty_title: Il n’y a aucun widget sur le tableau de bord
+        empty_text: Ajoutez le premier avec « Ajouter un widget ».
+        add: Ajouter un widget
+        edit: Modifier
+        done: Terminé
+        more: Plus
+        reset: Rétablir la disposition par défaut
+        reset_confirm: Rétablir le tableau de bord par défaut ? Votre propre disposition sera oubliée.
+        share: En faire la disposition par défaut pour tous
+        share_confirm: Faire de cette disposition la disposition par défaut pour tous ?
+        share_hint: Tous ceux qui n’ont pas leur propre disposition la verront.
+        remove: 'Retirer le widget « {title} »'
+        settings: 'Paramètres : {title}'
+        toast:
+            failed: Le tableau de bord n’a pas pu être enregistré
+            shared: La disposition est désormais celle par défaut pour tous
+        gallery:
+            title: Ajouter un widget
+            search: Rechercher des widgets
+            add: Ajouter
+            size: Taille
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {sur le tableau de bord} other {# fois sur le tableau de bord}}'
+            empty: Il n’y a aucun widget à ajouter.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Horloge
+            description: Une horloge analogique ou numérique, avec une deuxième ville à côté.
+            setting:
+                style: Cadran
+                zone: Deuxième ville
+            style:
+                analog: Analogique
+                digital: Numérique
+            city:
+                none: Aucune
+                utc: UTC
+                london: Londres
+                warsaw: Varsovie
+                berlin: Berlin
+                kyiv: Kyiv
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubaï
+                kolkata: Calcutta
+                shanghai: Shanghai
+                tokyo: Tokyo
+                sydney: Sydney
+        quick_actions:
+            title: Actions rapides
+            description: Des tuiles menant à l’ajout d’enregistrements, comme les raccourcis d’iOS – choisissez lesquelles.
+            setting: Quelles actions (aucune = toutes)
+            empty: Aucune action ne vous est disponible.
+        note:
+            title: Note
+            description: Un pense-bête enregistré pendant la saisie. Chacun a le sien.
+            placeholder: Écrivez quelque chose…
+            saving: Enregistrement…
+            saved: Enregistré
+    topbar:
+        open_menu: Ouvrir le menu
+        open_palette: Ouvrir la palette de commandes
+        search: Rechercher ou saisir une commande…
+    palette:
+        label: Palette de commandes
+        placeholder: Rechercher ou saisir une commande…
+        search_label: Rechercher dans le panneau
+        empty: 'Aucun résultat pour « {query} »'
+        navigate: naviguer
+        open: ouvrir
+        close: fermer
+        hint_html: 'Essayez le nom d’un enregistrement, ou <b>&gt;</b> pour les commandes'
+        verb:
+            go: Aller à
+            open: Ouvrir
+            run: Exécuter
+        group:
+            recent: Récents
+            suggested: Suggestions
+            navigation: Navigation
+            commands: Commandes
+        item:
+            panel_switch:
+                description: Aller à un autre panneau
+            dashboard_edit:
+                name: Modifier le tableau de bord
+                description: Déplacer et redimensionner les widgets
+                keywords: 'dashboard, tableau de bord, widgets, disposition, réorganiser'
+            dashboard_add:
+                name: Ajouter un widget
+                description: Choisir un widget dans la galerie
+                keywords: 'dashboard, tableau de bord, nouveau widget, galerie'
+            dashboard_reset:
+                name: Rétablir le tableau de bord par défaut
+                description: Oublier votre propre disposition des widgets
+                keywords: 'dashboard, tableau de bord, réinitialiser, reset, par défaut'
+            theme:
+                name: Basculer entre le thème clair et le thème sombre
+                description: Changer l’apparence du panneau
+                keywords: 'mode sombre, mode clair, couleurs, dark, light, thème'
+    theme:
+        toggle: Changer de thème
+        toggle_long: Basculer entre le thème clair et le thème sombre
+        choose: Thème
+        choose_long: Choisir le thème de couleurs
+        auto: Système
+    user_menu:
+        impersonating: Vous êtes connecté en tant que cet utilisateur
+        exit_impersonation: Revenir à votre propre compte
+        label: Menu utilisateur
+        logout: Se déconnecter
+        anonymous: Vous n’êtes pas connecté

@@ -1,0 +1,26 @@
+{# A compact list of a widget. items: {title, meta?, time?, href?, icon?, accent?, avatar?: {name, src}, badge?}. #}
+{% props items = [], empty = null %}
+{% if items is empty %}
+    <div class="text-sm text-gray-500 dark:text-gray-400">{{ empty }}</div>
+{% else %}
+    <ul {{ attributes.defaults({class: 'flex flex-col gap-0.5'}) }}>
+        {% for item in items %}
+            <li>
+                {% set tag = item.href is defined and item.href ? 'a' : 'div' %}
+                <{{ tag }} class="flex items-center gap-2 rounded-md px-1 py-1 text-sm{{ tag == 'a' ? ' hover:bg-gray-50 dark:hover:bg-white/5' }}"{% if tag == 'a' %} href="{{ item.href }}"{% endif %}>
+                    {% if item.avatar is defined and item.avatar %}
+                        <twig:Ui:Avatar :name="item.avatar.name" :src="item.avatar.src ?? null" size="1.75rem" />
+                    {% elseif item.icon is defined and item.icon %}
+                        {{ crud_icon(item.icon, '', {style: 'color: ' ~ (item.accent ?? 'inherit')}) }}
+                    {% endif %}
+                    <span class="min-w-0 flex-1 truncate">
+                        {{ item.title }}
+                        {% if item.meta is defined and item.meta %}<span class="block truncate text-xs text-gray-500 dark:text-gray-400">{{ item.meta }}</span>{% endif %}
+                    </span>
+                    {% if item.badge is defined and item.badge is not null %}<span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium dark:bg-white/10">{{ item.badge }}</span>{% endif %}
+                    {% if item.time is defined and item.time %}<span class="text-xs whitespace-nowrap text-gray-500 dark:text-gray-400">{{ item.time }}</span>{% endif %}
+                </{{ tag }}>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

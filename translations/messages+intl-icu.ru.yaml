@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Сохранить
+        save_new: 'Сохранить и добавить ещё'
+        save_edit: 'Сохранить и продолжить редактирование'
+        cancel: Отмена
+        confirm: Подтвердить
+        close: Закрыть
+    list:
+        shown_html: '{shown, plural, =0 {Показано <strong>0</strong> из {total, number}} =1 {Показано <strong>{from, number}</strong> из {total, number}} other {Показано <strong>{from, number}–{to, number}</strong> из {total, number}}}'
+        shown_more_html: 'Показано <strong>{from, number}–{to, number}</strong> из более чем {total, number}'
+        per_page: 'На странице'
+    timezone:
+        region:
+            africa: Африка
+            america: Америка
+            antarctica: Антарктида
+            arctic: Арктика
+            asia: Азия
+            atlantic: Атлантика
+            australia: Австралия
+            europe: Европа
+            indian: Индийский океан
+            pacific: Тихий океан
+            other: Другое
+    time_ago:
+        now: только что
+        minutes: '{count} мин назад'
+        hours: '{count, plural, one {# час назад} few {# часа назад} many {# часов назад} other {# часа назад}}'
+        days: '{count, plural, =1 {вчера} one {# день назад} few {# дня назад} many {# дней назад} other {# дня назад}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Общее
+            users: Пользователи
+            sales: Продажи
+            content: Контент
+            system: Система
+        number: '{value, number}'
+    pagination:
+        previous: Предыдущая страница
+        next: Следующая страница
+        previous_tip: Предыдущая страница
+        next_tip: Следующая страница
+        jump: Перейти на страницу
+        jump_hint: Введите номер страницы
+
+crud:
+    palette:
+        list: Список
+        create: Добавить новую запись
+        own: Ваша страница
+    total_html: 'Всего: <strong>{count, number}</strong>'
+    total_more_html: 'Всего: <strong>более {count, number}</strong>'
+    search: Поиск
+    clear_filters: Сбросить фильтры
+    sort_tip: 'Сортировка: нажатый столбец становится первым; по очереди: по возрастанию, по убыванию, выключено'
+    empty: Ничего не найдено.
+    selected: 'Выбрано: {count, number}'
+    select: 'Выбрать'
+    select_page: 'Выбрать все на этой странице'
+    select_all_matching: 'Выбрать все подходящие под фильтры ({count, number})'
+    all_matching_selected: 'Выбраны все подходящие под фильтры: {count, number}'
+    clear_selection: 'Снять выделение'
+    actions: Действия
+    filter:
+        title: 'Фильтры'
+        more: 'Другие фильтры'
+        query: Поиск
+        any: Все
+        'yes': 'Да'
+        'no': 'Нет'
+        from: 'С'
+        to: 'По'
+        clear: 'Очистить'
+        time: 'Время'
+        comparison:
+            label: 'Способ сравнения: {field}'
+            eq: 'равно'
+            neq: 'не равно'
+            contains: 'содержит'
+            not_contains: 'не содержит'
+            starts: 'начинается с'
+            ends: 'заканчивается на'
+            gt: 'больше'
+            gte: 'больше или равно'
+            lt: 'меньше'
+            lte: 'меньше или равно'
+            between: 'между'
+            in: 'является одним из'
+            not_in: 'не является ни одним из'
+            empty: 'пусто'
+            filled: 'не пусто'
+    confirm_delete:
+        message: Удалить эту запись?
+        hint: Это действие нельзя отменить.
+    confirm_bulk_delete:
+        message: 'Удалить выбранные записи ({count, number})?'
+    action:
+        details: Подробнее
+        edit: Изменить
+        delete: Удалить
+        duplicate: 'Дублировать'
+        list: Список
+    layout:
+        errors: '{count, plural, one {# ошибка} few {# ошибки} many {# ошибок} other {# ошибки}}'
+    toast:
+        created: Добавлено
+        updated: Изменения сохранены
+        deleted: Удалено
+        delete_failed: Не удалось удалить
+        bulk_deleted: 'Удалено: {count, number}'
+        bulk_delete_failed: 'Не удалено: {count, number}'
+        gone: Этой записи больше нет
+        bulk_failed: 'Действие не выполнено'
+        action_failed: 'Не удалось выполнить'
+        done: 'Готово'
+    value:
+        'yes': 'Да'
+        'no': 'Нет'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Не найдено.
+        forbidden: У вас нет прав на это действие.
+        taken: Такая запись уже существует.
+        in_use: Эта запись используется другими записями и не может быть удалена.
+        changed: 'Кто-то другой изменил эту запись тем временем. Откройте её снова, чтобы увидеть изменения.'
+        retry: 'База данных занята. Ничего не сохранено — попробуйте ещё раз.'
+        refused: 'База данных отклонила эту запись.'
+        input_required: 'Этот ответ обязателен.'
+        input_choice: 'Выберите один из вариантов.'
+        input_number: 'Введите число.'
+        input_date: 'Введите правильную дату.'
+
+panel:
+    login:
+        title: Вход
+        username: Имя пользователя
+        password: Пароль
+        submit: Войти
+    scope:
+        panel: Панель
+        admin: Администрирование
+    nav:
+        main_menu: Главное меню
+        close_menu: Закрыть меню
+        dashboard: Дашборд
+        section:
+            start: Начало
+            main: Основное
+            account: Аккаунт
+    dashboard:
+        subtitle: Ваши виджеты – перетаскивайте, меняйте размер, добавляйте новые.
+        subtitle_own: Ваша собственная раскладка виджетов.
+        empty_title: На дашборде нет виджетов
+        empty_text: Добавьте первый кнопкой «Добавить виджет».
+        add: Добавить виджет
+        edit: Изменить
+        done: Готово
+        more: Ещё
+        reset: Восстановить по умолчанию
+        reset_confirm: Восстановить дашборд по умолчанию? Ваша собственная раскладка будет забыта.
+        share: Сделать по умолчанию для всех
+        share_confirm: Сделать эту раскладку раскладкой по умолчанию для всех?
+        share_hint: Её увидят все, у кого нет своей раскладки.
+        remove: 'Удалить виджет «{title}»'
+        settings: 'Настройки: {title}'
+        toast:
+            failed: Не удалось сохранить дашборд
+            shared: Теперь эта раскладка по умолчанию для всех
+        gallery:
+            title: Добавить виджет
+            search: Поиск виджетов
+            add: Добавить
+            size: Размер
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {на дашборде} one {# раз на дашборде} few {# раза на дашборде} many {# раз на дашборде} other {# раза на дашборде}}'
+            empty: Нет виджетов для добавления.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Часы
+            description: Аналоговые или цифровые часы, со вторым городом рядом.
+            setting:
+                style: Циферблат
+                zone: Второй город
+            style:
+                analog: Аналоговые
+                digital: Цифровые
+            city:
+                none: Нет
+                utc: UTC
+                london: Лондон
+                warsaw: Варшава
+                berlin: Берлин
+                kyiv: Киев
+                new_york: Нью-Йорк
+                chicago: Чикаго
+                los_angeles: Лос-Анджелес
+                sao_paulo: Сан-Паулу
+                dubai: Дубай
+                kolkata: Калькутта
+                shanghai: Шанхай
+                tokyo: Токио
+                sydney: Сидней
+        quick_actions:
+            title: Быстрые действия
+            description: Плитки для добавления записей, как быстрые команды в iOS – выберите, какие.
+            setting: Какие действия (ни одного = все)
+            empty: Нет действий, доступных вам.
+        note:
+            title: Заметка
+            description: Стикер, который сохраняется по мере ввода. У каждого свой.
+            placeholder: Напишите что-нибудь…
+            saving: Сохранение…
+            saved: Сохранено
+    topbar:
+        open_menu: Открыть меню
+        open_palette: Открыть палитру команд
+        search: Найдите или введите команду…
+    palette:
+        label: Палитра команд
+        placeholder: Найдите или введите команду…
+        search_label: Поиск по панели
+        empty: 'По запросу «{query}» ничего не найдено'
+        navigate: перемещение
+        open: открыть
+        close: закрыть
+        hint_html: 'Введите название записи или <b>&gt;</b> для команд'
+        verb:
+            go: Перейти
+            open: Открыть
+            run: Выполнить
+        group:
+            recent: Недавние
+            suggested: Рекомендуемые
+            navigation: Навигация
+            commands: Команды
+        item:
+            panel_switch:
+                description: Перейти в другую панель
+            dashboard_edit:
+                name: Изменить дашборд
+                description: Перемещайте виджеты и меняйте их размер
+                keywords: 'dashboard, дашборд, виджеты, раскладка, переставить'
+            dashboard_add:
+                name: Добавить виджет
+                description: Выберите виджет из галереи
+                keywords: 'dashboard, дашборд, новый виджет, галерея'
+            dashboard_reset:
+                name: Восстановить дашборд по умолчанию
+                description: Забыть собственную раскладку виджетов
+                keywords: 'dashboard, дашборд, сброс, reset, по умолчанию'
+            theme:
+                name: Переключить светлую и тёмную тему
+                description: Изменить внешний вид панели
+                keywords: 'тёмная тема, светлая тема, цвета, dark, light, theme'
+    theme:
+        toggle: Сменить тему
+        toggle_long: Переключить светлую и тёмную тему
+        choose: Тема
+        choose_long: Выбрать цветовую тему
+        auto: Системная
+    user_menu:
+        impersonating: Вы вошли как этот пользователь
+        exit_impersonation: Вернуться в свой аккаунт
+        label: Меню пользователя
+        logout: Выйти
+        anonymous: Вы не вошли в систему

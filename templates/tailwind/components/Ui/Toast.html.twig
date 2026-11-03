@@ -1,0 +1,27 @@
+{#
+    Shown by a "toast:show" browser event with detail {title, description?, variant?} - see the toast controller.
+    Every event shows a toast of its own, stacked; variant: success (the default), danger, warning, info.
+#}
+<div {{ attributes.defaults({
+    class: 'pointer-events-none fixed end-4 bottom-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2',
+    role: 'status',
+    'aria-live': 'polite',
+    'data-controller': 'toast',
+    'data-action': 'toast:show@window->toast#show',
+    'data-toast-variants-value': {
+        success: {icon: 'bi-check-circle text-green-600 dark:text-green-400'},
+        danger: {toast: 'border-s-4 border-red-500', icon: 'bi-x-circle text-red-600 dark:text-red-400'},
+        warning: {toast: 'border-s-4 border-amber-500', icon: 'bi-exclamation-triangle text-amber-500 dark:text-amber-400'},
+        info: {icon: 'bi-info-circle text-indigo-600 dark:text-indigo-400'},
+    }|json_encode,
+}) }}>
+    <template data-toast-target="template">
+        <div class="pointer-events-auto flex gap-3 rounded-xl bg-white p-4 shadow-lg ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10" aria-atomic="true">
+            <i class="bi" data-toast-part="icon" aria-hidden="true"></i>
+            <div>
+                <div class="text-sm font-semibold" data-toast-part="title"></div>
+                <div class="text-sm text-gray-500 dark:text-gray-400" data-toast-part="description" hidden></div>
+            </div>
+        </div>
+    </template>
+</div>

@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: 저장
+        save_new: '저장하고 하나 더 추가'
+        save_edit: '저장하고 계속 편집'
+        cancel: 취소
+        confirm: 확인
+        close: 닫기
+    list:
+        shown_html: '{shown, plural, =0 {전체 {total, number}개 중 <strong>0</strong>개 표시} =1 {전체 {total, number}개 중 <strong>{from, number}</strong>번째 표시} other {전체 {total, number}개 중 <strong>{from, number}–{to, number}</strong> 표시}}'
+        shown_more_html: '{total, number}개 이상 중 <strong>{from, number}–{to, number}</strong> 표시'
+        per_page: '페이지당'
+    timezone:
+        region:
+            africa: 아프리카
+            america: 아메리카
+            antarctica: 남극
+            arctic: 북극
+            asia: 아시아
+            atlantic: 대서양
+            australia: 오스트레일리아
+            europe: 유럽
+            indian: 인도양
+            pacific: 태평양
+            other: 기타
+    time_ago:
+        now: 방금 전
+        minutes: '{count}분 전'
+        hours: '{count, plural, other {#시간 전}}'
+        days: '{count, plural, =1 {어제} other {#일 전}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: 일반
+            users: 사용자
+            sales: 판매
+            content: 콘텐츠
+            system: 시스템
+        number: '{value, number}'
+    pagination:
+        previous: 이전 페이지
+        next: 다음 페이지
+        previous_tip: 이전 페이지
+        next_tip: 다음 페이지
+        jump: 페이지로 이동
+        jump_hint: 페이지 번호를 입력하세요
+
+crud:
+    palette:
+        list: 목록
+        create: 새 레코드 추가
+        own: 내 페이지
+    total_html: '합계: <strong>{count, number}</strong>'
+    total_more_html: '합계: <strong>{count, number}개 이상</strong>'
+    search: 검색
+    clear_filters: 필터 지우기
+    sort_tip: '정렬: 클릭한 열이 맨 앞에 옵니다. 순서대로 오름차순, 내림차순, 끄기'
+    empty: 결과가 없습니다.
+    selected: '선택됨: {count, number}'
+    select: '선택'
+    select_page: '이 페이지 모두 선택'
+    select_all_matching: '필터와 일치하는 {count, number}개 모두 선택'
+    all_matching_selected: '필터와 일치하는 {count, number}개가 모두 선택됨'
+    clear_selection: '선택 해제'
+    actions: 작업
+    filter:
+        title: '필터'
+        more: '필터 더 보기'
+        query: 검색
+        any: 전체
+        'yes': '예'
+        'no': '아니요'
+        from: '시작'
+        to: '끝'
+        clear: '지우기'
+        time: '시간'
+        comparison:
+            label: '{field} 비교 방법'
+            eq: '같음'
+            neq: '같지 않음'
+            contains: '포함'
+            not_contains: '포함하지 않음'
+            starts: '으로 시작'
+            ends: '으로 끝남'
+            gt: '초과'
+            gte: '이상'
+            lt: '미만'
+            lte: '이하'
+            between: '사이'
+            in: '다음 중 하나'
+            not_in: '다음 중 어느 것도 아님'
+            empty: '비어 있음'
+            filled: '비어 있지 않음'
+    confirm_delete:
+        message: 이 레코드를 삭제할까요?
+        hint: 이 작업은 되돌릴 수 없습니다.
+    confirm_bulk_delete:
+        message: '선택한 레코드({count, number})를 삭제할까요?'
+    action:
+        details: 세부 정보
+        edit: 편집
+        delete: 삭제
+        duplicate: '복제'
+        list: 목록
+    layout:
+        errors: '{count, plural, other {오류 #개}}'
+    toast:
+        created: 추가됨
+        updated: 변경 사항이 저장됨
+        deleted: 삭제됨
+        delete_failed: 삭제할 수 없음
+        bulk_deleted: '삭제됨: {count, number}'
+        bulk_delete_failed: '삭제되지 않음: {count, number}'
+        gone: 이 레코드는 더 이상 존재하지 않습니다
+        bulk_failed: '작업이 수행되지 않았습니다'
+        action_failed: '실행할 수 없습니다'
+        done: '완료되었습니다'
+    value:
+        'yes': '예'
+        'no': '아니요'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: 찾을 수 없습니다.
+        forbidden: 이 작업을 수행할 권한이 없습니다.
+        taken: 같은 레코드가 이미 있습니다.
+        in_use: 이 레코드는 다른 레코드에서 사용 중이므로 삭제할 수 없습니다.
+        changed: '그 사이에 다른 사람이 이 레코드를 변경했습니다. 변경 내용을 보려면 다시 여세요.'
+        retry: '데이터베이스가 사용 중입니다. 아무것도 저장되지 않았습니다. 다시 시도하세요.'
+        refused: '데이터베이스가 이 레코드를 거부했습니다.'
+        input_required: '이 답변은 필수입니다.'
+        input_choice: '옵션 중 하나를 선택하세요.'
+        input_number: '숫자를 입력하세요.'
+        input_date: '올바른 날짜를 입력하세요.'
+
+panel:
+    login:
+        title: 로그인
+        username: 사용자 이름
+        password: 비밀번호
+        submit: 로그인
+    scope:
+        panel: 패널
+        admin: 관리
+    nav:
+        main_menu: 주 메뉴
+        close_menu: 메뉴 닫기
+        dashboard: 대시보드
+        section:
+            start: 시작
+            main: 기본
+            account: 계정
+    dashboard:
+        subtitle: 내 위젯 – 끌어서 옮기고, 크기를 바꾸고, 더 추가하세요.
+        subtitle_own: 나만의 위젯 배치입니다.
+        empty_title: 대시보드에 위젯이 없습니다
+        empty_text: '“위젯 추가”로 첫 위젯을 추가하세요.'
+        add: 위젯 추가
+        edit: 편집
+        done: 완료
+        more: 더 보기
+        reset: 기본값 복원
+        reset_confirm: 기본 대시보드를 복원할까요? 나만의 배치는 사라집니다.
+        share: 모두의 기본값으로 설정
+        share_confirm: 이 배치를 모두의 기본값으로 설정할까요?
+        share_hint: 자신만의 배치가 없는 모든 사람에게 표시됩니다.
+        remove: '“{title}” 위젯 제거'
+        settings: '설정: {title}'
+        toast:
+            failed: 대시보드를 저장할 수 없습니다
+            shared: 이제 이 배치가 모두의 기본값입니다
+        gallery:
+            title: 위젯 추가
+            search: 위젯 검색
+            add: 추가
+            size: 크기
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {대시보드에 있음} other {대시보드에 #개 있음}}'
+            empty: 추가할 위젯이 없습니다.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: 시계
+            description: 아날로그 또는 디지털 시계와 그 옆에 두 번째 도시를 표시합니다.
+            setting:
+                style: 시계 화면
+                zone: 두 번째 도시
+            style:
+                analog: 아날로그
+                digital: 디지털
+            city:
+                none: 없음
+                utc: UTC
+                london: 런던
+                warsaw: 바르샤바
+                berlin: 베를린
+                kyiv: 키이우
+                new_york: 뉴욕
+                chicago: 시카고
+                los_angeles: 로스앤젤레스
+                sao_paulo: 상파울루
+                dubai: 두바이
+                kolkata: 콜카타
+                shanghai: 상하이
+                tokyo: 도쿄
+                sydney: 시드니
+        quick_actions:
+            title: 빠른 작업
+            description: iOS 단축어처럼 레코드 추가로 바로 가는 타일 – 표시할 항목을 고르세요.
+            setting: 표시할 작업 (없음 = 전체)
+            empty: 사용할 수 있는 작업이 없습니다.
+        note:
+            title: 메모
+            description: 입력하는 동안 저장되는 메모지입니다. 각자 자신의 메모가 있습니다.
+            placeholder: 무언가 적어 보세요…
+            saving: 저장 중…
+            saved: 저장됨
+    topbar:
+        open_menu: 메뉴 열기
+        open_palette: 명령 팔레트 열기
+        search: 검색하거나 명령을 입력하세요…
+    palette:
+        label: 명령 팔레트
+        placeholder: 검색하거나 명령을 입력하세요…
+        search_label: 패널에서 검색
+        empty: '“{query}”에 대한 결과가 없습니다'
+        navigate: 이동
+        open: 열기
+        close: 닫기
+        hint_html: '레코드 이름을 입력하거나, 명령은 <b>&gt;</b>를 입력하세요'
+        verb:
+            go: 이동
+            open: 열기
+            run: 실행
+        group:
+            recent: 최근
+            suggested: 추천
+            navigation: 탐색
+            commands: 명령
+        item:
+            panel_switch:
+                description: 다른 패널로 이동
+            dashboard_edit:
+                name: 대시보드 편집
+                description: 위젯을 옮기고 크기를 조정합니다
+                keywords: 'dashboard, 대시보드, 위젯, widgets, 배치, 재배치'
+            dashboard_add:
+                name: 위젯 추가
+                description: 갤러리에서 위젯을 선택합니다
+                keywords: 'dashboard, 대시보드, 새 위젯, widget, 갤러리'
+            dashboard_reset:
+                name: 기본 대시보드 복원
+                description: 나만의 위젯 배치를 삭제합니다
+                keywords: 'dashboard, 대시보드, 초기화, reset, 기본값'
+            theme:
+                name: 밝은 테마와 어두운 테마 전환
+                description: 패널의 모양을 바꿉니다
+                keywords: '다크 모드, 라이트 모드, 색상, dark, light, theme'
+    theme:
+        toggle: 테마 전환
+        toggle_long: 밝은 테마와 어두운 테마 전환
+        choose: 테마
+        choose_long: 색상 테마 선택
+        auto: 시스템
+    user_menu:
+        impersonating: 이 사용자로 로그인되어 있습니다
+        exit_impersonation: 내 계정으로 돌아가기
+        label: 사용자 메뉴
+        logout: 로그아웃
+        anonymous: 로그인하지 않았습니다

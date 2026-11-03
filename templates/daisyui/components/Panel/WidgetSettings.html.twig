@@ -1,0 +1,85 @@
+{# The settings of one widget, drawn from what it declares (WidgetSetting): a choice, several, a text, a number, a switch, a day or a colour. #}
+{% set widget = this.widget %}
+{% set settingType = enum('Byfareska\\Crud\\Dashboard\\WidgetSettingType') %}
+<div {{ attributes }}>
+    <form data-action="live#action:prevent" data-live-action-param="save">
+        <div class="flex items-center justify-between border-b border-base-300 px-5 py-3">
+            <h2 class="text-lg font-semibold">{{ widget ? 'panel.dashboard.settings'|trans({title: widget.title|trans}) : '' }}</h2>
+            <button type="button" class="btn btn-ghost btn-sm btn-square" commandfor="widget-settings" command="close" aria-label="{{ 'ui.action.close'|trans }}">{{ crud_icon('x-lg') }}</button>
+        </div>
+        <div class="p-5">
+            {% for setting in widget ? widget.settings|filter(setting => setting.editable) : [] %}
+                {% set id = 'widget-setting-' ~ setting.name %}
+                <div class="mb-4">
+                    {% if setting.type == settingType.Choice %}
+                        {% set chosen = this.values[setting.name] ?? setting.default %}
+                        {#
+                            A field to search in (symfony/ux-autocomplete) skips the morph of the live component: its id
+                            names the placement, so the dialog of another widget gets a field of its own.
+                        #}
+                        {% if setting.searchable %}{% set id = id ~ '-' ~ this.placement %}{% endif %}
+                        <label class="label mb-1 text-sm font-medium text-base-content" for="{{ id }}">{{ setting.label|trans }}</label>
+                        <select class="select w-full" id="{{ id }}" data-model="values[{{ setting.name }}]"
+                                {% if setting.searchable %}data-controller="symfony--ux-autocomplete--autocomplete" data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="{{ 'No results found'|trans({}, 'AutocompleteBundle') }}"{% endif %}>
+                            {% if setting.placeholder %}
+                                <option value="" {{ chosen == '' ? 'selected' }}>{{ setting.placeholder|trans }}</option>
+                            {% endif %}
+                            {% for value, label in setting.choices %}
+                                {% if label is iterable %}
+                                    <optgroup label="{{ setting.translateChoices ? value|trans : value }}">
+                                        {% for inner, text in label %}
+                                            <option value="{{ inner }}" {{ chosen == inner ? 'selected' }}>{{ setting.translateChoices ? text|trans : text }}</option>
+                                        {% endfor %}
+                                    </optgroup>
+                                {% else %}
+                                    <option value="{{ value }}" {{ chosen == value ? 'selected' }}>{{ setting.translateChoices ? label|trans : label }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    {% elseif setting.type == settingType.Multiple %}
+                        <div class="mb-1 block text-sm font-medium">{{ setting.label|trans }}</div>
+                        {% set chosen = this.values[setting.name] ?? setting.default %}
+                        {# A group of choices (WidgetSetting::$choices) is a heading over its own. #}
+                        {% for value, label in setting.choices %}
+                            {% if label is iterable %}
+                                <div class="mt-2 text-xs font-semibold text-base-content/60">{{ setting.translateChoices ? value|trans : value }}</div>
+                                {% for inner, text in label %}
+                                    {% set box = id ~ '-' ~ loop.parent.loop.index ~ '-' ~ loop.index %}
+                                    <div class="flex items-center gap-2">
+                                        <input class="checkbox checkbox-sm checkbox-primary" type="checkbox" id="{{ box }}" value="{{ inner }}" data-model="values[{{ setting.name }}][]" {{ inner in chosen ? 'checked' }}>
+                                        <label class="text-sm" for="{{ box }}">{{ setting.translateChoices ? text|trans : text }}</label>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="flex items-center gap-2">
+                                    <input class="checkbox checkbox-sm checkbox-primary" type="checkbox" id="{{ id ~ '-' ~ loop.index }}" value="{{ value }}" data-model="values[{{ setting.name }}][]" {{ value in chosen ? 'checked' }}>
+                                    <label class="text-sm" for="{{ id ~ '-' ~ loop.index }}">{{ setting.translateChoices ? label|trans : label }}</label>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% elseif setting.type == settingType.Toggle %}
+                        <div class="flex items-center gap-2">
+                            <input class="checkbox checkbox-sm checkbox-primary" type="checkbox" id="{{ id }}" value="1" data-model="values[{{ setting.name }}]" {{ (this.values[setting.name] ?? setting.default) == '1' ? 'checked' }}>
+                            <label class="text-sm font-medium" for="{{ id }}">{{ setting.label|trans }}</label>
+                        </div>
+                    {% else %}
+                        {# A text, a number, a day or a colour: the input of its kind. #}
+                        {% set kind = {number: 'number', date: 'date', color: 'color'}[setting.type.value] ?? 'text' %}
+                        <label class="label mb-1 text-sm font-medium text-base-content" for="{{ id }}">{{ setting.label|trans }}</label>
+                        <input class="{{ kind == 'color' ? 'input w-16 cursor-pointer p-1' : 'input w-full' }}" id="{{ id }}" type="{{ kind }}" data-model="values[{{ setting.name }}]" value="{{ this.values[setting.name] ?? setting.default }}"
+                               {%- if setting.min is not null %} min="{{ setting.min }}"{% endif %}
+                               {%- if setting.max is not null %} max="{{ setting.max }}"{% endif %}
+                               {%- if setting.step is not null %} step="{{ setting.step }}"{% endif %}>
+                    {% endif %}
+                    {# What its validator refused at the last save (WidgetSettingRefused). #}
+                    {% set refused = this.refused[setting.name] ?? null %}
+                    {% if refused %}<div class="mt-1 text-sm text-error" role="alert">{{ refused.translationKey|trans(refused.parameters) }}</div>{% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="modal-action m-0 gap-2 bg-base-200 px-5 py-3">
+            <button type="button" class="btn btn-sm" commandfor="widget-settings" command="close">{{ 'ui.action.cancel'|trans }}</button>
+            <button type="submit" class="btn btn-sm btn-primary" {{ widget ? '' : 'disabled' }}>{{ 'ui.action.save'|trans }}</button>
+        </div>
+    </form>
+</div>

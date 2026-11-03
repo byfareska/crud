@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: حفظ
+        save_new: 'حفظ وإضافة آخر'
+        save_edit: 'حفظ ومتابعة التعديل'
+        cancel: إلغاء
+        confirm: تأكيد
+        close: إغلاق
+    list:
+        shown_html: '{shown, plural, =0 {عرض <strong>0</strong> من {total, number}} =1 {عرض <strong>{from, number}</strong> من {total, number}} other {عرض <strong>{from, number}–{to, number}</strong> من {total, number}}}'
+        shown_more_html: 'عرض <strong>{from, number}–{to, number}</strong> من أكثر من {total, number}'
+        per_page: 'لكل صفحة'
+    timezone:
+        region:
+            africa: أفريقيا
+            america: أمريكا
+            antarctica: القارة القطبية الجنوبية
+            arctic: القطب الشمالي
+            asia: آسيا
+            atlantic: الأطلسي
+            australia: أستراليا
+            europe: أوروبا
+            indian: المحيط الهندي
+            pacific: المحيط الهادئ
+            other: أخرى
+    time_ago:
+        now: الآن
+        minutes: 'منذ {count} د'
+        hours: '{count, plural, zero {منذ # ساعة} one {منذ ساعة} two {منذ ساعتين} few {منذ # ساعات} many {منذ # ساعة} other {منذ # ساعة}}'
+        days: '{count, plural, zero {اليوم} one {أمس} two {منذ يومين} few {منذ # أيام} many {منذ # يومًا} other {منذ # يوم}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: عام
+            users: المستخدمون
+            sales: المبيعات
+            content: المحتوى
+            system: النظام
+        number: '{value, number}'
+    pagination:
+        previous: الصفحة السابقة
+        next: الصفحة التالية
+        previous_tip: الصفحة السابقة
+        next_tip: الصفحة التالية
+        jump: الانتقال إلى صفحة
+        jump_hint: اكتب رقم الصفحة
+
+crud:
+    palette:
+        list: القائمة
+        create: إضافة سجل جديد
+        own: صفحتك
+    total_html: 'الإجمالي: <strong>{count, number}</strong>'
+    total_more_html: 'الإجمالي: <strong>أكثر من {count, number}</strong>'
+    search: بحث
+    clear_filters: مسح عوامل التصفية
+    sort_tip: 'الفرز: يصبح العمود الذي تنقر عليه الأول؛ بالتتابع: تصاعدي، تنازلي، إيقاف'
+    empty: لا توجد نتائج.
+    selected: 'المحدد: {count, number}'
+    select: 'تحديد'
+    select_page: 'تحديد الكل في هذه الصفحة'
+    select_all_matching: 'تحديد كل السجلات المطابقة للمرشحات ({count, number})'
+    all_matching_selected: 'تم تحديد كل السجلات المطابقة للمرشحات: {count, number}'
+    clear_selection: 'مسح التحديد'
+    actions: الإجراءات
+    filter:
+        title: 'عوامل التصفية'
+        more: 'مزيد من عوامل التصفية'
+        query: بحث
+        any: الكل
+        'yes': 'نعم'
+        'no': 'لا'
+        from: 'من'
+        to: 'إلى'
+        clear: 'مسح'
+        time: 'الوقت'
+        comparison:
+            label: 'طريقة مقارنة {field}'
+            eq: 'يساوي'
+            neq: 'لا يساوي'
+            contains: 'يحتوي'
+            not_contains: 'لا يحتوي'
+            starts: 'يبدأ بـ'
+            ends: 'ينتهي بـ'
+            gt: 'أكبر من'
+            gte: 'أكبر من أو يساوي'
+            lt: 'أصغر من'
+            lte: 'أصغر من أو يساوي'
+            between: 'بين'
+            in: 'أحد'
+            not_in: 'ليس أيًا من'
+            empty: 'فارغ'
+            filled: 'غير فارغ'
+    confirm_delete:
+        message: حذف هذا السجل؟
+        hint: لا يمكن التراجع عن هذا الإجراء.
+    confirm_bulk_delete:
+        message: 'حذف السجلات المحددة ({count, number})؟'
+    action:
+        details: التفاصيل
+        edit: تعديل
+        delete: حذف
+        duplicate: 'تكرار'
+        list: القائمة
+    layout:
+        errors: '{count, plural, zero {لا أخطاء} one {خطأ واحد} two {خطآن} few {# أخطاء} many {# خطأً} other {# خطأ}}'
+    toast:
+        created: تمت الإضافة
+        updated: تم حفظ التغييرات
+        deleted: تم الحذف
+        delete_failed: تعذّر الحذف
+        bulk_deleted: 'تم الحذف: {count, number}'
+        bulk_delete_failed: 'لم يُحذف: {count, number}'
+        gone: هذا السجل لم يعد موجودًا
+        bulk_failed: 'لم يتم تنفيذ الإجراء'
+        action_failed: 'تعذّر تنفيذ الإجراء'
+        done: 'تم'
+    value:
+        'yes': 'نعم'
+        'no': 'لا'
+        datetime: '{at, date, medium}، {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: غير موجود.
+        forbidden: ليس لديك إذن للقيام بذلك.
+        taken: يوجد سجل مماثل بالفعل.
+        in_use: هذا السجل مستخدم من قبل سجلات أخرى ولا يمكن حذفه.
+        changed: 'قام شخص آخر بتغيير هذا السجل في هذه الأثناء. افتحه مرة أخرى لرؤية التغييرات.'
+        retry: 'قاعدة البيانات مشغولة. لم يُحفظ أي شيء - حاول مرة أخرى.'
+        refused: 'رفضت قاعدة البيانات هذا السجل.'
+        input_required: 'هذا الحقل مطلوب.'
+        input_choice: 'اختر أحد الخيارات.'
+        input_number: 'أدخل رقمًا.'
+        input_date: 'أدخل تاريخًا صحيحًا.'
+
+panel:
+    login:
+        title: تسجيل الدخول
+        username: اسم المستخدم
+        password: كلمة المرور
+        submit: تسجيل الدخول
+    scope:
+        panel: اللوحة
+        admin: الإدارة
+    nav:
+        main_menu: القائمة الرئيسية
+        close_menu: إغلاق القائمة
+        dashboard: لوحة المعلومات
+        section:
+            start: البداية
+            main: الرئيسي
+            account: الحساب
+    dashboard:
+        subtitle: أدواتك – اسحبها، غيّر حجمها، أضف المزيد.
+        subtitle_own: ترتيبك الخاص للأدوات.
+        empty_title: لا توجد أدوات في لوحة المعلومات
+        empty_text: أضف الأولى عبر «إضافة أداة».
+        add: إضافة أداة
+        edit: تعديل
+        done: تم
+        more: المزيد
+        reset: استعادة الافتراضي
+        reset_confirm: استعادة لوحة المعلومات الافتراضية؟ سيُنسى ترتيبك الخاص.
+        share: اجعله الافتراضي للجميع
+        share_confirm: جعل هذا الترتيب الافتراضي للجميع؟
+        share_hint: سيراه كل من ليس لديه ترتيب خاص به.
+        remove: 'إزالة الأداة «{title}»'
+        settings: 'الإعدادات: {title}'
+        toast:
+            failed: تعذّر حفظ لوحة المعلومات
+            shared: أصبح هذا الترتيب الافتراضي للجميع
+        gallery:
+            title: إضافة أداة
+            search: البحث عن أدوات
+            add: إضافة
+            size: الحجم
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {في لوحة المعلومات} two {مرتان في لوحة المعلومات} few {# مرات في لوحة المعلومات} many {# مرة في لوحة المعلومات} other {# مرة في لوحة المعلومات}}'
+            empty: لا توجد أدوات لإضافتها.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: الساعة
+            description: ساعة تناظرية أو رقمية، وبجانبها مدينة ثانية.
+            setting:
+                style: الوجه
+                zone: المدينة الثانية
+            style:
+                analog: تناظرية
+                digital: رقمية
+            city:
+                none: لا شيء
+                utc: UTC
+                london: لندن
+                warsaw: وارسو
+                berlin: برلين
+                kyiv: كييف
+                new_york: نيويورك
+                chicago: شيكاغو
+                los_angeles: لوس أنجلوس
+                sao_paulo: ساو باولو
+                dubai: دبي
+                kolkata: كولكاتا
+                shanghai: شنغهاي
+                tokyo: طوكيو
+                sydney: سيدني
+        quick_actions:
+            title: إجراءات سريعة
+            description: مربعات تقود إلى إضافة السجلات، مثل اختصارات iOS – اختر ما تريد منها.
+            setting: أي الإجراءات (لا شيء = الكل)
+            empty: لا توجد إجراءات يمكنك استخدامها.
+        note:
+            title: ملاحظة
+            description: ورقة لاصقة تُحفظ أثناء الكتابة. لكل شخص ورقته الخاصة.
+            placeholder: اكتب شيئًا…
+            saving: جارٍ الحفظ…
+            saved: تم الحفظ
+    topbar:
+        open_menu: فتح القائمة
+        open_palette: فتح لوحة الأوامر
+        search: ابحث أو اكتب أمرًا…
+    palette:
+        label: لوحة الأوامر
+        placeholder: ابحث أو اكتب أمرًا…
+        search_label: البحث في اللوحة
+        empty: 'لم يُعثر على شيء لـ «{query}»'
+        navigate: تنقّل
+        open: فتح
+        close: إغلاق
+        hint_html: 'جرّب اسم سجل، أو <b>&gt;</b> للأوامر'
+        verb:
+            go: انتقال إلى
+            open: فتح
+            run: تشغيل
+        group:
+            recent: الأخيرة
+            suggested: المقترحة
+            navigation: التنقل
+            commands: الأوامر
+        item:
+            panel_switch:
+                description: الانتقال إلى لوحة أخرى
+            dashboard_edit:
+                name: تعديل لوحة المعلومات
+                description: نقل الأدوات وتغيير حجمها
+                keywords: 'dashboard, لوحة المعلومات, أدوات, widgets, ترتيب, إعادة ترتيب'
+            dashboard_add:
+                name: إضافة أداة
+                description: اختر أداة من المعرض
+                keywords: 'dashboard, لوحة المعلومات, أداة جديدة, widget, معرض'
+            dashboard_reset:
+                name: استعادة لوحة المعلومات الافتراضية
+                description: نسيان ترتيبك الخاص للأدوات
+                keywords: 'dashboard, لوحة المعلومات, إعادة تعيين, reset, افتراضي'
+            theme:
+                name: التبديل بين السمة الفاتحة والداكنة
+                description: تغيير مظهر اللوحة
+                keywords: 'الوضع الداكن, الوضع الفاتح, الألوان, dark, light, theme'
+    theme:
+        toggle: تبديل السمة
+        toggle_long: التبديل بين السمة الفاتحة والداكنة
+        choose: السمة
+        choose_long: اختيار سمة الألوان
+        auto: النظام
+    user_menu:
+        impersonating: أنت مسجّل الدخول بصفتك هذا المستخدم
+        exit_impersonation: العودة إلى حسابك
+        label: قائمة المستخدم
+        logout: تسجيل الخروج
+        anonymous: لم تسجّل الدخول

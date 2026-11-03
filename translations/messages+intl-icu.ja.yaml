@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: 保存
+        save_new: '保存して続けて追加'
+        save_edit: '保存して編集を続ける'
+        cancel: キャンセル
+        confirm: 確認
+        close: 閉じる
+    list:
+        shown_html: '{shown, plural, =0 {{total, number} 件中 <strong>0</strong> 件を表示} =1 {{total, number} 件中 <strong>{from, number}</strong> 件目を表示} other {{total, number} 件中 <strong>{from, number}–{to, number}</strong> 件を表示}}'
+        shown_more_html: '{total, number} 件以上中 <strong>{from, number}–{to, number}</strong> 件を表示'
+        per_page: '1ページの件数'
+    timezone:
+        region:
+            africa: アフリカ
+            america: アメリカ
+            antarctica: 南極
+            arctic: 北極
+            asia: アジア
+            atlantic: 大西洋
+            australia: オーストラリア
+            europe: ヨーロッパ
+            indian: インド洋
+            pacific: 太平洋
+            other: その他
+    time_ago:
+        now: たった今
+        minutes: '{count} 分前'
+        hours: '{count, plural, other {# 時間前}}'
+        days: '{count, plural, =1 {昨日} other {# 日前}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: 一般
+            users: ユーザー
+            sales: 売上
+            content: コンテンツ
+            system: システム
+        number: '{value, number}'
+    pagination:
+        previous: 前のページ
+        next: 次のページ
+        previous_tip: 前のページ
+        next_tip: 次のページ
+        jump: ページへ移動
+        jump_hint: ページ番号を入力
+
+crud:
+    palette:
+        list: 一覧
+        create: 新しいレコードを追加
+        own: あなたのページ
+    total_html: '合計: <strong>{count, number}</strong>'
+    total_more_html: '合計: <strong>{count, number} 件以上</strong>'
+    search: 検索
+    clear_filters: フィルターをクリア
+    sort_tip: '並べ替え: クリックした列が先頭になります。クリックごとに 昇順、降順、オフ'
+    empty: 結果はありません。
+    selected: '選択中: {count, number}'
+    select: '選択'
+    select_page: 'このページをすべて選択'
+    select_all_matching: 'フィルターに一致する {count, number} 件をすべて選択'
+    all_matching_selected: 'フィルターに一致する {count, number} 件をすべて選択しました'
+    clear_selection: '選択を解除'
+    actions: 操作
+    filter:
+        title: '絞り込み'
+        more: 'その他の絞り込み'
+        query: 検索
+        any: すべて
+        'yes': 'はい'
+        'no': 'いいえ'
+        from: '開始'
+        to: '終了'
+        clear: 'クリア'
+        time: '時刻'
+        comparison:
+            label: '{field}の比較方法'
+            eq: '等しい'
+            neq: '等しくない'
+            contains: '含む'
+            not_contains: '含まない'
+            starts: 'で始まる'
+            ends: 'で終わる'
+            gt: 'より大きい'
+            gte: '以上'
+            lt: 'より小さい'
+            lte: '以下'
+            between: '範囲'
+            in: '次のいずれか'
+            not_in: '次のいずれでもない'
+            empty: '空'
+            filled: '空ではない'
+    confirm_delete:
+        message: このレコードを削除しますか？
+        hint: この操作は元に戻せません。
+    confirm_bulk_delete:
+        message: '選択したレコード（{count, number}）を削除しますか？'
+    action:
+        details: 詳細
+        edit: 編集
+        delete: 削除
+        duplicate: '複製'
+        list: 一覧
+    layout:
+        errors: '{count, plural, other {# 件のエラー}}'
+    toast:
+        created: 追加しました
+        updated: 変更を保存しました
+        deleted: 削除しました
+        delete_failed: 削除できませんでした
+        bulk_deleted: '削除済み: {count, number}'
+        bulk_delete_failed: '削除できなかった: {count, number}'
+        gone: このレコードはもう存在しません
+        bulk_failed: '操作は実行されませんでした'
+        action_failed: '実行できませんでした'
+        done: '完了しました'
+    value:
+        'yes': 'はい'
+        'no': 'いいえ'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: 見つかりません。
+        forbidden: この操作を行う権限がありません。
+        taken: 同じレコードがすでに存在します。
+        in_use: このレコードは他のレコードで使用されているため削除できません。
+        changed: 'このレコードはその間に他のユーザーによって変更されました。変更を確認するには、もう一度開いてください。'
+        retry: 'データベースが混み合っています。何も保存されていません。もう一度お試しください。'
+        refused: 'データベースがこのレコードを拒否しました。'
+        input_required: 'この回答は必須です。'
+        input_choice: '選択肢のいずれかを選んでください。'
+        input_number: '数値を入力してください。'
+        input_date: '有効な日付を入力してください。'
+
+panel:
+    login:
+        title: サインイン
+        username: ユーザー名
+        password: パスワード
+        submit: サインイン
+    scope:
+        panel: パネル
+        admin: 管理
+    nav:
+        main_menu: メインメニュー
+        close_menu: メニューを閉じる
+        dashboard: ダッシュボード
+        section:
+            start: スタート
+            main: メイン
+            account: アカウント
+    dashboard:
+        subtitle: あなたのウィジェット – ドラッグ、サイズ変更、追加ができます。
+        subtitle_own: あなた独自のウィジェット配置です。
+        empty_title: ダッシュボードにウィジェットがありません
+        empty_text: 「ウィジェットを追加」で最初のウィジェットを追加してください。
+        add: ウィジェットを追加
+        edit: 編集
+        done: 完了
+        more: その他
+        reset: デフォルトに戻す
+        reset_confirm: デフォルトのダッシュボードに戻しますか？独自の配置は失われます。
+        share: 全員のデフォルトにする
+        share_confirm: この配置を全員のデフォルトにしますか？
+        share_hint: 独自の配置を持たないすべての人に表示されます。
+        remove: 'ウィジェット「{title}」を削除'
+        settings: '設定: {title}'
+        toast:
+            failed: ダッシュボードを保存できませんでした
+            shared: この配置が全員のデフォルトになりました
+        gallery:
+            title: ウィジェットを追加
+            search: ウィジェットを検索
+            add: 追加
+            size: サイズ
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {ダッシュボードに配置済み} other {ダッシュボードに # 個配置済み}}'
+            empty: 追加できるウィジェットはありません。
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: 時計
+            description: アナログまたはデジタルの時計。隣に 2 つ目の都市を表示します。
+            setting:
+                style: 文字盤
+                zone: 2 つ目の都市
+            style:
+                analog: アナログ
+                digital: デジタル
+            city:
+                none: なし
+                utc: UTC
+                london: ロンドン
+                warsaw: ワルシャワ
+                berlin: ベルリン
+                kyiv: キーウ
+                new_york: ニューヨーク
+                chicago: シカゴ
+                los_angeles: ロサンゼルス
+                sao_paulo: サンパウロ
+                dubai: ドバイ
+                kolkata: コルカタ
+                shanghai: 上海
+                tokyo: 東京
+                sydney: シドニー
+        quick_actions:
+            title: クイックアクション
+            description: レコードの追加へ移動するタイル。iOS のショートカットのように表示するものを選べます。
+            setting: 表示するアクション（なし = すべて）
+            empty: 使用できるアクションはありません。
+        note:
+            title: メモ
+            description: 入力中に保存される付箋。各自が自分の付箋を持ちます。
+            placeholder: 何か書いてください…
+            saving: 保存中…
+            saved: 保存しました
+    topbar:
+        open_menu: メニューを開く
+        open_palette: コマンドパレットを開く
+        search: 検索またはコマンドを入力…
+    palette:
+        label: コマンドパレット
+        placeholder: 検索またはコマンドを入力…
+        search_label: パネル内を検索
+        empty: '「{query}」に一致するものはありません'
+        navigate: 移動
+        open: 開く
+        close: 閉じる
+        hint_html: 'レコード名を入力するか、<b>&gt;</b> でコマンドを入力してください'
+        verb:
+            go: 移動
+            open: 開く
+            run: 実行
+        group:
+            recent: 最近
+            suggested: おすすめ
+            navigation: ナビゲーション
+            commands: コマンド
+        item:
+            panel_switch:
+                description: 別のパネルへ移動
+            dashboard_edit:
+                name: ダッシュボードを編集
+                description: ウィジェットを移動してサイズを変更
+                keywords: 'dashboard, ダッシュボード, ウィジェット, widgets, レイアウト, 並べ替え'
+            dashboard_add:
+                name: ウィジェットを追加
+                description: ギャラリーからウィジェットを選択
+                keywords: 'dashboard, ダッシュボード, 新しいウィジェット, widget, ギャラリー'
+            dashboard_reset:
+                name: デフォルトのダッシュボードに戻す
+                description: 独自のウィジェット配置を破棄
+                keywords: 'dashboard, ダッシュボード, リセット, reset, デフォルト'
+            theme:
+                name: ライトテーマとダークテーマを切り替え
+                description: パネルの見た目を変更
+                keywords: 'ダークモード, ライトモード, 色, dark, light, theme'
+    theme:
+        toggle: テーマを切り替え
+        toggle_long: ライトテーマとダークテーマを切り替え
+        choose: テーマ
+        choose_long: カラーテーマを選択
+        auto: システム
+    user_menu:
+        impersonating: このユーザーとしてサインインしています
+        exit_impersonation: 自分のアカウントに戻る
+        label: ユーザーメニュー
+        logout: サインアウト
+        anonymous: サインインしていません

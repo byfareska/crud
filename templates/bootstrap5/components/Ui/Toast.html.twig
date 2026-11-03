@@ -1,0 +1,29 @@
+{#
+    Shown by a "toast:show" browser event with detail {title, description?, variant?} - see the toast controller.
+    Every event shows a toast of its own, stacked; variant: success (the default), danger, warning, info.
+#}
+<div {{ attributes.defaults({
+    class: 'toast-container position-fixed bottom-0 end-0 p-3',
+    role: 'status',
+    'aria-live': 'polite',
+    'data-controller': 'toast',
+    'data-action': 'toast:show@window->toast#show',
+    'data-toast-variants-value': {
+        success: {icon: 'bi-check-circle text-success'},
+        danger: {toast: 'border-danger', icon: 'bi-x-circle text-danger'},
+        warning: {toast: 'border-warning', icon: 'bi-exclamation-triangle text-warning'},
+        info: {icon: 'bi-info-circle text-primary'},
+    }|json_encode,
+}) }}>
+    <template data-toast-target="template">
+        <div class="toast show" aria-atomic="true">
+            <div class="toast-body d-flex gap-2">
+                <i class="bi" data-toast-part="icon" aria-hidden="true"></i>
+                <div>
+                    <div class="fw-semibold" data-toast-part="title"></div>
+                    <div class="small text-body-secondary" data-toast-part="description" hidden></div>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>

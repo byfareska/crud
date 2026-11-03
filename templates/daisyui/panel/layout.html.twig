@@ -1,0 +1,40 @@
+{#
+    The shell of a panel: its menu (Panel:Sidebar), the top bar and the command palette. The page fills "content";
+    "page_title" is the title of the window, "topbar_start" puts something at the start of the top bar, "topbar_actions"
+    next to the user's menu, "user_menu_items" into that menu (above "sign out") and "main_class" adds classes to <main>.
+#}
+{% extends '@CrudTheme/panel/base.html.twig' %}
+
+{% block title %}{% block page_title %}{{ panel_scope().label|trans }}{% endblock %} · {{ panel_brand() }}{% endblock %}
+
+{% block body %}
+    {# data-scope tells the command palette which panel it is in (the palette is kept across Turbo visits). #}
+    <div class="flex min-h-screen" data-scope="{{ panel_scope().name }}">
+        <twig:Panel:Sidebar />
+
+        <div class="flex min-w-0 flex-1 flex-col">
+            {# Taken before the component: a block of this template is not seen from inside the content of a component. #}
+            {% set topbar_start %}{% block topbar_start %}{% endblock %}{% endset %}
+            {% set topbar_actions %}{% block topbar_actions %}{% endblock %}{% endset %}
+            {% set user_menu_items %}{% block user_menu_items %}{% endblock %}{% endset %}
+            <twig:Panel:Topbar :userMenuItems="user_menu_items">
+                <twig:block name="start">{{ topbar_start }}</twig:block>
+                <twig:block name="actions">{{ topbar_actions }}</twig:block>
+            </twig:Panel:Topbar>
+
+            <main class="flex-1 p-4 lg:p-8 {% block main_class %}{% endblock %}">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {# Kept across Turbo visits. #}
+    <twig:Panel:CommandPaletteModal />
+    <twig:Ui:Toast id="panel-toast" data-turbo-permanent />
+    {# Where the confirm controller asks "are you sure?". #}
+    <twig:Ui:ConfirmDialog />
+    {# Messages left by the previous page, e.g. after a form was saved. #}
+    {% for title in app.flashes('toast') %}
+        <span hidden data-controller="flash" data-flash-title-value="{{ title }}"></span>
+    {% endfor %}
+{% endblock %}

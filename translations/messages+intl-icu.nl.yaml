@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Opslaan
+        save_new: 'Opslaan en nog een toevoegen'
+        save_edit: 'Opslaan en verder bewerken'
+        cancel: Annuleren
+        confirm: Bevestigen
+        close: Sluiten
+    list:
+        shown_html: '{shown, plural, =0 {<strong>0</strong> van {total, number} getoond} =1 {<strong>{from, number}</strong> van {total, number} getoond} other {<strong>{from, number}–{to, number}</strong> van {total, number} getoond}}'
+        shown_more_html: '<strong>{from, number}–{to, number}</strong> van meer dan {total, number}'
+        per_page: 'Per pagina'
+    timezone:
+        region:
+            africa: Afrika
+            america: Amerika
+            antarctica: Antarctica
+            arctic: Noordpoolgebied
+            asia: Azië
+            atlantic: Atlantische Oceaan
+            australia: Australië
+            europe: Europa
+            indian: Indische Oceaan
+            pacific: Stille Oceaan
+            other: Overig
+    time_ago:
+        now: zojuist
+        minutes: '{count} min geleden'
+        hours: '{count, plural, one {# uur geleden} other {# uur geleden}}'
+        days: '{count, plural, one {gisteren} other {# dagen geleden}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Algemeen
+            users: Gebruikers
+            sales: Verkoop
+            content: Inhoud
+            system: Systeem
+        number: '{value, number}'
+    pagination:
+        previous: Vorige pagina
+        next: Volgende pagina
+        previous_tip: Vorige pagina
+        next_tip: Volgende pagina
+        jump: Ga naar pagina
+        jump_hint: Typ een paginanummer
+
+crud:
+    palette:
+        list: Lijst
+        create: Nieuw record toevoegen
+        own: Je eigen pagina
+    total_html: 'Totaal: <strong>{count, number}</strong>'
+    total_more_html: 'Totaal: <strong>meer dan {count, number}</strong>'
+    search: Zoeken
+    clear_filters: Filters wissen
+    sort_tip: 'Sorteren: de aangeklikte kolom komt eerst; achtereenvolgens: oplopend, aflopend, uit'
+    empty: Geen resultaten.
+    selected: 'Geselecteerd: {count, number}'
+    select: 'Selecteren'
+    select_page: 'Alles op deze pagina selecteren'
+    select_all_matching: 'Alle {count, number} overeenkomende met de filters selecteren'
+    all_matching_selected: 'Alle {count, number} overeenkomende met de filters zijn geselecteerd'
+    clear_selection: 'Selectie wissen'
+    actions: Acties
+    filter:
+        title: 'Filters'
+        more: 'Meer filters'
+        query: Zoeken
+        any: Alle
+        'yes': 'Ja'
+        'no': 'Nee'
+        from: 'Van'
+        to: 'Tot'
+        clear: 'Wissen'
+        time: 'Tijd'
+        comparison:
+            label: 'Vergelijking van {field}'
+            eq: 'gelijk aan'
+            neq: 'niet gelijk aan'
+            contains: 'bevat'
+            not_contains: 'bevat niet'
+            starts: 'begint met'
+            ends: 'eindigt op'
+            gt: 'groter dan'
+            gte: 'groter dan of gelijk aan'
+            lt: 'kleiner dan'
+            lte: 'kleiner dan of gelijk aan'
+            between: 'tussen'
+            in: 'is een van'
+            not_in: 'is geen van'
+            empty: 'is leeg'
+            filled: 'is niet leeg'
+    confirm_delete:
+        message: Dit record verwijderen?
+        hint: Dit kan niet ongedaan worden gemaakt.
+    confirm_bulk_delete:
+        message: 'De geselecteerde records ({count, number}) verwijderen?'
+    action:
+        details: Details
+        edit: Bewerken
+        delete: Verwijderen
+        duplicate: 'Dupliceren'
+        list: Lijst
+    layout:
+        errors: '{count, plural, one {# fout} other {# fouten}}'
+    toast:
+        created: Toegevoegd
+        updated: Wijzigingen opgeslagen
+        deleted: Verwijderd
+        delete_failed: Verwijderen is mislukt
+        bulk_deleted: 'Verwijderd: {count, number}'
+        bulk_delete_failed: 'Niet verwijderd: {count, number}'
+        gone: Dit record bestaat niet meer
+        bulk_failed: 'De actie is niet uitgevoerd'
+        action_failed: 'Dit kon niet worden gedaan'
+        done: 'Gedaan'
+    value:
+        'yes': 'Ja'
+        'no': 'Nee'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Niet gevonden.
+        forbidden: Je hebt geen toestemming om dit te doen.
+        taken: Zo’n record bestaat al.
+        in_use: Dit record wordt door andere records gebruikt en kan niet worden verwijderd.
+        changed: 'Iemand anders heeft dit record intussen gewijzigd. Open het opnieuw om de wijzigingen te zien.'
+        retry: 'De database is bezet. Er is niets opgeslagen - probeer het opnieuw.'
+        refused: 'De database heeft dit record geweigerd.'
+        input_required: 'Dit antwoord is verplicht.'
+        input_choice: 'Kies een van de opties.'
+        input_number: 'Voer een getal in.'
+        input_date: 'Voer een geldige datum in.'
+
+panel:
+    login:
+        title: Inloggen
+        username: Gebruikersnaam
+        password: Wachtwoord
+        submit: Inloggen
+    scope:
+        panel: Paneel
+        admin: Beheer
+    nav:
+        main_menu: Hoofdmenu
+        close_menu: Menu sluiten
+        dashboard: Dashboard
+        section:
+            start: Start
+            main: Hoofdonderdelen
+            account: Account
+    dashboard:
+        subtitle: Je widgets – sleep ze, wijzig het formaat, voeg er meer toe.
+        subtitle_own: Je eigen indeling van widgets.
+        empty_title: Er staan geen widgets op het dashboard
+        empty_text: Voeg de eerste toe met „Widget toevoegen”.
+        add: Widget toevoegen
+        edit: Bewerken
+        done: Klaar
+        more: Meer
+        reset: Standaard herstellen
+        reset_confirm: Het standaarddashboard herstellen? Je eigen indeling gaat verloren.
+        share: Standaard maken voor iedereen
+        share_confirm: Deze indeling de standaard maken voor iedereen?
+        share_hint: Iedereen zonder eigen indeling ziet hem.
+        remove: 'Widget „{title}” verwijderen'
+        settings: 'Instellingen: {title}'
+        toast:
+            failed: Het dashboard kon niet worden opgeslagen
+            shared: De indeling is nu de standaard voor iedereen
+        gallery:
+            title: Een widget toevoegen
+            search: Widgets zoeken
+            add: Toevoegen
+            size: Formaat
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {op het dashboard} other {# keer op het dashboard}}'
+            empty: Er zijn geen widgets om toe te voegen.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Klok
+            description: Een analoge of digitale klok, met een tweede stad ernaast.
+            setting:
+                style: Wijzerplaat
+                zone: Tweede stad
+            style:
+                analog: Analoog
+                digital: Digitaal
+            city:
+                none: Geen
+                utc: UTC
+                london: Londen
+                warsaw: Warschau
+                berlin: Berlijn
+                kyiv: Kyiv
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Calcutta
+                shanghai: Shanghai
+                tokyo: Tokio
+                sydney: Sydney
+        quick_actions:
+            title: Snelle acties
+            description: Tegels die naar het toevoegen van records leiden, zoals de opdrachten van iOS – kies welke.
+            setting: Welke acties (geen = alle)
+            empty: Er zijn geen acties die je kunt gebruiken.
+        note:
+            title: Notitie
+            description: Een plakbriefje dat tijdens het typen wordt opgeslagen. Iedereen heeft er een eigen.
+            placeholder: Schrijf iets…
+            saving: Opslaan…
+            saved: Opgeslagen
+    topbar:
+        open_menu: Menu openen
+        open_palette: Opdrachtenpalet openen
+        search: Zoek of typ een opdracht…
+    palette:
+        label: Opdrachtenpalet
+        placeholder: Zoek of typ een opdracht…
+        search_label: Zoeken in het paneel
+        empty: 'Niets gevonden voor „{query}”'
+        navigate: navigeren
+        open: openen
+        close: sluiten
+        hint_html: 'Probeer de naam van een record, of <b>&gt;</b> voor opdrachten'
+        verb:
+            go: Ga naar
+            open: Openen
+            run: Uitvoeren
+        group:
+            recent: Recent
+            suggested: Voorgesteld
+            navigation: Navigatie
+            commands: Opdrachten
+        item:
+            panel_switch:
+                description: Ga naar een ander paneel
+            dashboard_edit:
+                name: Het dashboard bewerken
+                description: Widgets verplaatsen en het formaat wijzigen
+                keywords: 'dashboard, widgets, indeling, layout, herschikken'
+            dashboard_add:
+                name: Een widget toevoegen
+                description: Kies een widget uit de galerij
+                keywords: 'dashboard, nieuwe widget, galerij'
+            dashboard_reset:
+                name: Het standaarddashboard herstellen
+                description: Je eigen indeling van widgets vergeten
+                keywords: 'dashboard, herstellen, reset, standaard'
+            theme:
+                name: Wisselen tussen het lichte en het donkere thema
+                description: Het uiterlijk van het paneel wijzigen
+                keywords: 'donkere modus, lichte modus, kleuren, dark, light, thema'
+    theme:
+        toggle: Thema wisselen
+        toggle_long: Wisselen tussen het lichte en het donkere thema
+        choose: Thema
+        choose_long: Kleurenthema kiezen
+        auto: Systeem
+    user_menu:
+        impersonating: Je bent ingelogd als deze gebruiker
+        exit_impersonation: Terug naar je eigen account
+        label: Gebruikersmenu
+        logout: Uitloggen
+        anonymous: Je bent niet ingelogd

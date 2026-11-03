@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: সংরক্ষণ করুন
+        save_new: 'সংরক্ষণ করে আরেকটি যোগ করুন'
+        save_edit: 'সংরক্ষণ করে সম্পাদনা চালিয়ে যান'
+        cancel: বাতিল করুন
+        confirm: নিশ্চিত করুন
+        close: বন্ধ করুন
+    list:
+        shown_html: '{shown, plural, =0 {{total, number}টির মধ্যে <strong>0</strong>টি দেখানো হচ্ছে} =1 {{total, number}টির মধ্যে <strong>{from, number}</strong> নম্বর দেখানো হচ্ছে} other {{total, number}টির মধ্যে <strong>{from, number}–{to, number}</strong> দেখানো হচ্ছে}}'
+        shown_more_html: '{total, number}-এর বেশির মধ্যে <strong>{from, number}–{to, number}</strong> দেখানো হচ্ছে'
+        per_page: 'প্রতি পৃষ্ঠায়'
+    timezone:
+        region:
+            africa: আফ্রিকা
+            america: আমেরিকা
+            antarctica: অ্যান্টার্কটিকা
+            arctic: আর্কটিক
+            asia: এশিয়া
+            atlantic: আটলান্টিক
+            australia: অস্ট্রেলিয়া
+            europe: ইউরোপ
+            indian: ভারত মহাসাগর
+            pacific: প্রশান্ত মহাসাগর
+            other: অন্যান্য
+    time_ago:
+        now: এইমাত্র
+        minutes: '{count} মিনিট আগে'
+        hours: '{count, plural, other {# ঘণ্টা আগে}}'
+        days: '{count, plural, =1 {গতকাল} other {# দিন আগে}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: সাধারণ
+            users: ব্যবহারকারী
+            sales: বিক্রয়
+            content: কনটেন্ট
+            system: সিস্টেম
+        number: '{value, number}'
+    pagination:
+        previous: আগের পৃষ্ঠা
+        next: পরের পৃষ্ঠা
+        previous_tip: আগের পৃষ্ঠা
+        next_tip: পরের পৃষ্ঠা
+        jump: পৃষ্ঠায় যান
+        jump_hint: একটি পৃষ্ঠা নম্বর লিখুন
+
+crud:
+    palette:
+        list: তালিকা
+        create: নতুন রেকর্ড যোগ করুন
+        own: আপনার পৃষ্ঠা
+    total_html: 'মোট: <strong>{count, number}</strong>'
+    total_more_html: 'মোট: <strong>{count, number}-এর বেশি</strong>'
+    search: খুঁজুন
+    clear_filters: ফিল্টার মুছুন
+    sort_tip: 'সাজান: ক্লিক করা কলাম প্রথমে আসে; পর্যায়ক্রমে: ঊর্ধ্বক্রম, অধঃক্রম, বন্ধ'
+    empty: কোনো ফলাফল নেই।
+    selected: 'নির্বাচিত: {count, number}'
+    select: 'নির্বাচন করুন'
+    select_page: 'এই পৃষ্ঠার সব নির্বাচন করুন'
+    select_all_matching: 'ফিল্টারের সাথে মেলে এমন সব {count, number}টি নির্বাচন করুন'
+    all_matching_selected: 'ফিল্টারের সাথে মেলে এমন সব {count, number}টি নির্বাচিত'
+    clear_selection: 'নির্বাচন মুছুন'
+    actions: কার্যক্রম
+    filter:
+        title: 'ফিল্টার'
+        more: 'আরও ফিল্টার'
+        query: খুঁজুন
+        any: যেকোনো
+        'yes': 'হ্যাঁ'
+        'no': 'না'
+        from: 'থেকে'
+        to: 'পর্যন্ত'
+        clear: 'মুছুন'
+        time: 'সময়'
+        comparison:
+            label: '{field} কীভাবে তুলনা হবে'
+            eq: 'সমান'
+            neq: 'সমান নয়'
+            contains: 'ধারণ করে'
+            not_contains: 'ধারণ করে না'
+            starts: 'দিয়ে শুরু'
+            ends: 'দিয়ে শেষ'
+            gt: 'এর চেয়ে বড়'
+            gte: 'বড় বা সমান'
+            lt: 'এর চেয়ে ছোট'
+            lte: 'ছোট বা সমান'
+            between: 'মধ্যে'
+            in: 'এর একটি'
+            not_in: 'এর কোনোটি নয়'
+            empty: 'খালি'
+            filled: 'খালি নয়'
+    confirm_delete:
+        message: এই রেকর্ডটি মুছবেন?
+        hint: এটি পূর্বাবস্থায় ফেরানো যাবে না।
+    confirm_bulk_delete:
+        message: 'নির্বাচিত রেকর্ডগুলি ({count, number}) মুছবেন?'
+    action:
+        details: বিস্তারিত
+        edit: সম্পাদনা
+        delete: মুছুন
+        duplicate: 'ডুপ্লিকেট করুন'
+        list: তালিকা
+    layout:
+        errors: '{count, plural, other {#টি ত্রুটি}}'
+    toast:
+        created: যোগ করা হয়েছে
+        updated: পরিবর্তন সংরক্ষিত হয়েছে
+        deleted: মুছে ফেলা হয়েছে
+        delete_failed: মুছে ফেলা যায়নি
+        bulk_deleted: 'মোছা হয়েছে: {count, number}'
+        bulk_delete_failed: 'মোছা হয়নি: {count, number}'
+        gone: এই রেকর্ডটি আর নেই
+        bulk_failed: 'কাজটি করা যায়নি'
+        action_failed: 'কাজটি করা যায়নি'
+        done: 'সম্পন্ন'
+    value:
+        'yes': 'হ্যাঁ'
+        'no': 'না'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: পাওয়া যায়নি।
+        forbidden: আপনার এটি করার অনুমতি নেই।
+        taken: এমন একটি রেকর্ড আগে থেকেই আছে।
+        in_use: এই রেকর্ডটি অন্য রেকর্ড ব্যবহার করছে এবং মুছে ফেলা যাবে না।
+        changed: 'এর মধ্যে অন্য কেউ এই রেকর্ডটি পরিবর্তন করেছেন। পরিবর্তনগুলি দেখতে এটি আবার খুলুন।'
+        retry: 'ডেটাবেস ব্যস্ত। কিছুই সংরক্ষিত হয়নি - আবার চেষ্টা করুন।'
+        refused: 'ডেটাবেস এই রেকর্ডটি প্রত্যাখ্যান করেছে।'
+        input_required: 'এই তথ্যটি প্রয়োজন।'
+        input_choice: 'বিকল্পগুলোর একটি বেছে নিন।'
+        input_number: 'একটি সংখ্যা লিখুন।'
+        input_date: 'একটি সঠিক তারিখ লিখুন।'
+
+panel:
+    login:
+        title: সাইন ইন
+        username: ব্যবহারকারীর নাম
+        password: পাসওয়ার্ড
+        submit: সাইন ইন করুন
+    scope:
+        panel: প্যানেল
+        admin: প্রশাসন
+    nav:
+        main_menu: প্রধান মেনু
+        close_menu: মেনু বন্ধ করুন
+        dashboard: ড্যাশবোর্ড
+        section:
+            start: শুরু
+            main: প্রধান
+            account: অ্যাকাউন্ট
+    dashboard:
+        subtitle: আপনার উইজেট – টেনে আনুন, আকার বদলান, আরও যোগ করুন।
+        subtitle_own: উইজেটের আপনার নিজস্ব বিন্যাস।
+        empty_title: ড্যাশবোর্ডে কোনো উইজেট নেই
+        empty_text: “উইজেট যোগ করুন” দিয়ে প্রথমটি যোগ করুন।
+        add: উইজেট যোগ করুন
+        edit: সম্পাদনা
+        done: সম্পন্ন
+        more: আরও
+        reset: ডিফল্ট পুনরুদ্ধার করুন
+        reset_confirm: ডিফল্ট ড্যাশবোর্ড পুনরুদ্ধার করবেন? আপনার নিজস্ব বিন্যাস মুছে যাবে।
+        share: সবার জন্য ডিফল্ট করুন
+        share_confirm: এই বিন্যাসটি সবার জন্য ডিফল্ট করবেন?
+        share_hint: যাদের নিজস্ব বিন্যাস নেই, তারা সবাই এটি দেখবে।
+        remove: '“{title}” উইজেটটি সরান'
+        settings: 'সেটিংস: {title}'
+        toast:
+            failed: ড্যাশবোর্ড সংরক্ষণ করা যায়নি
+            shared: এই বিন্যাসটি এখন সবার জন্য ডিফল্ট
+        gallery:
+            title: একটি উইজেট যোগ করুন
+            search: উইজেট খুঁজুন
+            add: যোগ করুন
+            size: আকার
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {ড্যাশবোর্ডে আছে} other {ড্যাশবোর্ডে # বার}}'
+            empty: যোগ করার মতো কোনো উইজেট নেই।
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: ঘড়ি
+            description: একটি অ্যানালগ বা ডিজিটাল ঘড়ি, পাশে একটি দ্বিতীয় শহর সহ।
+            setting:
+                style: ডায়াল
+                zone: দ্বিতীয় শহর
+            style:
+                analog: অ্যানালগ
+                digital: ডিজিটাল
+            city:
+                none: কোনোটি নয়
+                utc: UTC
+                london: লন্ডন
+                warsaw: ওয়ারশ
+                berlin: বার্লিন
+                kyiv: কিয়েভ
+                new_york: নিউ ইয়র্ক
+                chicago: শিকাগো
+                los_angeles: লস অ্যাঞ্জেলেস
+                sao_paulo: সাও পাওলো
+                dubai: দুবাই
+                kolkata: কলকাতা
+                shanghai: সাংহাই
+                tokyo: টোকিও
+                sydney: সিডনি
+        quick_actions:
+            title: দ্রুত কার্যক্রম
+            description: রেকর্ড যোগ করার দিকে নিয়ে যাওয়া টাইল, iOS-এর শর্টকাটের মতো – কোনগুলি তা বেছে নিন।
+            setting: কোন কার্যক্রম (কোনোটি নয় = সব)
+            empty: আপনার ব্যবহারযোগ্য কোনো কার্যক্রম নেই।
+        note:
+            title: নোট
+            description: লেখার সময় সংরক্ষিত হওয়া একটি স্টিকি নোট। প্রত্যেকের নিজের আছে।
+            placeholder: কিছু লিখুন…
+            saving: সংরক্ষণ করা হচ্ছে…
+            saved: সংরক্ষিত
+    topbar:
+        open_menu: মেনু খুলুন
+        open_palette: কমান্ড প্যালেট খুলুন
+        search: খুঁজুন বা একটি কমান্ড লিখুন…
+    palette:
+        label: কমান্ড প্যালেট
+        placeholder: খুঁজুন বা একটি কমান্ড লিখুন…
+        search_label: প্যানেলে খুঁজুন
+        empty: '“{query}”-এর জন্য কিছু পাওয়া যায়নি'
+        navigate: নেভিগেট
+        open: খুলুন
+        close: বন্ধ করুন
+        hint_html: 'কোনো রেকর্ডের নাম লিখে দেখুন, অথবা কমান্ডের জন্য <b>&gt;</b>'
+        verb:
+            go: যান
+            open: খুলুন
+            run: চালান
+        group:
+            recent: সাম্প্রতিক
+            suggested: প্রস্তাবিত
+            navigation: নেভিগেশন
+            commands: কমান্ড
+        item:
+            panel_switch:
+                description: অন্য প্যানেলে যান
+            dashboard_edit:
+                name: ড্যাশবোর্ড সম্পাদনা করুন
+                description: উইজেট সরান এবং আকার বদলান
+                keywords: 'dashboard, ড্যাশবোর্ড, উইজেট, widgets, বিন্যাস, পুনর্বিন্যাস'
+            dashboard_add:
+                name: একটি উইজেট যোগ করুন
+                description: গ্যালারি থেকে একটি উইজেট বেছে নিন
+                keywords: 'dashboard, ড্যাশবোর্ড, নতুন উইজেট, widget, গ্যালারি'
+            dashboard_reset:
+                name: ডিফল্ট ড্যাশবোর্ড পুনরুদ্ধার করুন
+                description: উইজেটের নিজস্ব বিন্যাস ভুলে যান
+                keywords: 'dashboard, ড্যাশবোর্ড, রিসেট, reset, ডিফল্ট'
+            theme:
+                name: হালকা ও গাঢ় থিমের মধ্যে বদলান
+                description: প্যানেলের চেহারা বদলান
+                keywords: 'ডার্ক মোড, লাইট মোড, রং, dark, light, theme'
+    theme:
+        toggle: থিম বদলান
+        toggle_long: হালকা ও গাঢ় থিমের মধ্যে বদলান
+        choose: থিম
+        choose_long: রঙের থিম বেছে নিন
+        auto: সিস্টেম
+    user_menu:
+        impersonating: আপনি এই ব্যবহারকারী হিসেবে সাইন ইন করেছেন
+        exit_impersonation: নিজের অ্যাকাউন্টে ফিরে যান
+        label: ব্যবহারকারী মেনু
+        logout: সাইন আউট
+        anonymous: আপনি সাইন ইন করেননি

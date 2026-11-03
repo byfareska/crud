@@ -1,0 +1,138 @@
+{#
+    How the layout of a #[AsCrud] resource is drawn - see CrudLayoutRenderer. A resource's own template can replace any
+    of these blocks, or one group of its own with crud_<resource>_layout_<name>.
+
+    Every block gets: layout (CrudLayoutView: view LayoutPage::Form or ::Detail, compact in the preview drawer), node,
+    crud, label and help (translation keys; help is null when there is no such text).
+#}
+
+{# The heading of a group: its icon, its name and how many errors the form has in it. #}
+{% macro heading(layout, node, label, tag = 'h3') %}
+    {% set errors = layout.errors(node) %}
+    <{{ tag }} class="h6 fw-semibold d-flex align-items-center gap-2 mb-3">
+        {% if node.icon %}{{ crud_icon(node.icon) }}{% endif %}
+        <span>{{ label|trans }}</span>
+        {% if errors %}<span class="badge rounded-pill text-bg-danger" title="{{ 'crud.layout.errors'|trans({count: errors}) }}">{{ errors }}</span>{% endif %}
+    </{{ tag }}>
+{% endmacro %}
+
+{# The classes of a cell of the grid: its Span (12ths per breakpoint), or an equal share from the breakpoint up. #}
+{% macro col(span, breakpoint) %}
+    {%- if span is null -%}
+        {{- breakpoint.value ? 'col-' ~ breakpoint.value : 'col' -}}
+    {%- else -%}
+        {{- span.widths|map((width, at) => (at ? 'col-' ~ at ~ '-' : 'col-') ~ width)|join(' ') -}}
+    {%- endif -%}
+{% endmacro %}
+
+{# The tab bar and the panes; in the drawer the tabs are one under another. #}
+{% block layout_tabs %}
+    {% if layout.compact %}
+        {% for tab in tabs %}{{ crud_layout_part(layout, tab) }}{% endfor %}
+    {% else %}
+        {# Worked with the keyboard too: ← / → and Tab from one tab of a form into the next - see the tabs controller. #}
+        <div data-controller="tabs">
+            <div class="nav nav-tabs mb-3" role="tablist">
+                {% for tab in tabs %}
+                    {% set active = layout.isActive(tab) %}
+                    {% set errors = layout.errors(tab) %}
+                    {% set badge = layout.badge(tab) %}
+                    <button type="button" role="tab" id="{{ layout.domId(tab) }}-tab"
+                        class="nav-link d-flex align-items-center gap-2{{ active ? ' active' }}{{ errors ? ' text-danger' }}"
+                        aria-controls="{{ layout.domId(tab) }}" aria-selected="{{ active ? 'true' : 'false' }}"{{ active ? '' : ' tabindex="-1"' }}
+                                                data-tabs-target="tab" data-action="tabs#select keydown->tabs#walk" data-tabs-name-param="{{ tab.name }}"
+                    >
+                        {% if tab.icon %}{{ crud_icon(tab.icon) }}{% endif %}
+                        <span>{{ layout.label(tab)|trans }}</span>
+                        {% if badge is not null %}<span class="badge rounded-pill text-bg-secondary">{{ badge }}</span>{% endif %}
+                        {% if errors %}<span class="badge rounded-pill text-bg-danger" title="{{ 'crud.layout.errors'|trans({count: errors}) }}">{{ errors }}</span>{% endif %}
+                    </button>
+                {% endfor %}
+            </div>
+            <div>
+                {% for tab in tabs %}{{ crud_layout_part(layout, tab, {active: layout.isActive(tab)}) }}{% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block layout_tab %}
+    {% if layout.compact %}
+        <section class="mb-4 {{ node.class }}">
+            {{ _self.heading(layout, node, label) }}
+            {{ crud_layout(layout, node.children) }}
+        </section>
+    {% else %}
+        <div class="{{ active ? 'active' }} {{ node.class }}" id="{{ layout.domId(node) }}" role="tabpanel" aria-labelledby="{{ layout.domId(node) }}-tab" data-tabs-target="pane"{{ active ? '' : ' hidden' }}{% if node.showIf and layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form %} data-show-if="{{ node.showIf }}"{% endif %}>
+            {% if help %}<p class="text-body-secondary">{{ help|trans }}</p>{% endif %}
+            {{ crud_layout(layout, node.children) }}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{# Columns side by side; one left alone on a page takes the whole width, and in the drawer every one does. #}
+{% block layout_columns %}
+    <div class="row g-4">
+        {% for column in columns %}
+            {{ crud_layout_part(layout, column, {alone: columns|length == 1}) }}
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block layout_column %}
+    <div class="{{ alone or layout.compact ? 'col-12' : _self.col(node.span, constant('BREAKPOINT', node)) }} {{ node.class }}">
+        {% if label %}
+            {{ _self.heading(layout, node, label) }}
+            {% if help %}<p class="text-body-secondary">{{ help|trans }}</p>{% endif %}
+        {% endif %}
+        {{ crud_layout(layout, node.children) }}
+    </div>
+{% endblock %}
+
+{#
+    A form fieldset is a <fieldset>, a group of details a <section>. One that folds is a <details>: open while it
+    holds an error, and always in the drawer. .crud-fieldset: what the show-if controller hides.
+#}
+{% block layout_fieldset %}
+    {% set foldable = node.foldable and not layout.compact %}
+    {% set tag = foldable ? 'details' : (layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form ? 'fieldset' : 'section') %}
+    {% set open = not node.collapsed or layout.errors(node) > 0 %}
+    <{{ tag }} class="crud-fieldset mb-4{{ label ? ' border rounded p-3' : '' }} {{ node.class }}"{{ foldable and open ? ' open' }}{% if node.showIf and layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form %} data-show-if="{{ node.showIf }}"{% endif %}>
+        {% if label %}
+            {{ _self.heading(layout, node, label, foldable ? 'summary' : (tag == 'fieldset' ? 'legend' : 'h3')) }}
+            {% if help %}<p class="text-body-secondary">{{ help|trans }}</p>{% endif %}
+        {% endif %}
+        {{ crud_layout(layout, node.children) }}
+    </{{ tag }}>
+{% endblock %}
+
+{% block layout_row %}
+    <div class="row g-3">
+        {% for field in node.children %}
+            <div class="{{ layout.compact ? 'col-12' : _self.col(node.spanOf(field), node.breakpoint) }} {{ field.class }}">{{ crud_layout_part(layout, field) }}</div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{#
+    A field of the form (a section another part adds is one too, and a filler of the form), a section under the
+    details, or a value of the record.
+#}
+{% block layout_field %}
+    {% set inForm = layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form %}
+    {% if inForm and layout.filler(node.name) %}
+        {{ include('@CrudTheme/crud/_filler.html.twig', {filler: layout.filler(node.name), crud: crud}) }}
+    {% elseif inForm %}
+        {{ form_row(layout.form[node.name], node.label ? {} : {label: false}) }}
+    {% elseif layout.section(node.name) %}
+        {% set section = layout.section(node.name) %}
+        {# A section under the details of every resource is told which one (AsCrudDetailsSection::EVERY), as on the page. #}
+        {{ component(section.component, {id: layout.id}|merge(section.resource == '*' ? {resource: crud.name} : {})) }}
+    {% else %}
+        {% set row = layout.row(node.name) %}
+        <dl class="mb-3">
+            {% if node.label %}<dt class="small text-body-secondary fw-normal">{{ row.column.label|trans }}</dt>{% endif %}
+            <dd class="mb-0">{{ crud_value(crud, row.column, row.value, layout.item, 'detail') }}</dd>
+        </dl>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{# A KPI tile. trend: up | down | flat; accent: any CSS colour of its icon. #}
+{% props icon, label, value, caption = null, trend = 'flat', accent = null %}
+{% set tone = trend == 'up' ? 'success' : (trend == 'down' ? 'danger' : 'secondary') %}
+<div {{ attributes.defaults({class: 'card border-0 shadow-sm h-100'}) }}>
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <span class="text-body-secondary small">{{ label }}</span>
+            <span class="bg-primary-subtle text-primary-emphasis rounded-3 px-2 py-1">{{ crud_icon(icon, '', accent ? {style: 'color: ' ~ accent} : {}) }}</span>
+        </div>
+        <div class="h3 fw-semibold mb-1">{{ value }}</div>
+        {% if caption %}
+            <span class="badge bg-{{ tone }}-subtle text-{{ tone }}-emphasis text-wrap text-start">{{ crud_icon(trend == 'flat' ? 'dash' : (trend == 'up' ? 'arrow-up-short' : 'arrow-down-short')) }}{{ caption }}</span>
+        {% endif %}
+    </div>
+</div>

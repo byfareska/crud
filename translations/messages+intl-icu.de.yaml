@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Speichern
+        save_new: 'Speichern und weiteren hinzufügen'
+        save_edit: 'Speichern und weiter bearbeiten'
+        cancel: Abbrechen
+        confirm: Bestätigen
+        close: Schließen
+    list:
+        shown_html: '{shown, plural, =0 {Angezeigt: <strong>0</strong> von {total, number}} =1 {Angezeigt: <strong>{from, number}</strong> von {total, number}} other {Angezeigt: <strong>{from, number}–{to, number}</strong> von {total, number}}}'
+        shown_more_html: '<strong>{from, number}–{to, number}</strong> von mehr als {total, number}'
+        per_page: 'Pro Seite'
+    timezone:
+        region:
+            africa: Afrika
+            america: Amerika
+            antarctica: Antarktis
+            arctic: Arktis
+            asia: Asien
+            atlantic: Atlantik
+            australia: Australien
+            europe: Europa
+            indian: Indischer Ozean
+            pacific: Pazifik
+            other: Sonstige
+    time_ago:
+        now: gerade eben
+        minutes: 'vor {count} Min.'
+        hours: '{count, plural, one {vor # Stunde} other {vor # Stunden}}'
+        days: '{count, plural, one {gestern} other {vor # Tagen}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Allgemein
+            users: Benutzer
+            sales: Vertrieb
+            content: Inhalte
+            system: System
+        number: '{value, number}'
+    pagination:
+        previous: Vorherige Seite
+        next: Nächste Seite
+        previous_tip: Vorherige Seite
+        next_tip: Nächste Seite
+        jump: Gehe zu Seite
+        jump_hint: Seitenzahl eingeben
+
+crud:
+    palette:
+        list: Liste
+        create: Neuen Datensatz hinzufügen
+        own: Ihre Seite
+    total_html: 'Gesamt: <strong>{count, number}</strong>'
+    total_more_html: 'Gesamt: <strong>mehr als {count, number}</strong>'
+    search: Suchen
+    clear_filters: Filter zurücksetzen
+    sort_tip: 'Sortieren: die angeklickte Spalte kommt zuerst; nacheinander: aufsteigend, absteigend, aus'
+    empty: Keine Ergebnisse.
+    selected: 'Ausgewählt: {count, number}'
+    select: 'Auswählen'
+    select_page: 'Alle auf dieser Seite auswählen'
+    select_all_matching: 'Alle {count, number} passenden auswählen'
+    all_matching_selected: 'Alle {count, number} passenden sind ausgewählt'
+    clear_selection: 'Auswahl aufheben'
+    actions: Aktionen
+    filter:
+        title: 'Filter'
+        more: 'Weitere Filter'
+        query: Suchen
+        any: Alle
+        'yes': 'Ja'
+        'no': 'Nein'
+        from: 'Von'
+        to: 'Bis'
+        clear: 'Leeren'
+        time: 'Uhrzeit'
+        comparison:
+            label: 'Vergleich für {field}'
+            eq: 'gleich'
+            neq: 'ungleich'
+            contains: 'enthält'
+            not_contains: 'enthält nicht'
+            starts: 'beginnt mit'
+            ends: 'endet mit'
+            gt: 'größer als'
+            gte: 'größer oder gleich'
+            lt: 'kleiner als'
+            lte: 'kleiner oder gleich'
+            between: 'zwischen'
+            in: 'ist eines von'
+            not_in: 'ist keines von'
+            empty: 'ist leer'
+            filled: 'ist nicht leer'
+    confirm_delete:
+        message: Diesen Datensatz löschen?
+        hint: Dies kann nicht rückgängig gemacht werden.
+    confirm_bulk_delete:
+        message: 'Die ausgewählten Datensätze ({count, number}) löschen?'
+    action:
+        details: Details
+        edit: Bearbeiten
+        delete: Löschen
+        duplicate: 'Duplizieren'
+        list: Liste
+    layout:
+        errors: '{count, plural, one {# Fehler} other {# Fehler}}'
+    toast:
+        created: Hinzugefügt
+        updated: Änderungen gespeichert
+        deleted: Gelöscht
+        delete_failed: Löschen fehlgeschlagen
+        bulk_deleted: 'Gelöscht: {count, number}'
+        bulk_delete_failed: 'Nicht gelöscht: {count, number}'
+        gone: Dieser Datensatz existiert nicht mehr
+        bulk_failed: 'Die Aktion wurde nicht ausgeführt'
+        action_failed: 'Die Aktion ist fehlgeschlagen'
+        done: 'Erledigt'
+    value:
+        'yes': 'Ja'
+        'no': 'Nein'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Nicht gefunden.
+        forbidden: Dazu sind Sie nicht berechtigt.
+        taken: Ein solcher Datensatz existiert bereits.
+        in_use: Dieser Datensatz wird von anderen Datensätzen verwendet und kann nicht gelöscht werden.
+        changed: 'Jemand anderes hat diesen Datensatz inzwischen geändert. Öffnen Sie ihn erneut, um die Änderungen zu sehen.'
+        retry: 'Die Datenbank ist ausgelastet. Es wurde nichts gespeichert - versuchen Sie es erneut.'
+        refused: 'Die Datenbank hat diesen Datensatz abgelehnt.'
+        input_required: 'Diese Angabe ist erforderlich.'
+        input_choice: 'Wählen Sie eine der Möglichkeiten.'
+        input_number: 'Geben Sie eine Zahl ein.'
+        input_date: 'Geben Sie ein gültiges Datum ein.'
+
+panel:
+    login:
+        title: Anmelden
+        username: Benutzername
+        password: Passwort
+        submit: Anmelden
+    scope:
+        panel: Panel
+        admin: Administration
+    nav:
+        main_menu: Hauptmenü
+        close_menu: Menü schließen
+        dashboard: Dashboard
+        section:
+            start: Start
+            main: Hauptbereich
+            account: Konto
+    dashboard:
+        subtitle: Ihre Widgets – verschieben, Größe ändern, weitere hinzufügen.
+        subtitle_own: Ihre eigene Anordnung der Widgets.
+        empty_title: Auf dem Dashboard gibt es keine Widgets
+        empty_text: Fügen Sie das erste mit „Widget hinzufügen“ hinzu.
+        add: Widget hinzufügen
+        edit: Bearbeiten
+        done: Fertig
+        more: Mehr
+        reset: Standard wiederherstellen
+        reset_confirm: Standard-Dashboard wiederherstellen? Ihre eigene Anordnung geht verloren.
+        share: Als Standard für alle festlegen
+        share_confirm: Diese Anordnung als Standard für alle festlegen?
+        share_hint: Alle ohne eigene Anordnung sehen sie.
+        remove: 'Widget „{title}“ entfernen'
+        settings: 'Einstellungen: {title}'
+        toast:
+            failed: Das Dashboard konnte nicht gespeichert werden
+            shared: Die Anordnung ist jetzt der Standard für alle
+        gallery:
+            title: Widget hinzufügen
+            search: Widgets suchen
+            add: Hinzufügen
+            size: Größe
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {auf dem Dashboard} other {# Mal auf dem Dashboard}}'
+            empty: Es gibt keine Widgets zum Hinzufügen.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Uhr
+            description: Eine analoge oder digitale Uhr, mit einer zweiten Stadt daneben.
+            setting:
+                style: Zifferblatt
+                zone: Zweite Stadt
+            style:
+                analog: Analog
+                digital: Digital
+            city:
+                none: Keine
+                utc: UTC
+                london: London
+                warsaw: Warschau
+                berlin: Berlin
+                kyiv: Kyjiw
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Kalkutta
+                shanghai: Shanghai
+                tokyo: Tokio
+                sydney: Sydney
+        quick_actions:
+            title: Schnellaktionen
+            description: Kacheln zum Hinzufügen von Datensätzen, wie die Kurzbefehle von iOS – wählen Sie, welche.
+            setting: Welche Aktionen (keine = alle)
+            empty: Es gibt keine Aktionen, die Sie verwenden können.
+        note:
+            title: Notiz
+            description: Ein Haftzettel, der beim Tippen gespeichert wird. Jeder hat seinen eigenen.
+            placeholder: Schreiben Sie etwas…
+            saving: Wird gespeichert…
+            saved: Gespeichert
+    topbar:
+        open_menu: Menü öffnen
+        open_palette: Befehlspalette öffnen
+        search: Suchen oder Befehl eingeben…
+    palette:
+        label: Befehlspalette
+        placeholder: Suchen oder Befehl eingeben…
+        search_label: Im Panel suchen
+        empty: 'Nichts gefunden für „{query}“'
+        navigate: navigieren
+        open: öffnen
+        close: schließen
+        hint_html: 'Versuchen Sie den Namen eines Datensatzes oder <b>&gt;</b> für Befehle'
+        verb:
+            go: Gehe zu
+            open: Öffnen
+            run: Ausführen
+        group:
+            recent: Zuletzt verwendet
+            suggested: Vorgeschlagen
+            navigation: Navigation
+            commands: Befehle
+        item:
+            panel_switch:
+                description: Zu einem anderen Panel wechseln
+            dashboard_edit:
+                name: Dashboard bearbeiten
+                description: Widgets verschieben und ihre Größe ändern
+                keywords: 'dashboard, widgets, anordnung, layout, umstellen'
+            dashboard_add:
+                name: Widget hinzufügen
+                description: Ein Widget aus der Galerie auswählen
+                keywords: 'dashboard, neues widget, galerie'
+            dashboard_reset:
+                name: Standard-Dashboard wiederherstellen
+                description: Die eigene Anordnung der Widgets verwerfen
+                keywords: 'dashboard, zurücksetzen, reset, standard'
+            theme:
+                name: Zwischen hellem und dunklem Design wechseln
+                description: Das Aussehen des Panels ändern
+                keywords: 'dunkelmodus, hellmodus, farben, dark mode, light mode, theme'
+    theme:
+        toggle: Design wechseln
+        toggle_long: Zwischen hellem und dunklem Design wechseln
+        choose: Design
+        choose_long: Farbdesign auswählen
+        auto: System
+    user_menu:
+        impersonating: Sie sind als dieser Benutzer angemeldet
+        exit_impersonation: Zurück zum eigenen Konto
+        label: Benutzermenü
+        logout: Abmelden
+        anonymous: Sie sind nicht angemeldet

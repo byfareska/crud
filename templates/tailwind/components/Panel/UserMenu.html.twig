@@ -1,0 +1,31 @@
+{# The one signed in, as panel_account() (PanelAccount) tells: also without Symfony Security, also on a firewall without "logout". Block "items": more entries. #}
+{% set account = panel_account() %}
+{% set name = account.name ?? '' %}
+{% set item = 'flex w-full items-center gap-2 px-3 py-2 text-start text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-white/10' %}
+<details {{ attributes.defaults({class: 'relative', 'data-dropdown': true, 'data-controller': 'dropdown', 'data-action': 'toggle->dropdown#toggle keydown.esc->dropdown#escape'}) }}>
+    <summary class="flex cursor-pointer list-none rounded-full [&::-webkit-details-marker]:hidden" aria-label="{{ 'panel.user_menu.label'|trans }}">
+        <twig:Ui:Avatar :name="name" :src="account.user.avatar ?? null" />
+    </summary>
+    <div class="z-50 min-w-56 rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10" data-dropdown-target="menu" data-action="click->dropdown#choose">
+        {% if account.user %}
+            <div class="mb-1 border-b border-gray-100 px-3 py-2 dark:border-white/10">
+                <div class="text-sm font-semibold">{{ name }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">{{ account.identifier }}</div>
+            </div>
+            {# Somebody signed in as this user (switch_user): the way back to their own account. #}
+            {% if account.impersonationExitUrl %}
+                <div class="px-3 pt-2 text-xs font-semibold text-gray-500 dark:text-gray-400">{{ 'panel.user_menu.impersonating'|trans }}</div>
+                <a class="{{ item }}" href="{{ account.impersonationExitUrl }}" data-turbo="false">{{ crud_icon('arrow-return-left') }}{{ 'panel.user_menu.exit_impersonation'|trans }}</a>
+                <div class="my-1 border-t border-gray-100 dark:border-white/10"></div>
+            {% endif %}
+            {% block items %}{% endblock %}
+            {% if account.logoutUrl %}
+                <form method="post" action="{{ account.logoutUrl }}" data-turbo="false">
+                    <button class="{{ item }}" type="submit">{{ crud_icon('box-arrow-right') }}{{ 'panel.user_menu.logout'|trans }}</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <div class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">{{ 'panel.user_menu.anonymous'|trans }}</div>
+        {% endif %}
+    </div>
+</details>

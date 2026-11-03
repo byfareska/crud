@@ -1,0 +1,19 @@
+{#
+    A filler of an add form (CrudFormFiller): a field to paste something into, and its button (the live action "fill"
+    of Crud:Form), which writes the visible fields. A <details>: no script, and open again after its own re-render.
+    Its field has no name: it is no field of the form. Given: filler {name, input, filled, used}, crud.
+#}
+{% set key = crud.key('filler.' ~ filler.name) %}
+<details class="mb-4 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-white/10 dark:bg-gray-900"{{ filler.used ? ' open' }}>
+    <summary class="cursor-pointer font-semibold">{{ crud_icon('magic', 'me-1') }}{{ (key ~ '.title')|trans }}</summary>
+    <textarea class="mt-2 block w-full rounded-lg bg-white px-3 py-2 font-mono text-sm outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:outline-indigo-600 dark:bg-white/5 dark:outline-white/10" rows="5" spellcheck="false" aria-label="{{ (key ~ '.title')|trans }}" placeholder="{{ (key ~ '.placeholder')|trans }}" data-model="norender|fillerInput[{{ filler.name }}]">{{ filler.input }}</textarea>
+    <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ (key ~ '.help')|trans }}</div>
+    <button class="mt-2 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:ring-white/10 dark:hover:bg-white/5" type="button" data-action="live#action" data-live-action-param="fill" data-live-filler-param="{{ filler.name }}" data-loading="addAttribute(disabled)">{{ crud_icon('magic') }}{{ (key ~ '.button')|trans }}</button>
+    {% if filler.filled %}
+        {% if filler.filled.error %}
+            <div class="mt-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400"><div class="font-semibold">{{ (key ~ '.unreadable')|trans }}</div>{{ filler.filled.error }}</div>
+        {% elseif filler.filled.notes is not empty %}
+            <ul class="mt-2 list-disc ps-5 text-sm">{% for note in filler.filled.notes %}<li>{{ note.key|trans(note.parameters) }}</li>{% endfor %}</ul>
+        {% endif %}
+    {% endif %}
+</details>

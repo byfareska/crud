@@ -1,0 +1,20 @@
+{#
+    A dialog (<dialog class="modal">). Open it with <button commandfor="id" command="show-modal">, or openOverlay() in a
+    controller; close it with command="close". Its events: overlay:show, overlay:shown, overlay:hidden;
+    data-overlay-target="autofocus" gets the focus once it is shown. A click beside it closes it (asked first, as Esc
+    is). size: sm, lg, xl; centered = false puts it nearer the top.
+#}
+{% props id, size = null, centered = true %}
+{% set widths = {sm: 'max-w-sm', lg: 'max-w-3xl', xl: 'max-w-5xl'} %}
+<dialog {{ attributes.defaults({
+    class: 'modal' ~ (centered ? '' : ' modal-top pt-[10vh]'),
+    id: id,
+    closedby: 'any',
+    'data-controller': 'overlay',
+    'data-action': 'overlay:shown->overlay#focus',
+}) }}>
+    <div class="modal-box w-[calc(100%-2rem)] {{ widths[size] ?? 'max-w-lg' }} {{ centered ? '' : 'mx-auto rounded-box' }} p-0">
+        {% block content %}{% endblock %}
+    </div>
+    <button type="button" class="modal-backdrop" commandfor="{{ id }}" command="request-close" tabindex="-1" aria-hidden="true"></button>
+</dialog>

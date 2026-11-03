@@ -1,0 +1,8 @@
+{#
+    The entries of the panel: byfareska_crud.entries ("app" by default), then byfareska_crud.scopes.<scope>.entries,
+    "{theme}" in a name being the theme of the page - by the tool of byfareska_crud.assets: Vite through Symfony Reprise,
+    Webpack Encore, the importmap of AssetMapper, or none (a layout of your own loads them). Tracked: after a new build
+    - or on the way to a panel with other entries - Turbo loads the next page whole, so a tab does not go on with the
+    scripts and styles of another.
+#}
+{{ panel_assets(panel_entries()) }}

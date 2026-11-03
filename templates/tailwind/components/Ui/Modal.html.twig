@@ -1,0 +1,16 @@
+{#
+    A dialog (<dialog>). Open it with <button commandfor="id" command="show-modal">, or openOverlay() in a controller;
+    close it with command="close". Its events: overlay:show, overlay:shown, overlay:hidden; data-overlay-target="autofocus"
+    gets the focus once it is shown. A click outside closes it (closedby="any"). size: sm, lg, xl.
+#}
+{% props id, size = null, centered = true %}
+{% set widths = {sm: 'max-w-sm', lg: 'max-w-3xl', xl: 'max-w-5xl'} %}
+<dialog {{ attributes.defaults({
+    class: 'w-[calc(100%-2rem)] ' ~ (widths[size] ?? 'max-w-lg') ~ ' ' ~ (centered ? 'm-auto' : 'mx-auto mt-[10vh]') ~ ' rounded-xl bg-white p-0 text-gray-900 shadow-xl ring-1 ring-black/5 backdrop:bg-gray-950/50 dark:bg-gray-900 dark:text-gray-100 dark:ring-white/10',
+    id: id,
+    closedby: 'any',
+    'data-controller': 'overlay',
+    'data-action': 'overlay:shown->overlay#focus',
+}) }}>
+    {% block content %}{% endblock %}
+</dialog>

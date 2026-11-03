@@ -1,0 +1,6 @@
+{% props href, icon, label, badge = null, badgeVariant = null, active = false %}
+{% set badgeClasses = {danger: 'badge-error', warning: 'badge-warning', success: 'badge-success', info: 'badge-info'} %}
+<a {{ attributes.defaults({class: 'flex items-center gap-2 font-medium' ~ (active ? ' menu-active' : ''), href: href, 'data-nav-link': true}) }}{% if active %} aria-current="page"{% endif %}>
+    {{ crud_icon(icon) }} <span class="flex-1">{{ label }}</span>
+    {% if badge %}<span class="badge badge-sm {{ badgeClasses[badgeVariant] ?? 'badge-ghost' }}">{{ badge }}</span>{% endif %}
+</a>

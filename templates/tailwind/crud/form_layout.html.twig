@@ -1,0 +1,74 @@
+{#
+    The form theme of the CRUD forms (and the filters of the lists) of this theme: Symfony's tailwind_2_layout with the
+    classes of this theme. A theme of the application puts a template of this name into its directory to draw the
+    fields otherwise.
+#}
+{% use 'tailwind_2_layout.html.twig' %}
+
+{%- block form_row -%}
+    {%- set row_class = row_class|default('mb-4') -%}
+    {{- parent() -}}
+{%- endblock form_row -%}
+
+{%- block checkbox_row -%}
+    {%- set row_class = row_class|default('mb-4') -%}
+    {{- parent() -}}
+{%- endblock checkbox_row -%}
+
+{%- block widget_attributes -%}
+    {%- set widget_class = widget_class|default('block w-full rounded-lg bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10 dark:placeholder:text-gray-500') -%}
+    {%- set widget_disabled_class = widget_disabled_class|default('cursor-not-allowed opacity-60') -%}
+    {%- set widget_errors_class = widget_errors_class|default('outline-red-500 dark:outline-red-400') -%}
+    {%- if errors|length -%}{%- set attr = attr|merge({'aria-invalid': 'true'}) -%}{%- endif -%}
+    {{- parent() -}}
+{%- endblock widget_attributes -%}
+
+{%- block checkbox_widget -%}
+    {%- set widget_class = widget_class|default('me-2 size-4 accent-indigo-600') -%}
+    {{- parent() -}}
+{%- endblock checkbox_widget -%}
+
+{%- block radio_widget -%}
+    {%- set widget_class = widget_class|default('me-2 size-4 accent-indigo-600') -%}
+    {{- parent() -}}
+{%- endblock radio_widget -%}
+
+{# The currency beside the amount, not above it. #}
+{%- block money_widget -%}
+    {%- set prepend = not (money_pattern starts with '{{') -%}
+    {%- set append = not (money_pattern ends with '}}') -%}
+    {%- if prepend or append -%}
+        <div class="flex items-center gap-2">
+            {%- if prepend -%}<span class="text-sm text-gray-500 dark:text-gray-400">{{ money_pattern|form_encode_currency }}</span>{%- endif -%}
+            {{- block('form_widget_simple') -}}
+            {%- if append -%}<span class="text-sm text-gray-500 dark:text-gray-400">{{ money_pattern|form_encode_currency }}</span>{%- endif -%}
+        </div>
+    {%- else -%}
+        {{- block('form_widget_simple') -}}
+    {%- endif -%}
+{%- endblock money_widget -%}
+
+{%- block form_label -%}
+    {%- set label_class = label_class|default('mb-1 block text-sm font-medium text-gray-900 dark:text-gray-100') -%}
+    {{- parent() -}}
+{%- endblock form_label -%}
+
+{%- block checkbox_label -%}
+    {%- set label_class = label_class|default('text-sm text-gray-900 dark:text-gray-100') -%}
+    {{- block('form_label') -}}
+{%- endblock checkbox_label -%}
+
+{%- block radio_label -%}
+    {%- set label_class = label_class|default('text-sm text-gray-900 dark:text-gray-100') -%}
+    {{- block('form_label') -}}
+{%- endblock radio_label -%}
+
+{%- block form_help -%}
+    {%- set help_class = help_class|default('mt-1 text-sm text-gray-500 dark:text-gray-400') -%}
+    {{- parent() -}}
+{%- endblock form_help -%}
+
+{%- block form_errors -%}
+    {%- set error_item_class = error_item_class|default('mt-1 text-sm text-red-600 dark:text-red-400') -%}
+    {{- parent() -}}
+{%- endblock form_errors -%}

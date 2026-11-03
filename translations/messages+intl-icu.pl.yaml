@@ -1,0 +1,278 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Zapisz
+        save_new: 'Zapisz i dodaj kolejny'
+        save_edit: 'Zapisz i edytuj dalej'
+        cancel: Anuluj
+        confirm: Potwierdź
+        close: Zamknij
+    list:
+        shown_html: '{shown, plural, =0 {Pokazano <strong>0</strong> z {total, number}} =1 {Pokazano <strong>{from, number}</strong> z {total, number}} other {Pokazano <strong>{from, number}–{to, number}</strong> z {total, number}}}'
+        shown_more_html: 'Pokazano <strong>{from, number}–{to, number}</strong> z ponad {total, number}'
+        per_page: 'Na stronę'
+    timezone:
+        region:
+            africa: Afryka
+            america: Ameryka
+            antarctica: Antarktyda
+            arctic: Arktyka
+            asia: Azja
+            atlantic: Atlantyk
+            australia: Australia
+            europe: Europa
+            indian: Ocean Indyjski
+            pacific: Pacyfik
+            other: Inne
+    time_ago:
+        now: przed chwilą
+        minutes: '{count} min temu'
+        hours: '{count} godz. temu'
+        days: '{count, plural, one {wczoraj} few {# dni temu} many {# dni temu} other {# dnia temu}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Ogólne
+            users: Użytkownicy
+            sales: Sprzedaż
+            content: Treści
+            system: System
+        number: '{value, number}'
+    pagination:
+        previous: Poprzednia strona
+        next: Następna strona
+        previous_tip: Poprzednia strona
+        next_tip: Następna strona
+        jump: Przejdź do strony
+        jump_hint: Wpisz numer strony
+
+crud:
+    palette:
+        list: Lista
+        create: Dodaj nowy rekord
+        own: Twoja strona
+    total_html: 'Razem: <strong>{count, number}</strong>'
+    total_more_html: 'Razem: <strong>ponad {count, number}</strong>'
+    search: Szukaj
+    clear_filters: Wyczyść filtry
+    sort_tip: 'Sortuj: kliknięta kolumna idzie na początek; pierwsza: rosnąco, malejąco, wyłącz'
+    empty: Brak wyników.
+    selected: 'Zaznaczono: {count, number}'
+    select: 'Zaznacz'
+    select_page: 'Zaznacz wszystkie na tej stronie'
+    select_all_matching: 'Zaznacz wszystkie pasujące do filtrów ({count, number})'
+    all_matching_selected: 'Zaznaczono wszystkie pasujące do filtrów: {count, number}'
+    clear_selection: 'Wyczyść zaznaczenie'
+    actions: Akcje
+    filter:
+        title: 'Filtry'
+        more: 'Więcej filtrów'
+        query: Szukaj
+        any: Wszystkie
+        'yes': Tak
+        'no': Nie
+        from: 'Od'
+        to: 'Do'
+        clear: 'Wyczyść'
+        time: 'Godzina'
+        comparison:
+            label: 'Sposób porównania: {field}'
+            eq: 'równa się'
+            neq: 'różne od'
+            contains: 'zawiera'
+            not_contains: 'nie zawiera'
+            starts: 'zaczyna się od'
+            ends: 'kończy się na'
+            gt: 'większe niż'
+            gte: 'większe lub równe'
+            lt: 'mniejsze niż'
+            lte: 'mniejsze lub równe'
+            between: 'między'
+            in: 'jest jednym z'
+            not_in: 'nie jest żadnym z'
+            empty: 'jest puste'
+            filled: 'nie jest puste'
+    confirm_delete:
+        message: Usunąć ten rekord?
+        hint: Tej operacji nie można cofnąć.
+    confirm_bulk_delete:
+        message: 'Usunąć zaznaczone rekordy ({count, number})?'
+    action:
+        details: Szczegóły
+        edit: Edytuj
+        delete: Usuń
+        duplicate: 'Duplikuj'
+        list: Lista
+    layout:
+        errors: '{count, plural, one {# błąd} few {# błędy} many {# błędów} other {# błędu}}'
+    toast:
+        created: Dodano
+        updated: Zapisano zmiany
+        deleted: Usunięto
+        delete_failed: Nie udało się usunąć
+        bulk_deleted: 'Usunięto: {count, number}'
+        bulk_delete_failed: 'Nie usunięto: {count, number}'
+        gone: Ten rekord już nie istnieje
+        bulk_failed: 'Nie wykonano akcji'
+        action_failed: 'Nie udało się wykonać akcji'
+        done: 'Gotowe'
+    value:
+        'yes': Tak
+        'no': Nie
+        datetime: '{at, date, short} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Nie znaleziono.
+        forbidden: Brak uprawnień.
+        taken: Taki rekord już istnieje.
+        in_use: Ten rekord jest używany przez inne i nie może zostać usunięty.
+        changed: 'Ktoś inny zmienił ten rekord w międzyczasie. Otwórz go ponownie, aby zobaczyć zmiany.'
+        retry: 'Baza danych jest zajęta. Nic nie zostało zapisane - spróbuj ponownie.'
+        refused: 'Baza danych odrzuciła ten rekord.'
+        input_required: 'Ta odpowiedź jest wymagana.'
+        input_choice: 'Wybierz jedną z opcji.'
+        input_number: 'Wpisz liczbę.'
+        input_date: 'Wpisz poprawną datę.'
+
+panel:
+    login:
+        title: Logowanie
+        username: Login
+        password: Hasło
+        submit: Zaloguj
+    scope:
+        panel: Panel
+        admin: Administracja
+    nav:
+        main_menu: Menu główne
+        close_menu: Zamknij menu
+        dashboard: Pulpit
+        section:
+            start: Start
+            main: Główne
+            account: Konto
+    dashboard:
+        subtitle: Twoje widgety - przeciągnij, zmień rozmiar, dodaj kolejne.
+        subtitle_own: Twój własny układ widgetów.
+        empty_title: Na pulpicie nie ma widgetów
+        empty_text: Dodaj pierwszy przyciskiem „Dodaj widget”.
+        add: Dodaj widget
+        edit: Edytuj
+        done: Gotowe
+        more: Więcej
+        reset: Przywróć domyślny
+        reset_confirm: Przywrócić domyślny układ pulpitu? Twój własny zostanie zapomniany.
+        share: Ustaw jako domyślny dla wszystkich
+        share_confirm: Ustawić ten układ jako domyślny dla wszystkich?
+        share_hint: Zobaczą go wszyscy, którzy nie mają własnego układu.
+        remove: 'Usuń widget „{title}”'
+        settings: 'Ustawienia: {title}'
+        toast:
+            failed: Nie udało się zapisać pulpitu
+            shared: Układ jest teraz domyślny dla wszystkich
+        gallery:
+            title: Dodaj widget
+            search: Szukaj widgetu
+            add: Dodaj
+            size: Rozmiar
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {na pulpicie} few {# razy na pulpicie} many {# razy na pulpicie} other {# razy na pulpicie}}'
+            empty: Nie ma widgetów do dodania.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Zegar
+            description: Zegar analogowy lub cyfrowy, z drugim miastem obok.
+            setting:
+                style: Tarcza
+                zone: Drugie miasto
+            style:
+                analog: Analogowa
+                digital: Cyfrowa
+            city:
+                none: Brak
+                utc: UTC
+                london: Londyn
+                warsaw: Warszawa
+                berlin: Berlin
+                kyiv: Kijów
+                new_york: Nowy Jork
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubaj
+                kolkata: Kalkuta
+                shanghai: Szanghaj
+                tokyo: Tokio
+                sydney: Sydney
+        quick_actions:
+            title: Szybkie akcje
+            description: Kafelki prowadzące do dodawania rekordów, jak skróty w iOS - wybierz, które.
+            setting: Które akcje (żadna = wszystkie)
+            empty: Nie ma akcji, których możesz użyć.
+        note:
+            title: Notatka
+            description: Karteczka z tekstem, zapisywana w trakcie pisania. Każdy ma swoją.
+            placeholder: Zapisz coś…
+            saving: Zapisywanie…
+            saved: Zapisano
+    topbar:
+        open_menu: Otwórz menu
+        open_palette: Otwórz paletę poleceń
+        search: Szukaj lub wpisz polecenie…
+    palette:
+        label: Paleta poleceń
+        placeholder: Szukaj lub wpisz polecenie…
+        search_label: Szukaj w panelu
+        empty: 'Nic nie znaleziono dla „{query}”'
+        navigate: nawigacja
+        open: otwórz
+        close: zamknij
+        hint_html: 'Spróbuj wpisać nazwę rekordu albo <b>&gt;</b> dla poleceń'
+        verb:
+            go: Przejdź
+            open: Otwórz
+            run: Uruchom
+        group:
+            recent: Ostatnie
+            suggested: Sugerowane
+            navigation: Nawigacja
+            commands: Polecenia
+        # What the palette says about its items. Keywords are search terms that are not shown, separated by commas.
+        item:
+            panel_switch:
+                description: Przejdź do innego panelu
+            dashboard_edit:
+                name: Edytuj pulpit
+                description: Przesuwaj i zmieniaj rozmiar widgetów
+                keywords: 'dashboard, widgety, układ, przestaw'
+            dashboard_add:
+                name: Dodaj widget
+                description: Wybierz widget z galerii
+                keywords: 'dashboard, pulpit, nowy widget, galeria'
+            dashboard_reset:
+                name: Przywróć domyślny pulpit
+                description: Zapomnij własny układ widgetów
+                keywords: 'dashboard, reset, układ domyślny'
+            theme:
+                name: Przełącz motyw jasny / ciemny
+                description: Zmień wygląd panelu
+                keywords: 'tryb ciemny, tryb jasny, kolory, dark, light, theme'
+    theme:
+        toggle: Przełącz motyw
+        toggle_long: Przełącz motyw jasny/ciemny
+        choose: Motyw
+        choose_long: Wybierz motyw kolorystyczny
+        auto: Systemowy
+    user_menu:
+        impersonating: Jesteś zalogowany jako ten użytkownik
+        exit_impersonation: Wróć na swoje konto
+        label: Menu użytkownika
+        logout: Wyloguj
+        anonymous: Nie jesteś zalogowany

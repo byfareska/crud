@@ -1,0 +1,100 @@
+/*
+ * The fields to search in (symfony/ux-autocomplete: Tom Select) in the look of the inputs of the "tailwind" theme,
+ * light and dark (data-theme="dark" on <html>). Load it after tom-select.default.css:
+ *
+ *     import 'tom-select/dist/css/tom-select.default.css';
+ *     import '@byfareska/crud/styles/tom-select.tailwind.css';
+ */
+.ts-control,
+.ts-wrapper.single .ts-control,
+.ts-wrapper.single.input-active .ts-control {
+    border: 0;
+    border-radius: 0.5rem;
+    outline: 1px solid #d1d5db;
+    outline-offset: -1px;
+    background: #fff;
+    box-shadow: none;
+    padding: 0.375rem 0.75rem;
+    color: #111827;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.ts-control input {
+    color: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.ts-control input::placeholder {
+    color: #9ca3af;
+}
+
+.ts-wrapper.focus .ts-control {
+    outline: 2px solid #4f46e5;
+    outline-offset: -2px;
+    box-shadow: none;
+}
+
+.dropdown-active .ts-control {
+    border-radius: 0.5rem;
+}
+
+.ts-dropdown {
+    margin-top: 0.25rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    color: #111827;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.ts-dropdown .active {
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.ts-dropdown .no-results,
+.ts-dropdown .optgroup-header {
+    background: transparent;
+    color: #6b7280;
+}
+
+[data-theme=dark] .ts-control,
+[data-theme=dark] .ts-wrapper.single .ts-control,
+[data-theme=dark] .ts-wrapper.single.input-active .ts-control {
+    outline-color: rgb(255 255 255 / 0.1);
+    background: rgb(255 255 255 / 0.05);
+    color: #fff;
+}
+
+[data-theme=dark] .ts-wrapper.focus .ts-control {
+    outline-color: #6366f1;
+}
+
+[data-theme=dark] .ts-wrapper.single .ts-control::after {
+    border-top-color: #9ca3af;
+}
+
+[data-theme=dark] .ts-wrapper.single.dropdown-active .ts-control::after {
+    border-bottom-color: #9ca3af;
+}
+
+[data-theme=dark] .ts-dropdown {
+    border-color: rgb(255 255 255 / 0.1);
+    background: #111827;
+    color: #f3f4f6;
+}
+
+[data-theme=dark] .ts-dropdown .active {
+    background: rgb(99 102 241 / 0.2);
+    color: #fff;
+}
+
+[data-theme=dark] .ts-dropdown .no-results,
+[data-theme=dark] .ts-dropdown .optgroup-header {
+    color: #9ca3af;
+}

@@ -1,0 +1,26 @@
+{# The panel the page is put into is the application's choice: byfareska_crud.scopes.<name>.layout. #}
+{% extends layout %}
+
+{% set operation = enum('Byfareska\\Crud\\Resource\\CrudOperation') %}
+{% set title = crud.key(id is null ? 'new' : 'edit')|trans %}
+
+{% block page_title %}{{ title }} · {{ crud.key('title')|trans }}{% endblock %}
+
+{% block content %}
+    {# The way out of the form, with the same keys as on the details page. #}
+    <twig:Ui:PageHead :title="title" :meta="crud.key('title')|trans">
+        <twig:block name="actions">
+            {# One's own record (AsCrud::$own) has no list: the way out is its details, below. #}
+            {% if not (crud.own and crud.can(operation.Read)) %}
+                <a class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:bg-white/10 dark:text-white dark:ring-white/10 dark:hover:bg-white/20" href="{{ crud_return_url(crud, id) }}">{{ crud_icon('arrow-left') }} {{ crud.own ? 'ui.action.cancel'|trans : 'crud.action.list'|trans }}</a>
+            {% endif %}
+            {# What can be done with the record - see RecordAction: its details, deleting it... #}
+            {% for action in actions %}
+                {{ crud_action(action, 'bar') }}
+            {% endfor %}
+        </twig:block>
+    </twig:Ui:PageHead>
+
+    {# Crud:Form, or the resource's own form extending it (#[AsCrud] formComponent). #}
+    {{ component(crud.formComponent, {resource: crud.name, id: id, tab: app.request.query.get('tab'), with: id is null ? app.request.query.all('with') : [], from: id is null ? app.request.query.get('from') : null}) }}
+{% endblock %}

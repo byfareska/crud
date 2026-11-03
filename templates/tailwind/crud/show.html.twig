@@ -1,0 +1,27 @@
+{# The details page of a record; the frame (the layout of the panel, the heading) is that of every page of a record. #}
+{% extends '@CrudTheme/crud/record.html.twig' %}
+
+{% block record_actions %}
+    {# One's own record (AsCrud::$own) has no list to go back to. #}
+    {% if not crud.own %}
+        <a class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:bg-white/10 dark:text-white dark:ring-white/10 dark:hover:bg-white/20" href="{{ crud_return_url(crud, id) }}"{{ actions|filter(action => action.primary) is empty ? ' autofocus' }}>{{ crud_icon('arrow-left') }} {{ 'crud.action.list'|trans }}</a>
+    {% endif %}
+    {# What can be done with the record - see RecordAction; the main one (edit) last. #}
+    {% for action in actions|filter(action => not action.primary)|merge(actions|filter(action => action.primary)) %}
+        {{ crud_action(action, 'bar') }}
+    {% endfor %}
+{% endblock %}
+
+{% block record_content %}
+    {# The tab in view is in the address, so a link (and the way to the edit form and back) keeps it. #}
+    {% set record_layout = crud_details_layout(crud, details, false, app.request.query.get('tab')) %}
+    <section class="mb-6 p-6 rounded-xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-gray-900">
+            <twig:Crud:Details :layout="record_layout" />
+        </section>
+
+    {# What else there is to a record - see AsCrudDetailsSection. Each brings its own panel, or nothing; the layout may have placed it already. #}
+    {% for section in sections|filter(section => not record_layout.places(section.name)) %}
+        {# A section under the details of every resource is told which one (AsCrudDetailsSection::EVERY). #}
+        {{ component(section.component, {id: id}|merge(section.resource == '*' ? {resource: crud.name} : {})) }}
+    {% endfor %}
+{% endblock %}

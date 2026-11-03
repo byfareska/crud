@@ -1,0 +1,11 @@
+{# A note: what is typed is kept after a pause (live model, debounced). #}
+{% set text = this.text %}
+{% set saved = this.saved %}
+<div {{ attributes.defaults({class: 'h-full'}) }}>
+    <twig:Ui:Widget :title="'panel.widget.note.title'|trans" icon="sticky" accent="#eab308">
+        <textarea class="w-full flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-gray-400" data-model="debounce(800)|text" maxlength="5000" aria-label="{{ 'panel.widget.note.title'|trans }}"
+                  placeholder="{{ 'panel.widget.note.placeholder'|trans }}">{{ text }}</textarea>
+        <div class="text-xs text-gray-500 dark:text-gray-400" data-loading="show">{{ 'panel.widget.note.saving'|trans }}</div>
+        {% if saved %}<div class="text-xs text-gray-500 dark:text-gray-400" data-loading="hide">{{ 'panel.widget.note.saved'|trans }}</div>{% endif %}
+    </twig:Ui:Widget>
+</div>

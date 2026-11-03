@@ -1,0 +1,27 @@
+{# The panel the page is put into is the application's choice: byfareska_crud.scopes.<name>.layout. #}
+{% extends layout %}
+
+{% set operation = enum('Byfareska\\Crud\\Resource\\CrudOperation') %}
+
+{% block page_title %}{{ crud.key('title')|trans }}{% endblock %}
+
+{% block content %}
+    <twig:Ui:PageHead :title="crud.key('title')|trans" :icon="crud.icon">
+        <twig:block name="actions">
+            {# What the resource adds next to "new" (#[AsCrud] listActions), e.g. the folder in view of the files. #}
+            {% if crud.listActions %}
+                {{ component(crud.listActions, {filters: app.request.query.all('filters'), resource: crud.name}) }}
+            {% endif %}
+            {# Pages of the whole resource (#[AsCrudPage(collection: true)]): an import, a kanban, a report. #}
+            {% for page in crud_collection_pages(crud) %}
+                <a class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" href="{{ path(crud.route(page.name)) }}">{{ crud_icon(page.icon) }}{{ crud.key('action.' ~ page.name)|trans }}</a>
+            {% endfor %}
+            {% if crud.can(operation.Create) %}
+                <a class="btn btn-sm btn-success d-inline-flex align-items-center gap-1" href="{{ path(crud.route('new')) }}">{{ crud_icon('plus-lg') }}{{ crud.key('new')|trans }}</a>
+            {% endif %}
+        </twig:block>
+    </twig:Ui:PageHead>
+
+    {# Crud:List, or the resource's own list extending it (#[AsCrud] listComponent). #}
+    {{ component(crud.listComponent, {resource: crud.name}) }}
+{% endblock %}

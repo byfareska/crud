@@ -1,0 +1,10 @@
+{# A page of a record added by #[AsCrudPage]: the frame of every page of a record around the component of the page. #}
+{% extends '@CrudTheme/crud/record.html.twig' %}
+
+{# Named like the button that leads to it; the name of the record goes next to it. #}
+{% set heading = crud.key('action.' ~ page.name)|trans %}
+
+{% block record_content %}
+    {# A page of every resource is told which one (AsCrudPage::EVERY). #}
+    {{ component(page.component, {id: id}|merge(page.resource == '*' ? {resource: crud.name} : {})) }}
+{% endblock %}

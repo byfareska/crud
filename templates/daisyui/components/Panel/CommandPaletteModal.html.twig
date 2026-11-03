@@ -1,0 +1,18 @@
+{#
+    The dialog of the command palette stays outside the live component, so re-rendering the results never touches it.
+    Opened by <button commandfor="command-palette" command="show-modal">.
+#}
+<dialog {{ attributes.defaults({
+    class: 'modal modal-top pt-[10vh]',
+    id: 'command-palette',
+    closedby: 'any',
+    'aria-label': 'panel.palette.label'|trans,
+    'data-turbo-permanent': true,
+    'data-controller': 'command-palette',
+    'data-action': 'overlay:show->command-palette#reset overlay:shown->command-palette#focus',
+}) }}>
+    <div class="modal-box mx-auto w-[calc(100%-2rem)] max-w-2xl overflow-hidden rounded-box p-0">
+        <twig:Panel:CommandPalette :scope="panel_scope().name" />
+    </div>
+    <button type="button" class="modal-backdrop" commandfor="command-palette" command="request-close" tabindex="-1" aria-hidden="true"></button>
+</dialog>

@@ -1,0 +1,23 @@
+{# A drawer (Bootstrap offcanvas). Open it with data-bs-toggle="offcanvas" data-bs-target="#id"; blocks: content, footer. #}
+{% props id, title, subtitle = null, placement = 'end' %}
+<div {{ attributes.defaults({
+    class: 'offcanvas offcanvas-' ~ placement,
+    style: '--bs-offcanvas-width: min(32rem, 100vw)',
+    id: id,
+    tabindex: '-1',
+    'aria-labelledby': id ~ '-title',
+    'data-controller': 'overlay',
+}) }}>
+    <div class="offcanvas-header border-bottom">
+        <div style="min-width: 0">
+            <h5 class="offcanvas-title text-truncate" id="{{ id }}-title">{{ title }}</h5>
+            {% if subtitle %}<div class="small text-body-secondary">{{ subtitle }}</div>{% endif %}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="{{ 'ui.action.close'|trans }}"></button>
+    </div>
+    <div class="offcanvas-body">{% block content %}{% endblock %}</div>
+    {% set footer %}{% block footer %}{% endblock %}{% endset %}
+    {% if footer|trim is not empty %}
+        <div class="d-flex flex-wrap gap-2 p-3 border-top">{{ footer }}</div>
+    {% endif %}
+</div>

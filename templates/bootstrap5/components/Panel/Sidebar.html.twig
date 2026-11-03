@@ -1,0 +1,55 @@
+{#
+    The menu of the panel of the page: its sections and pages (NavigationSources). A column of the grid of the layout
+    from "md" up; below, a drawer opened from the top bar (Bootstrap's responsive offcanvas). Blocks of a theme of
+    yours (extending this one): "sidebar_brand" (the title of the drawer), "sidebar_sections", "sidebar_footer".
+#}
+{# As wide as the name of the panel above it (Panel:Topbar): 15rem, whatever the width of the screen. #}
+<nav {{ attributes.defaults({class: 'col-md-auto p-0 bg-body border-end', style: 'width: 15rem', 'aria-label': 'panel.nav.main_menu'|trans}) }}>
+    <div class="offcanvas-md offcanvas-start bg-body" tabindex="-1" id="side-nav" aria-labelledby="side-nav-title">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="side-nav-title">{% block sidebar_brand %}{{ panel_brand() }}{% endblock %}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#side-nav" aria-label="{{ 'panel.nav.close_menu'|trans }}"></button>
+        </div>
+        <div class="offcanvas-body d-md-flex flex-column p-0 pt-md-3 overflow-y-auto">
+            {% block sidebar_sections %}
+            {% for title, links in this.sections %}
+                <h6 class="px-3 {{ loop.first ? 'mt-3 mt-md-0' : 'mt-4' }} mb-2 text-body-secondary small">{{ title|trans }}</h6>
+                <ul class="nav nav-pills flex-column px-2 gap-1" aria-label="{{ title|trans }}" data-panel-nav>
+                    {% for link in links %}
+                        <li class="nav-item">
+                            {# An address of its own (NavigationItem url), a badge, more attributes (target, data-*): NavigationSource / NavigationExtension. #}
+                            {{ _self.link(link) }}
+                            {# The items under it (NavigationItem parent), however deep. #}
+                            {{ _self.children(link) }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+            {% endblock %}
+            {% block sidebar_footer %}{% endblock %}
+        </div>
+    </div>
+</nav>
+
+{# A link of the menu: its label translated with its parameters (or as it is), its badge in its variant. #}
+{% macro link(link, nested = false) %}
+    {{ component('Panel:NavLink', {
+        href: link.url ?? path(link.route, link.parameters),
+        icon: link.icon,
+        label: link.translate ? link.label|trans(link.labelParameters) : link.label,
+        badge: link.badge,
+        badgeVariant: link.badgeVariant,
+        active: link.active,
+        nested: nested,
+    }|merge(link.attributes)) }}
+{% endmacro %}
+
+{# The links under a link (NavigationItem parent), and theirs under them. #}
+{% macro children(link) %}
+    {% import _self as menu %}
+    {% if link.children is not empty %}
+        <ul class="nav flex-column ms-4 small">
+            {% for child in link.children %}<li class="nav-item">{{ menu.link(child, true) }}{{ menu.children(child) }}</li>{% endfor %}
+        </ul>
+    {% endif %}
+{% endmacro %}

@@ -1,0 +1,18 @@
+{#
+    The dialog of the command palette stays outside the live component, so re-rendering the results never touches the
+    state Bootstrap keeps on it. Opened by data-bs-toggle="modal" data-bs-target="#command-palette".
+#}
+<div {{ attributes.defaults({
+    class: 'modal fade',
+    id: 'command-palette',
+    tabindex: '-1',
+    'aria-label': 'panel.palette.label'|trans,
+    'aria-hidden': 'true',
+    'data-turbo-permanent': true,
+    'data-controller': 'command-palette',
+    'data-action': 'overlay:show->command-palette#reset overlay:shown->command-palette#focus',
+}) }}>
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" style="margin-top: 10vh">
+        <twig:Panel:CommandPalette :scope="panel_scope().name" />
+    </div>
+</div>

@@ -1,0 +1,24 @@
+{#
+    A card of the dashboard: a head with the widget's icon (in its accent) and title, the content filling the rest.
+    href / link: the way to the page behind the widget, in its corner. titleHref / titleLink: the title itself a link,
+    opened in a new tab. tone: a hint of the theme the widget would like ("day", "night"...); this theme draws all
+    cards alike.
+#}
+{% props title, icon, accent = '#8b5cf6', href = null, link = null, titleHref = null, titleLink = null, tone = null %}
+<article {{ attributes.defaults({class: 'card card-border h-full overflow-hidden bg-base-100 shadow-xs'}) }}>
+    <header class="flex items-center gap-2 px-4 pt-3">
+        {{ crud_icon(icon, '', {style: 'color: ' ~ (accent)}) }}
+        <h2 class="min-w-0 flex-1 truncate text-sm font-semibold">
+            {%- if titleHref -%}
+                <a class="hover:underline" href="{{ titleHref }}" target="_blank" rel="noopener noreferrer" title="{{ titleLink }}">{{ title }}</a>
+            {%- else -%}
+                {{ title }}
+            {%- endif -%}
+        </h2>
+        {% block head %}{% endblock %}
+        {% if href %}
+            <a class="text-base-content/40 hover:text-base-content" href="{{ href }}" title="{{ link }}" aria-label="{{ link }}">{{ crud_icon('chevron-right') }}</a>
+        {% endif %}
+    </header>
+    <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden p-4 pt-2">{% block content %}{% endblock %}</div>
+</article>

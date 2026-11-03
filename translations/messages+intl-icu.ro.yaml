@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Salvează
+        save_new: 'Salvează și adaugă altul'
+        save_edit: 'Salvează și continuă editarea'
+        cancel: Anulează
+        confirm: Confirmă
+        close: Închide
+    list:
+        shown_html: '{shown, plural, =0 {Se afișează <strong>0</strong> din {total, number}} =1 {Se afișează <strong>{from, number}</strong> din {total, number}} other {Se afișează <strong>{from, number}–{to, number}</strong> din {total, number}}}'
+        shown_more_html: 'Se afișează <strong>{from, number}–{to, number}</strong> din peste {total, number}'
+        per_page: 'Pe pagină'
+    timezone:
+        region:
+            africa: Africa
+            america: America
+            antarctica: Antarctica
+            arctic: Arctica
+            asia: Asia
+            atlantic: Atlantic
+            australia: Australia
+            europe: Europa
+            indian: Oceanul Indian
+            pacific: Pacific
+            other: Altele
+    time_ago:
+        now: chiar acum
+        minutes: 'acum {count} min'
+        hours: '{count, plural, one {acum # oră} few {acum # ore} other {acum # de ore}}'
+        days: '{count, plural, one {ieri} few {acum # zile} other {acum # de zile}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: General
+            users: Utilizatori
+            sales: Vânzări
+            content: Conținut
+            system: Sistem
+        number: '{value, number}'
+    pagination:
+        previous: Pagina anterioară
+        next: Pagina următoare
+        previous_tip: Pagina anterioară
+        next_tip: Pagina următoare
+        jump: Mergi la pagina
+        jump_hint: Introdu un număr de pagină
+
+crud:
+    palette:
+        list: Listă
+        create: Adaugă o înregistrare nouă
+        own: Pagina ta
+    total_html: 'Total: <strong>{count, number}</strong>'
+    total_more_html: 'Total: <strong>peste {count, number}</strong>'
+    search: Caută
+    clear_filters: Șterge filtrele
+    sort_tip: 'Sortare: coloana pe care se dă clic trece prima; pe rând: crescător, descrescător, oprit'
+    empty: Niciun rezultat.
+    selected: 'Selectate: {count, number}'
+    select: 'Selectează'
+    select_page: 'Selectează tot de pe această pagină'
+    select_all_matching: 'Selectează toate cele {count, number} care corespund filtrelor'
+    all_matching_selected: 'Sunt selectate toate cele {count, number} care corespund filtrelor'
+    clear_selection: 'Golește selecția'
+    actions: Acțiuni
+    filter:
+        title: 'Filtre'
+        more: 'Mai multe filtre'
+        query: Caută
+        any: Oricare
+        'yes': 'Da'
+        'no': 'Nu'
+        from: 'De la'
+        to: 'Până la'
+        clear: 'Golește'
+        time: 'Ora'
+        comparison:
+            label: 'Comparația pentru {field}'
+            eq: 'egal cu'
+            neq: 'diferit de'
+            contains: 'conține'
+            not_contains: 'nu conține'
+            starts: 'începe cu'
+            ends: 'se termină cu'
+            gt: 'mai mare decât'
+            gte: 'mai mare sau egal cu'
+            lt: 'mai mic decât'
+            lte: 'mai mic sau egal cu'
+            between: 'între'
+            in: 'este unul dintre'
+            not_in: 'nu este niciunul dintre'
+            empty: 'este gol'
+            filled: 'nu este gol'
+    confirm_delete:
+        message: Ștergi această înregistrare?
+        hint: Acțiunea nu poate fi anulată.
+    confirm_bulk_delete:
+        message: 'Ștergeți înregistrările selectate ({count, number})?'
+    action:
+        details: Detalii
+        edit: Editează
+        delete: Șterge
+        duplicate: 'Duplică'
+        list: Listă
+    layout:
+        errors: '{count, plural, one {# eroare} few {# erori} other {# de erori}}'
+    toast:
+        created: Adăugat
+        updated: Modificările au fost salvate
+        deleted: Șters
+        delete_failed: Nu s-a putut șterge
+        bulk_deleted: 'Șterse: {count, number}'
+        bulk_delete_failed: 'Neșterse: {count, number}'
+        gone: Această înregistrare nu mai există
+        bulk_failed: 'Acțiunea nu a fost efectuată'
+        action_failed: 'Acțiunea nu a putut fi efectuată'
+        done: 'Gata'
+    value:
+        'yes': 'Da'
+        'no': 'Nu'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Nu a fost găsit.
+        forbidden: Nu ai permisiunea să faci asta.
+        taken: O astfel de înregistrare există deja.
+        in_use: Această înregistrare este folosită de alte înregistrări și nu poate fi ștearsă.
+        changed: 'Altcineva a modificat între timp această înregistrare. Deschide-o din nou pentru a vedea modificările.'
+        retry: 'Baza de date este ocupată. Nu s-a salvat nimic - încearcă din nou.'
+        refused: 'Baza de date a respins această înregistrare.'
+        input_required: 'Acest răspuns este obligatoriu.'
+        input_choice: 'Alegeți una dintre opțiuni.'
+        input_number: 'Introduceți un număr.'
+        input_date: 'Introduceți o dată validă.'
+
+panel:
+    login:
+        title: Autentificare
+        username: Nume de utilizator
+        password: Parolă
+        submit: Autentifică-te
+    scope:
+        panel: Panou
+        admin: Administrare
+    nav:
+        main_menu: Meniu principal
+        close_menu: Închide meniul
+        dashboard: Tablou de bord
+        section:
+            start: Început
+            main: Principal
+            account: Cont
+    dashboard:
+        subtitle: Widgeturile tale – trage, redimensionează, adaugă altele.
+        subtitle_own: Aranjamentul tău propriu de widgeturi.
+        empty_title: Nu există widgeturi pe tabloul de bord
+        empty_text: Adaugă-l pe primul cu „Adaugă widget”.
+        add: Adaugă widget
+        edit: Editează
+        done: Gata
+        more: Mai mult
+        reset: Restabilește implicitul
+        reset_confirm: Restabilești tabloul de bord implicit? Aranjamentul tău propriu va fi uitat.
+        share: Fă-l implicit pentru toți
+        share_confirm: Faci acest aranjament implicit pentru toți?
+        share_hint: Îl vor vedea toți cei care nu au un aranjament propriu.
+        remove: 'Elimină widgetul „{title}”'
+        settings: 'Setări: {title}'
+        toast:
+            failed: Tabloul de bord nu a putut fi salvat
+            shared: Aranjamentul este acum implicit pentru toți
+        gallery:
+            title: Adaugă un widget
+            search: Caută widgeturi
+            add: Adaugă
+            size: Dimensiune
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {pe tabloul de bord} few {de # ori pe tabloul de bord} other {de # de ori pe tabloul de bord}}'
+            empty: Nu există widgeturi de adăugat.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Ceas
+            description: Un ceas analogic sau digital, cu un al doilea oraș alături.
+            setting:
+                style: Cadran
+                zone: Al doilea oraș
+            style:
+                analog: Analogic
+                digital: Digital
+            city:
+                none: Niciunul
+                utc: UTC
+                london: Londra
+                warsaw: Varșovia
+                berlin: Berlin
+                kyiv: Kiev
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Calcutta
+                shanghai: Shanghai
+                tokyo: Tokyo
+                sydney: Sydney
+        quick_actions:
+            title: Acțiuni rapide
+            description: Plăci care duc la adăugarea de înregistrări, ca scurtăturile din iOS – alege care.
+            setting: Ce acțiuni (niciuna = toate)
+            empty: Nu există acțiuni pe care le poți folosi.
+        note:
+            title: Notă
+            description: Un bilețel salvat pe măsură ce scrii. Fiecare îl are pe al său.
+            placeholder: Scrie ceva…
+            saving: Se salvează…
+            saved: Salvat
+    topbar:
+        open_menu: Deschide meniul
+        open_palette: Deschide paleta de comenzi
+        search: Caută sau tastează o comandă…
+    palette:
+        label: Paleta de comenzi
+        placeholder: Caută sau tastează o comandă…
+        search_label: Caută în panou
+        empty: 'Nu s-a găsit nimic pentru „{query}”'
+        navigate: navighează
+        open: deschide
+        close: închide
+        hint_html: 'Încearcă numele unei înregistrări sau <b>&gt;</b> pentru comenzi'
+        verb:
+            go: Mergi la
+            open: Deschide
+            run: Rulează
+        group:
+            recent: Recente
+            suggested: Sugerate
+            navigation: Navigare
+            commands: Comenzi
+        item:
+            panel_switch:
+                description: Mergi la alt panou
+            dashboard_edit:
+                name: Editează tabloul de bord
+                description: Mută și redimensionează widgeturile
+                keywords: 'dashboard, tablou de bord, widgeturi, aranjament, rearanjează'
+            dashboard_add:
+                name: Adaugă un widget
+                description: Alege un widget din galerie
+                keywords: 'dashboard, tablou de bord, widget nou, galerie'
+            dashboard_reset:
+                name: Restabilește tabloul de bord implicit
+                description: Uită aranjamentul tău propriu de widgeturi
+                keywords: 'dashboard, tablou de bord, resetează, reset, implicit'
+            theme:
+                name: Comută între tema luminoasă și cea întunecată
+                description: Schimbă aspectul panoului
+                keywords: 'mod întunecat, mod luminos, culori, dark, light, temă'
+    theme:
+        toggle: Comută tema
+        toggle_long: Comută între tema luminoasă și cea întunecată
+        choose: Temă
+        choose_long: Alege tema de culori
+        auto: Sistem
+    user_menu:
+        impersonating: Ești autentificat ca acest utilizator
+        exit_impersonation: Înapoi la contul tău
+        label: Meniul utilizatorului
+        logout: Deconectează-te
+        anonymous: Nu ești autentificat

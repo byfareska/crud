@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Зберегти
+        save_new: 'Зберегти й додати ще'
+        save_edit: 'Зберегти й продовжити редагування'
+        cancel: Скасувати
+        confirm: Підтвердити
+        close: Закрити
+    list:
+        shown_html: '{shown, plural, =0 {Показано <strong>0</strong> з {total, number}} =1 {Показано <strong>{from, number}</strong> з {total, number}} other {Показано <strong>{from, number}–{to, number}</strong> з {total, number}}}'
+        shown_more_html: 'Показано <strong>{from, number}–{to, number}</strong> з понад {total, number}'
+        per_page: 'На сторінці'
+    timezone:
+        region:
+            africa: Африка
+            america: Америка
+            antarctica: Антарктида
+            arctic: Арктика
+            asia: Азія
+            atlantic: Атлантика
+            australia: Австралія
+            europe: Європа
+            indian: Індійський океан
+            pacific: Тихий океан
+            other: Інше
+    time_ago:
+        now: щойно
+        minutes: '{count} хв тому'
+        hours: '{count, plural, one {# годину тому} few {# години тому} many {# годин тому} other {# години тому}}'
+        days: '{count, plural, =1 {учора} one {# день тому} few {# дні тому} many {# днів тому} other {# дня тому}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Загальне
+            users: Користувачі
+            sales: Продажі
+            content: Контент
+            system: Система
+        number: '{value, number}'
+    pagination:
+        previous: Попередня сторінка
+        next: Наступна сторінка
+        previous_tip: Попередня сторінка
+        next_tip: Наступна сторінка
+        jump: Перейти до сторінки
+        jump_hint: Введіть номер сторінки
+
+crud:
+    palette:
+        list: Список
+        create: Додати новий запис
+        own: Ваша сторінка
+    total_html: 'Усього: <strong>{count, number}</strong>'
+    total_more_html: 'Усього: <strong>понад {count, number}</strong>'
+    search: Пошук
+    clear_filters: Скинути фільтри
+    sort_tip: 'Сортування: натиснутий стовпець стає першим; по черзі: за зростанням, за спаданням, вимкнено'
+    empty: Нічого не знайдено.
+    selected: 'Вибрано: {count, number}'
+    select: 'Вибрати'
+    select_page: 'Вибрати все на цій сторінці'
+    select_all_matching: 'Вибрати всі, що відповідають фільтрам ({count, number})'
+    all_matching_selected: 'Вибрано всі, що відповідають фільтрам: {count, number}'
+    clear_selection: 'Зняти вибір'
+    actions: Дії
+    filter:
+        title: 'Фільтри'
+        more: 'Інші фільтри'
+        query: Пошук
+        any: Усі
+        'yes': 'Так'
+        'no': 'Ні'
+        from: 'З'
+        to: 'По'
+        clear: 'Очистити'
+        time: 'Час'
+        comparison:
+            label: 'Спосіб порівняння: {field}'
+            eq: 'дорівнює'
+            neq: 'не дорівнює'
+            contains: 'містить'
+            not_contains: 'не містить'
+            starts: 'починається з'
+            ends: 'закінчується на'
+            gt: 'більше'
+            gte: 'більше або дорівнює'
+            lt: 'менше'
+            lte: 'менше або дорівнює'
+            between: 'між'
+            in: 'є одним із'
+            not_in: 'не є жодним із'
+            empty: 'порожнє'
+            filled: 'не порожнє'
+    confirm_delete:
+        message: Видалити цей запис?
+        hint: Цю дію не можна скасувати.
+    confirm_bulk_delete:
+        message: 'Видалити вибрані записи ({count, number})?'
+    action:
+        details: Докладніше
+        edit: Редагувати
+        delete: Видалити
+        duplicate: 'Дублювати'
+        list: Список
+    layout:
+        errors: '{count, plural, one {# помилка} few {# помилки} many {# помилок} other {# помилки}}'
+    toast:
+        created: Додано
+        updated: Зміни збережено
+        deleted: Видалено
+        delete_failed: Не вдалося видалити
+        bulk_deleted: 'Видалено: {count, number}'
+        bulk_delete_failed: 'Не видалено: {count, number}'
+        gone: Цього запису більше немає
+        bulk_failed: 'Дію не виконано'
+        action_failed: 'Не вдалося виконати'
+        done: 'Готово'
+    value:
+        'yes': 'Так'
+        'no': 'Ні'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Не знайдено.
+        forbidden: У вас немає прав на цю дію.
+        taken: Такий запис уже існує.
+        in_use: Цей запис використовується іншими записами і не може бути видалений.
+        changed: 'Хтось інший змінив цей запис тим часом. Відкрийте його знову, щоб побачити зміни.'
+        retry: 'База даних зайнята. Нічого не збережено — спробуйте ще раз.'
+        refused: 'База даних відхилила цей запис.'
+        input_required: 'Ця відповідь обовʼязкова.'
+        input_choice: 'Виберіть один із варіантів.'
+        input_number: 'Введіть число.'
+        input_date: 'Введіть правильну дату.'
+
+panel:
+    login:
+        title: Вхід
+        username: Ім’я користувача
+        password: Пароль
+        submit: Увійти
+    scope:
+        panel: Панель
+        admin: Адміністрування
+    nav:
+        main_menu: Головне меню
+        close_menu: Закрити меню
+        dashboard: Дашборд
+        section:
+            start: Початок
+            main: Основне
+            account: Обліковий запис
+    dashboard:
+        subtitle: Ваші віджети – перетягуйте, змінюйте розмір, додавайте нові.
+        subtitle_own: Ваше власне розташування віджетів.
+        empty_title: На дашборді немає віджетів
+        empty_text: Додайте перший кнопкою «Додати віджет».
+        add: Додати віджет
+        edit: Редагувати
+        done: Готово
+        more: Більше
+        reset: Відновити типовий
+        reset_confirm: Відновити типовий дашборд? Ваше власне розташування буде забуто.
+        share: Зробити типовим для всіх
+        share_confirm: Зробити це розташування типовим для всіх?
+        share_hint: Його побачать усі, хто не має власного розташування.
+        remove: 'Прибрати віджет «{title}»'
+        settings: 'Налаштування: {title}'
+        toast:
+            failed: Не вдалося зберегти дашборд
+            shared: Тепер це розташування типове для всіх
+        gallery:
+            title: Додати віджет
+            search: Пошук віджетів
+            add: Додати
+            size: Розмір
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {на дашборді} one {# раз на дашборді} few {# рази на дашборді} many {# разів на дашборді} other {# рази на дашборді}}'
+            empty: Немає віджетів для додавання.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Годинник
+            description: Аналоговий або цифровий годинник, з другим містом поруч.
+            setting:
+                style: Циферблат
+                zone: Друге місто
+            style:
+                analog: Аналоговий
+                digital: Цифровий
+            city:
+                none: Немає
+                utc: UTC
+                london: Лондон
+                warsaw: Варшава
+                berlin: Берлін
+                kyiv: Київ
+                new_york: Нью-Йорк
+                chicago: Чикаго
+                los_angeles: Лос-Анджелес
+                sao_paulo: Сан-Паулу
+                dubai: Дубай
+                kolkata: Калькутта
+                shanghai: Шанхай
+                tokyo: Токіо
+                sydney: Сідней
+        quick_actions:
+            title: Швидкі дії
+            description: Плитки для додавання записів, як швидкі команди в iOS – виберіть, які саме.
+            setting: Які дії (жодної = усі)
+            empty: Немає дій, доступних вам.
+        note:
+            title: Нотатка
+            description: Стікер, що зберігається під час введення. У кожного свій.
+            placeholder: Напишіть щось…
+            saving: Збереження…
+            saved: Збережено
+    topbar:
+        open_menu: Відкрити меню
+        open_palette: Відкрити палітру команд
+        search: Шукайте або введіть команду…
+    palette:
+        label: Палітра команд
+        placeholder: Шукайте або введіть команду…
+        search_label: Пошук у панелі
+        empty: 'За запитом «{query}» нічого не знайдено'
+        navigate: переміщення
+        open: відкрити
+        close: закрити
+        hint_html: 'Введіть назву запису або <b>&gt;</b> для команд'
+        verb:
+            go: Перейти
+            open: Відкрити
+            run: Виконати
+        group:
+            recent: Нещодавні
+            suggested: Рекомендовані
+            navigation: Навігація
+            commands: Команди
+        item:
+            panel_switch:
+                description: Перейти до іншої панелі
+            dashboard_edit:
+                name: Редагувати дашборд
+                description: Переміщуйте віджети та змінюйте їхній розмір
+                keywords: 'dashboard, дашборд, віджети, розташування, переставити'
+            dashboard_add:
+                name: Додати віджет
+                description: Виберіть віджет із галереї
+                keywords: 'dashboard, дашборд, новий віджет, галерея'
+            dashboard_reset:
+                name: Відновити типовий дашборд
+                description: Забути власне розташування віджетів
+                keywords: 'dashboard, дашборд, скинути, reset, типовий'
+            theme:
+                name: Перемкнути світлу й темну тему
+                description: Змінити вигляд панелі
+                keywords: 'темна тема, світла тема, кольори, dark, light, theme'
+    theme:
+        toggle: Змінити тему
+        toggle_long: Перемкнути світлу й темну тему
+        choose: Тема
+        choose_long: Вибрати колірну тему
+        auto: Системна
+    user_menu:
+        impersonating: Ви увійшли як цей користувач
+        exit_impersonation: Повернутися до свого облікового запису
+        label: Меню користувача
+        logout: Вийти
+        anonymous: Ви не ввійшли

@@ -1,0 +1,13 @@
+{# A KPI tile. trend: up | down | flat; accent: any CSS colour of its icon. #}
+{% props icon, label, value, caption = null, trend = 'flat', accent = null %}
+<div {{ attributes.defaults({class: 'stat h-full rounded-box border border-base-300 bg-base-100 shadow-xs'}) }}>
+    <div class="stat-title flex items-center gap-2">
+        {{ crud_icon(icon, '', accent ? {style: 'color: ' ~ accent} : {}) }} {{ label }}
+    </div>
+    <div class="stat-value text-2xl">{{ value }}</div>
+    {% if caption %}
+        <div class="stat-desc text-sm {{ trend == 'up' ? 'text-success' : (trend == 'down' ? 'text-error' : 'text-base-content/60') }}">
+            {{ crud_icon(trend == 'flat' ? 'dash' : (trend == 'up' ? 'arrow-up-right' : 'arrow-down-right')) }} {{ caption }}
+        </div>
+    {% endif %}
+</div>

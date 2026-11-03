@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: บันทึก
+        save_new: 'บันทึกและเพิ่มอีกรายการ'
+        save_edit: 'บันทึกและแก้ไขต่อ'
+        cancel: ยกเลิก
+        confirm: ยืนยัน
+        close: ปิด
+    list:
+        shown_html: '{shown, plural, =0 {แสดง <strong>0</strong> จาก {total, number}} =1 {แสดง <strong>{from, number}</strong> จาก {total, number}} other {แสดง <strong>{from, number}–{to, number}</strong> จาก {total, number}}}'
+        shown_more_html: 'แสดง <strong>{from, number}–{to, number}</strong> จากมากกว่า {total, number}'
+        per_page: 'ต่อหน้า'
+    timezone:
+        region:
+            africa: แอฟริกา
+            america: อเมริกา
+            antarctica: แอนตาร์กติกา
+            arctic: อาร์กติก
+            asia: เอเชีย
+            atlantic: แอตแลนติก
+            australia: ออสเตรเลีย
+            europe: ยุโรป
+            indian: มหาสมุทรอินเดีย
+            pacific: แปซิฟิก
+            other: อื่นๆ
+    time_ago:
+        now: เมื่อสักครู่
+        minutes: '{count} นาทีที่แล้ว'
+        hours: '{count, plural, other {# ชั่วโมงที่แล้ว}}'
+        days: '{count, plural, =1 {เมื่อวาน} other {# วันที่แล้ว}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: ทั่วไป
+            users: ผู้ใช้
+            sales: การขาย
+            content: เนื้อหา
+            system: ระบบ
+        number: '{value, number}'
+    pagination:
+        previous: หน้าก่อนหน้า
+        next: หน้าถัดไป
+        previous_tip: หน้าก่อนหน้า
+        next_tip: หน้าถัดไป
+        jump: ไปที่หน้า
+        jump_hint: พิมพ์หมายเลขหน้า
+
+crud:
+    palette:
+        list: รายการ
+        create: เพิ่มระเบียนใหม่
+        own: หน้าของคุณ
+    total_html: 'ทั้งหมด: <strong>{count, number}</strong>'
+    total_more_html: 'ทั้งหมด: <strong>มากกว่า {count, number}</strong>'
+    search: ค้นหา
+    clear_filters: ล้างตัวกรอง
+    sort_tip: 'เรียงลำดับ: คอลัมน์ที่คลิกจะขึ้นก่อน; ตามลำดับ: น้อยไปมาก, มากไปน้อย, ปิด'
+    empty: ไม่พบผลลัพธ์
+    selected: 'เลือกแล้ว: {count, number}'
+    select: 'เลือก'
+    select_page: 'เลือกทั้งหมดในหน้านี้'
+    select_all_matching: 'เลือกทั้งหมด {count, number} รายการที่ตรงกับตัวกรอง'
+    all_matching_selected: 'เลือกทั้งหมด {count, number} รายการที่ตรงกับตัวกรองแล้ว'
+    clear_selection: 'ล้างการเลือก'
+    actions: การดำเนินการ
+    filter:
+        title: 'ตัวกรอง'
+        more: 'ตัวกรองเพิ่มเติม'
+        query: ค้นหา
+        any: ทั้งหมด
+        'yes': 'ใช่'
+        'no': 'ไม่ใช่'
+        from: 'ตั้งแต่'
+        to: 'ถึง'
+        clear: 'ล้าง'
+        time: 'เวลา'
+        comparison:
+            label: 'วิธีเปรียบเทียบ {field}'
+            eq: 'เท่ากับ'
+            neq: 'ไม่เท่ากับ'
+            contains: 'มีคำว่า'
+            not_contains: 'ไม่มีคำว่า'
+            starts: 'ขึ้นต้นด้วย'
+            ends: 'ลงท้ายด้วย'
+            gt: 'มากกว่า'
+            gte: 'มากกว่าหรือเท่ากับ'
+            lt: 'น้อยกว่า'
+            lte: 'น้อยกว่าหรือเท่ากับ'
+            between: 'ระหว่าง'
+            in: 'เป็นหนึ่งใน'
+            not_in: 'ไม่ใช่ข้อใดใน'
+            empty: 'ว่าง'
+            filled: 'ไม่ว่าง'
+    confirm_delete:
+        message: ลบระเบียนนี้หรือไม่
+        hint: การดำเนินการนี้ไม่สามารถย้อนกลับได้
+    confirm_bulk_delete:
+        message: 'ลบระเบียนที่เลือก ({count, number}) หรือไม่?'
+    action:
+        details: รายละเอียด
+        edit: แก้ไข
+        delete: ลบ
+        duplicate: 'ทำสำเนา'
+        list: รายการ
+    layout:
+        errors: '{count, plural, other {ข้อผิดพลาด # รายการ}}'
+    toast:
+        created: เพิ่มแล้ว
+        updated: บันทึกการเปลี่ยนแปลงแล้ว
+        deleted: ลบแล้ว
+        delete_failed: ลบไม่สำเร็จ
+        bulk_deleted: 'ลบแล้ว: {count, number}'
+        bulk_delete_failed: 'ลบไม่ได้: {count, number}'
+        gone: ระเบียนนี้ไม่มีอยู่แล้ว
+        bulk_failed: 'ไม่ได้ดำเนินการ'
+        action_failed: 'ดำเนินการไม่ได้'
+        done: 'เสร็จแล้ว'
+    value:
+        'yes': 'ใช่'
+        'no': 'ไม่ใช่'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: ไม่พบ
+        forbidden: คุณไม่ได้รับอนุญาตให้ทำสิ่งนี้
+        taken: มีระเบียนลักษณะนี้อยู่แล้ว
+        in_use: ระเบียนนี้ถูกใช้โดยระเบียนอื่นและไม่สามารถลบได้
+        changed: 'มีคนอื่นแก้ไขระเบียนนี้ในระหว่างนั้น เปิดอีกครั้งเพื่อดูการเปลี่ยนแปลง'
+        retry: 'ฐานข้อมูลไม่ว่าง ยังไม่ได้บันทึกสิ่งใด - ลองอีกครั้ง'
+        refused: 'ฐานข้อมูลปฏิเสธระเบียนนี้'
+        input_required: 'ต้องระบุคำตอบนี้'
+        input_choice: 'เลือกหนึ่งในตัวเลือก'
+        input_number: 'กรอกตัวเลข'
+        input_date: 'กรอกวันที่ให้ถูกต้อง'
+
+panel:
+    login:
+        title: เข้าสู่ระบบ
+        username: ชื่อผู้ใช้
+        password: รหัสผ่าน
+        submit: เข้าสู่ระบบ
+    scope:
+        panel: แผงควบคุม
+        admin: การดูแลระบบ
+    nav:
+        main_menu: เมนูหลัก
+        close_menu: ปิดเมนู
+        dashboard: แดชบอร์ด
+        section:
+            start: เริ่มต้น
+            main: หลัก
+            account: บัญชี
+    dashboard:
+        subtitle: วิดเจ็ตของคุณ – ลาก ปรับขนาด และเพิ่มได้อีก
+        subtitle_own: การจัดวางวิดเจ็ตของคุณเอง
+        empty_title: ไม่มีวิดเจ็ตบนแดชบอร์ด
+        empty_text: เพิ่มวิดเจ็ตแรกด้วย “เพิ่มวิดเจ็ต”
+        add: เพิ่มวิดเจ็ต
+        edit: แก้ไข
+        done: เสร็จสิ้น
+        more: เพิ่มเติม
+        reset: คืนค่าเริ่มต้น
+        reset_confirm: คืนค่าแดชบอร์ดเริ่มต้นหรือไม่ การจัดวางของคุณเองจะหายไป
+        share: ตั้งเป็นค่าเริ่มต้นสำหรับทุกคน
+        share_confirm: ตั้งการจัดวางนี้เป็นค่าเริ่มต้นสำหรับทุกคนหรือไม่
+        share_hint: ทุกคนที่ไม่มีการจัดวางของตัวเองจะเห็นการจัดวางนี้
+        remove: 'นำวิดเจ็ต “{title}” ออก'
+        settings: 'การตั้งค่า: {title}'
+        toast:
+            failed: บันทึกแดชบอร์ดไม่สำเร็จ
+            shared: การจัดวางนี้เป็นค่าเริ่มต้นสำหรับทุกคนแล้ว
+        gallery:
+            title: เพิ่มวิดเจ็ต
+            search: ค้นหาวิดเจ็ต
+            add: เพิ่ม
+            size: ขนาด
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {อยู่บนแดชบอร์ด} other {# ครั้งบนแดชบอร์ด}}'
+            empty: ไม่มีวิดเจ็ตให้เพิ่ม
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: นาฬิกา
+            description: นาฬิกาแบบเข็มหรือแบบดิจิทัล พร้อมเมืองที่สองอยู่ข้างๆ
+            setting:
+                style: หน้าปัด
+                zone: เมืองที่สอง
+            style:
+                analog: แบบเข็ม
+                digital: ดิจิทัล
+            city:
+                none: ไม่มี
+                utc: UTC
+                london: ลอนดอน
+                warsaw: วอร์ซอ
+                berlin: เบอร์ลิน
+                kyiv: เคียฟ
+                new_york: นิวยอร์ก
+                chicago: ชิคาโก
+                los_angeles: ลอสแอนเจลิส
+                sao_paulo: เซาเปาโล
+                dubai: ดูไบ
+                kolkata: โกลกาตา
+                shanghai: เซี่ยงไฮ้
+                tokyo: โตเกียว
+                sydney: ซิดนีย์
+        quick_actions:
+            title: การดำเนินการด่วน
+            description: ไทล์ที่นำไปสู่การเพิ่มระเบียน เหมือนคำสั่งลัดของ iOS – เลือกได้ว่าจะใช้อันไหน
+            setting: การดำเนินการใด (ไม่เลือก = ทั้งหมด)
+            empty: ไม่มีการดำเนินการที่คุณใช้ได้
+        note:
+            title: โน้ต
+            description: กระดาษโน้ตที่บันทึกขณะคุณพิมพ์ ทุกคนมีของตัวเอง
+            placeholder: เขียนอะไรสักอย่าง…
+            saving: กำลังบันทึก…
+            saved: บันทึกแล้ว
+    topbar:
+        open_menu: เปิดเมนู
+        open_palette: เปิดชุดคำสั่ง
+        search: ค้นหาหรือพิมพ์คำสั่ง…
+    palette:
+        label: ชุดคำสั่ง
+        placeholder: ค้นหาหรือพิมพ์คำสั่ง…
+        search_label: ค้นหาในแผงควบคุม
+        empty: 'ไม่พบสิ่งใดสำหรับ “{query}”'
+        navigate: เลื่อน
+        open: เปิด
+        close: ปิด
+        hint_html: 'ลองพิมพ์ชื่อระเบียน หรือ <b>&gt;</b> สำหรับคำสั่ง'
+        verb:
+            go: ไปที่
+            open: เปิด
+            run: เรียกใช้
+        group:
+            recent: ล่าสุด
+            suggested: แนะนำ
+            navigation: การนำทาง
+            commands: คำสั่ง
+        item:
+            panel_switch:
+                description: ไปยังแผงควบคุมอื่น
+            dashboard_edit:
+                name: แก้ไขแดชบอร์ด
+                description: ย้ายและปรับขนาดวิดเจ็ต
+                keywords: 'dashboard, แดชบอร์ด, วิดเจ็ต, widgets, การจัดวาง, จัดเรียงใหม่'
+            dashboard_add:
+                name: เพิ่มวิดเจ็ต
+                description: เลือกวิดเจ็ตจากแกลเลอรี
+                keywords: 'dashboard, แดชบอร์ด, วิดเจ็ตใหม่, widget, แกลเลอรี'
+            dashboard_reset:
+                name: คืนค่าแดชบอร์ดเริ่มต้น
+                description: ล้างการจัดวางวิดเจ็ตของคุณเอง
+                keywords: 'dashboard, แดชบอร์ด, รีเซ็ต, reset, ค่าเริ่มต้น'
+            theme:
+                name: สลับระหว่างธีมสว่างและธีมมืด
+                description: เปลี่ยนรูปลักษณ์ของแผงควบคุม
+                keywords: 'โหมดมืด, โหมดสว่าง, สี, dark, light, theme'
+    theme:
+        toggle: สลับธีม
+        toggle_long: สลับระหว่างธีมสว่างและธีมมืด
+        choose: ธีม
+        choose_long: เลือกธีมสี
+        auto: ตามระบบ
+    user_menu:
+        impersonating: คุณเข้าสู่ระบบในฐานะผู้ใช้นี้
+        exit_impersonation: กลับไปยังบัญชีของคุณ
+        label: เมนูผู้ใช้
+        logout: ออกจากระบบ
+        anonymous: คุณยังไม่ได้เข้าสู่ระบบ

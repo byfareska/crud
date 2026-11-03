@@ -1,0 +1,41 @@
+{#
+    A sign-in page in the looks of the panel, for form_login:
+
+        {% extends '@CrudTheme/panel/login.html.twig' %}
+
+    Given: error (AuthenticationUtils::getLastAuthenticationError()), last_username, and optionally action (the
+    check path; default the current address), hint (shown under the form). Blocks: fields (more fields), footer.
+#}
+{% extends '@CrudTheme/panel/base.html.twig' %}
+
+{% block title %}{{ 'panel.login.title'|trans }} · {{ panel_brand() }}{% endblock %}
+
+{% set input = 'block w-full rounded-lg bg-white px-3 py-2 text-sm text-gray-900 outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 dark:bg-white/5 dark:text-white dark:outline-white/10' %}
+{% set label = 'mb-1 block text-sm font-medium' %}
+
+{% block body %}
+    <main class="flex min-h-screen items-center justify-center p-4">
+        <form class="flex w-full max-w-sm flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900" method="post" action="{{ action ?? app.request.requestUri }}" data-turbo="false">
+            <div class="flex items-center gap-2 text-lg font-semibold">
+                <span class="inline-flex size-7 items-center justify-center rounded-lg bg-indigo-600 text-sm text-white">{{ panel_brand()|first|upper }}</span> {{ panel_brand() }}
+            </div>
+            <h1 class="text-xl font-semibold">{{ 'panel.login.title'|trans }}</h1>
+            {% if error %}
+                <div class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+            <div>
+                <label class="{{ label }}" for="login-username">{{ 'panel.login.username'|trans }}</label>
+                <input class="{{ input }}" id="login-username" name="_username" value="{{ last_username }}" autocomplete="username" required autofocus>
+            </div>
+            <div>
+                <label class="{{ label }}" for="login-password">{{ 'panel.login.password'|trans }}</label>
+                <input class="{{ input }}" id="login-password" name="_password" type="password" autocomplete="current-password" required>
+            </div>
+            {% block fields %}{% endblock %}
+            <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+            <button class="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500" type="submit">{{ 'panel.login.submit'|trans }}</button>
+            {% if hint ?? false %}<p class="text-sm text-gray-500 dark:text-gray-400">{{ hint }}</p>{% endif %}
+            {% block footer %}{% endblock %}
+        </form>
+    </main>
+{% endblock %}

@@ -1,0 +1,47 @@
+{#
+ # The frame of a page of one record: the layout of the panel, a heading with the way back, and the block
+ # "record_content". The details page extends it, and so may a page of the application's about a record - one of
+ # #[AsCrudPage], or of a controller taking #[MapCrud]: nothing has to be passed, the record is crud_context(). The
+ # blocks get "crud", "id" and "details" (what the details page shows of the record; null when the resource cannot
+ # read one).
+ #
+ # Set "heading" in the template that extends it to name the page ("History"): the name of the record goes next to it.
+ # "meta" changes what goes next to the heading; the block "record_actions" the buttons.
+ #}
+{% extends layout ?? panel_scope().layout %}
+
+{% set operation = enum('Byfareska\\Crud\\Resource\\CrudOperation') %}
+{% set context = crud_context() %}
+{% set crud = context.crud %}
+{% set id = context.id %}
+{% set details = context.details %}
+{# A record without a name to go by is named like its section. #}
+{% set record_title = context.title ?? crud.key('title')|trans %}
+{% if heading is defined %}
+    {% set meta = meta ?? record_title %}
+{% else %}
+    {% set heading = record_title %}
+    {% set meta = meta ?? crud.key('title')|trans %}
+{% endif %}
+
+{% block page_title %}{{ heading }} · {{ meta }}{% endblock %}
+
+{% block content %}
+    {# Rendered here, not inside the component: a block of this template is one the template extending it may change. #}
+    {% set record_actions %}{{ block('record_actions') }}{% endset %}
+    <twig:Ui:PageHead :title="heading" :meta="meta">
+        <twig:block name="actions">{{ record_actions }}</twig:block>
+    </twig:Ui:PageHead>
+
+    {% block record_content %}{% endblock %}
+{% endblock %}
+
+{# The way back: to the details of the record, else (a resource that cannot read one, a page of the whole resource) to
+   the list. #}
+{% block record_actions %}
+    {% if crud.can(operation.Read) and (id is not null or crud.own) %}
+        <a class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:bg-white/10 dark:text-white dark:ring-white/10 dark:hover:bg-white/20" href="{{ path(crud.route('show'), crud.recordParameters(id)) }}" autofocus>{{ crud_icon('arrow-left') }} {{ 'crud.action.details'|trans }}</a>
+    {% elseif not crud.own %}
+        <a class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:bg-white/10 dark:text-white dark:ring-white/10 dark:hover:bg-white/20" href="{{ crud_return_url(crud, id) }}" autofocus>{{ crud_icon('arrow-left') }} {{ 'crud.action.list'|trans }}</a>
+    {% endif %}
+{% endblock %}

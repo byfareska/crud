@@ -1,0 +1,18 @@
+{% set tiles = this.tiles %}
+<div {{ attributes.defaults({class: 'h-full'}) }}>
+    <twig:Ui:Widget :title="'panel.widget.quick_actions.title'|trans" icon="lightning-charge" accent="#3b82f6">
+        {% if tiles is empty %}
+            <div class="text-sm text-base-content/60">{{ 'panel.widget.quick_actions.empty'|trans }}</div>
+        {% else %}
+            <div class="grid grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] gap-2">
+                {% for tile in tiles %}
+                    {% set name = tile.entry.name|trans %}
+                    <a class="flex min-w-0 flex-col items-center gap-1 rounded-field border border-base-300 p-2 text-xs hover:bg-base-200" href="{{ path(tile.entry.routeName, tile.entry.routeParameters) }}" title="{{ name }}">
+                        {{ crud_icon(tile.icon, 'text-xl', {style: 'color: ' ~ (tile.color)}) }}
+                        <span class="w-full truncate text-center">{{ name }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </twig:Ui:Widget>
+</div>

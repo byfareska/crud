@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Save
+        save_new: 'Save and add another'
+        save_edit: 'Save and keep editing'
+        cancel: Cancel
+        confirm: Confirm
+        close: Close
+    list:
+        shown_html: '{shown, plural, =0 {Showing <strong>0</strong> of {total, number}} =1 {Showing <strong>{from, number}</strong> of {total, number}} other {Showing <strong>{from, number}–{to, number}</strong> of {total, number}}}'
+        shown_more_html: 'Showing <strong>{from, number}–{to, number}</strong> of more than {total, number}'
+        per_page: 'Per page'
+    timezone:
+        region:
+            africa: Africa
+            america: America
+            antarctica: Antarctica
+            arctic: Arctic
+            asia: Asia
+            atlantic: Atlantic
+            australia: Australia
+            europe: Europe
+            indian: Indian Ocean
+            pacific: Pacific
+            other: Other
+    time_ago:
+        now: just now
+        minutes: '{count} min ago'
+        hours: '{count, plural, one {# hour ago} other {# hours ago}}'
+        days: '{count, plural, one {yesterday} other {# days ago}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: General
+            users: Users
+            sales: Sales
+            content: Content
+            system: System
+        number: '{value, number}'
+    pagination:
+        previous: Previous page
+        next: Next page
+        previous_tip: Previous page
+        next_tip: Next page
+        jump: Go to page
+        jump_hint: Type a page number
+
+crud:
+    palette:
+        list: List
+        create: Add a new record
+        own: Your page
+    total_html: 'Total: <strong>{count, number}</strong>'
+    total_more_html: 'Total: <strong>more than {count, number}</strong>'
+    search: Search
+    clear_filters: Clear filters
+    sort_tip: 'Sort: a clicked column goes first; the first one: ascending, descending, off'
+    empty: No results.
+    selected: 'Selected: {count, number}'
+    select: 'Select'
+    select_page: 'Select all on this page'
+    select_all_matching: 'Select all {count, number} matching the filters'
+    all_matching_selected: 'All {count, number} matching the filters are selected'
+    clear_selection: 'Clear selection'
+    actions: Actions
+    filter:
+        title: 'Filters'
+        more: 'More filters'
+        query: Search
+        any: Any
+        'yes': 'Yes'
+        'no': 'No'
+        from: 'From'
+        to: 'To'
+        clear: 'Clear'
+        time: 'Time'
+        comparison:
+            label: 'How {field} is compared'
+            eq: 'equals'
+            neq: 'doesn''t equal'
+            contains: 'contains'
+            not_contains: 'doesn''t contain'
+            starts: 'starts with'
+            ends: 'ends with'
+            gt: 'greater than'
+            gte: 'greater than or equal'
+            lt: 'less than'
+            lte: 'less than or equal'
+            between: 'between'
+            in: 'is one of'
+            not_in: 'is none of'
+            empty: 'is empty'
+            filled: 'is not empty'
+    confirm_delete:
+        message: Delete this record?
+        hint: This cannot be undone.
+    confirm_bulk_delete:
+        message: 'Delete the selected records ({count, number})?'
+    action:
+        details: Details
+        edit: Edit
+        delete: Delete
+        duplicate: 'Duplicate'
+        list: List
+    layout:
+        errors: '{count, plural, one {# error} other {# errors}}'
+    toast:
+        created: Added
+        updated: Changes saved
+        deleted: Deleted
+        delete_failed: Could not delete
+        bulk_deleted: 'Deleted: {count, number}'
+        bulk_delete_failed: 'Not deleted: {count, number}'
+        gone: This record no longer exists
+        bulk_failed: 'The action was not done'
+        action_failed: 'Could not do this'
+        done: 'Done'
+    value:
+        'yes': 'Yes'
+        'no': 'No'
+        datetime: '{at, date, medium}, {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Not found.
+        forbidden: You are not allowed to do this.
+        taken: Such a record exists already.
+        in_use: This record is used by others and cannot be deleted.
+        changed: 'Somebody else has changed this record in the meantime. Open it again to see their changes.'
+        retry: 'The database is busy. Nothing was saved - try again.'
+        refused: 'The database refused this record.'
+        input_required: 'This answer is required.'
+        input_choice: 'Choose one of the options.'
+        input_number: 'Enter a number.'
+        input_date: 'Enter a valid date.'
+
+panel:
+    login:
+        title: Sign in
+        username: Username
+        password: Password
+        submit: Sign in
+    scope:
+        panel: Panel
+        admin: Administration
+    nav:
+        main_menu: Main menu
+        close_menu: Close menu
+        dashboard: Dashboard
+        section:
+            start: Start
+            main: Main
+            account: Account
+    dashboard:
+        subtitle: Your widgets - drag, resize, add more.
+        subtitle_own: Your own layout of widgets.
+        empty_title: There are no widgets on the dashboard
+        empty_text: Add the first one with "Add widget".
+        add: Add widget
+        edit: Edit
+        done: Done
+        more: More
+        reset: Restore the default
+        reset_confirm: Restore the default dashboard? Your own layout will be forgotten.
+        share: Make it the default for everybody
+        share_confirm: Make this layout the default for everybody?
+        share_hint: Everybody without a layout of their own will see it.
+        remove: 'Remove the widget "{title}"'
+        settings: 'Settings: {title}'
+        toast:
+            failed: The dashboard could not be saved
+            shared: The layout is now the default for everybody
+        gallery:
+            title: Add a widget
+            search: Search widgets
+            add: Add
+            size: Size
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {on the dashboard} other {# times on the dashboard}}'
+            empty: There are no widgets to add.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Clock
+            description: An analog or digital clock, with a second city beside it.
+            setting:
+                style: Face
+                zone: Second city
+            style:
+                analog: Analog
+                digital: Digital
+            city:
+                none: None
+                utc: UTC
+                london: London
+                warsaw: Warsaw
+                berlin: Berlin
+                kyiv: Kyiv
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Kolkata
+                shanghai: Shanghai
+                tokyo: Tokyo
+                sydney: Sydney
+        quick_actions:
+            title: Quick actions
+            description: Tiles leading to adding records, like the shortcuts of iOS - choose which.
+            setting: Which actions (none = all)
+            empty: There are no actions you can use.
+        note:
+            title: Note
+            description: A sticky note saved as you type. Everybody has their own.
+            placeholder: Write something…
+            saving: Saving…
+            saved: Saved
+    topbar:
+        open_menu: Open menu
+        open_palette: Open the command palette
+        search: Search or type a command…
+    palette:
+        label: Command palette
+        placeholder: Search or type a command…
+        search_label: Search the panel
+        empty: 'Nothing found for “{query}”'
+        navigate: navigate
+        open: open
+        close: close
+        hint_html: 'Try the name of a record, or <b>&gt;</b> for commands'
+        verb:
+            go: Go to
+            open: Open
+            run: Run
+        group:
+            recent: Recent
+            suggested: Suggested
+            navigation: Navigation
+            commands: Commands
+        item:
+            panel_switch:
+                description: Go to another panel
+            dashboard_edit:
+                name: Edit the dashboard
+                description: Move and resize the widgets
+                keywords: 'dashboard, widgets, layout, rearrange'
+            dashboard_add:
+                name: Add a widget
+                description: Pick a widget from the gallery
+                keywords: 'dashboard, new widget, gallery'
+            dashboard_reset:
+                name: Restore the default dashboard
+                description: Forget your own layout of widgets
+                keywords: 'dashboard, reset, default layout'
+            theme:
+                name: Switch between the light and the dark theme
+                description: Change the look of the panel
+                keywords: 'dark mode, light mode, colours, colors'
+    theme:
+        toggle: Switch theme
+        toggle_long: Switch between the light and the dark theme
+        choose: Theme
+        choose_long: Choose the colour theme
+        auto: System
+    user_menu:
+        impersonating: You are signed in as this user
+        exit_impersonation: Back to your own account
+        label: User menu
+        logout: Sign out
+        anonymous: You are not signed in

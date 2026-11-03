@@ -1,0 +1,32 @@
+{# The one signed in, as panel_account() (PanelAccount) tells: also without Symfony Security, also on a firewall without "logout". Block "items": more entries. #}
+{% set account = panel_account() %}
+{% set name = account.name ?? '' %}
+{# In the dark top bar: a .nav-link, its menu placed by Bootstrap's navbar (position-absolute). #}
+<div {{ attributes.defaults({class: 'nav-item dropdown'}) }}>
+    <button class="btn btn-link nav-link px-2 py-1 d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ 'panel.user_menu.label'|trans }}">
+        <twig:Ui:Avatar :name="name" :src="account.user.avatar ?? null" />
+        {% if name %}<span class="d-none d-lg-inline small">{{ name }}</span>{% endif %}
+    </button>
+    <div class="dropdown-menu dropdown-menu-end shadow position-absolute">
+        {% if account.user %}
+            <div class="px-3 py-2 border-bottom mb-1">
+                <div class="fw-semibold">{{ name }}</div>
+                <div class="small text-body-secondary">{{ account.identifier }}</div>
+            </div>
+            {# Somebody signed in as this user (switch_user): the way back to their own account. #}
+            {% if account.impersonationExitUrl %}
+                <h6 class="dropdown-header">{{ 'panel.user_menu.impersonating'|trans }}</h6>
+                <a class="dropdown-item" href="{{ account.impersonationExitUrl }}" data-turbo="false">{{ crud_icon('arrow-return-left', 'me-2') }}{{ 'panel.user_menu.exit_impersonation'|trans }}</a>
+                <div class="dropdown-divider"></div>
+            {% endif %}
+            {% block items %}{% endblock %}
+            {% if account.logoutUrl %}
+                <form method="post" action="{{ account.logoutUrl }}" data-turbo="false">
+                    <button class="dropdown-item" type="submit">{{ crud_icon('box-arrow-right', 'me-2') }}{{ 'panel.user_menu.logout'|trans }}</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <h6 class="dropdown-header">{{ 'panel.user_menu.anonymous'|trans }}</h6>
+        {% endif %}
+    </div>
+</div>

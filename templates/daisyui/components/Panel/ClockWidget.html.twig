@@ -1,0 +1,37 @@
+{# The clock: one face per zone (the user's own, then the second city). The hands are turned by the clock controller. #}
+{# Inside the card, `this` is the card (Ui:Widget): what the clock knows is taken out before. #}
+{% set zones = this.zones %}
+{% set analog = this.analog %}
+{% set numerals = this.numerals %}
+<div {{ attributes.defaults({class: 'h-full'}) }}>
+    <twig:Ui:Widget :title="'panel.widget.clock.title'|trans" icon="clock" accent="#f97316" :tone="this.tone">
+        <div class="flex min-h-0 flex-1 items-center justify-around gap-3" data-controller="clock" data-clock-locale-value="{{ app.locale }}">
+            {% for zone in zones %}
+                <div class="grid h-full min-w-0 grid-rows-[minmax(0,1fr)_auto] items-center justify-items-center gap-1" data-clock-target="face" data-zone="{{ zone.zone }}">
+                    {% if analog %}
+                        <svg class="aspect-square h-full w-auto max-w-full" viewBox="0 0 100 100" role="img" aria-label="{{ zone.label }}" fill="none" stroke="currentColor" stroke-linecap="round">
+                            <circle cx="50" cy="50" r="48" stroke-width="1.5" opacity="0.4" />
+                            {% for i in 0..59 %}
+                                {% set major = i % 5 == 0 %}
+                                <line x1="50" y1="{{ major ? 5 : 4 }}" x2="50" y2="{{ major ? 10 : 7 }}" stroke-width="{{ major ? 1.6 : 0.6 }}" transform="rotate({{ i * 6 }} 50 50)" opacity="{{ major ? 0.9 : 0.4 }}" />
+                            {% endfor %}
+                            {% for numeral in numerals %}
+                                <text x="{{ numeral.x }}" y="{{ numeral.y }}" fill="currentColor" stroke="none" font-size="9" font-weight="600" text-anchor="middle" dominant-baseline="central">{{ numeral.hour }}</text>
+                            {% endfor %}
+                            <line data-hand="hour" x1="50" y1="54" x2="50" y2="27" stroke-width="3.6" />
+                            <line data-hand="minute" x1="50" y1="56" x2="50" y2="14" stroke-width="2.4" />
+                            <line data-hand="second" x1="50" y1="60" x2="50" y2="10" stroke-width="1" stroke="#f97316" />
+                            <circle cx="50" cy="50" r="2.4" fill="#f97316" stroke="none" />
+                        </svg>
+                    {% else %}
+                        <div class="text-center">
+                            <div class="text-4xl font-semibold tabular-nums" data-digital></div>
+                            <div class="text-sm text-base-content/60" data-day></div>
+                        </div>
+                    {% endif %}
+                    <div class="truncate text-sm text-base-content/60">{{ zone.label }}{% if zone.flag %}<span aria-hidden="true"> {{ zone.flag }}</span>{% endif %}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </twig:Ui:Widget>
+</div>

@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Kaydet
+        save_new: 'Kaydet ve yenisini ekle'
+        save_edit: 'Kaydet ve düzenlemeye devam et'
+        cancel: İptal
+        confirm: Onayla
+        close: Kapat
+    list:
+        shown_html: '{shown, plural, =0 {{total, number} kayıttan <strong>0</strong> gösteriliyor} =1 {{total, number} kayıttan <strong>{from, number}</strong> gösteriliyor} other {{total, number} kayıttan <strong>{from, number}–{to, number}</strong> gösteriliyor}}'
+        shown_more_html: '{total, number} üzeri kayıttan <strong>{from, number}–{to, number}</strong> gösteriliyor'
+        per_page: 'Sayfa başına'
+    timezone:
+        region:
+            africa: Afrika
+            america: Amerika
+            antarctica: Antarktika
+            arctic: Arktik
+            asia: Asya
+            atlantic: Atlantik
+            australia: Avustralya
+            europe: Avrupa
+            indian: Hint Okyanusu
+            pacific: Pasifik
+            other: Diğer
+    time_ago:
+        now: az önce
+        minutes: '{count} dk önce'
+        hours: '{count, plural, other {# saat önce}}'
+        days: '{count, plural, =1 {dün} other {# gün önce}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Genel
+            users: Kullanıcılar
+            sales: Satışlar
+            content: İçerik
+            system: Sistem
+        number: '{value, number}'
+    pagination:
+        previous: Önceki sayfa
+        next: Sonraki sayfa
+        previous_tip: Önceki sayfa
+        next_tip: Sonraki sayfa
+        jump: Sayfaya git
+        jump_hint: Bir sayfa numarası yazın
+
+crud:
+    palette:
+        list: Liste
+        create: Yeni kayıt ekle
+        own: Sayfanız
+    total_html: 'Toplam: <strong>{count, number}</strong>'
+    total_more_html: 'Toplam: <strong>{count, number} üzeri</strong>'
+    search: Ara
+    clear_filters: Filtreleri temizle
+    sort_tip: 'Sırala: tıklanan sütun öne geçer; sırasıyla: artan, azalan, kapalı'
+    empty: Sonuç yok.
+    selected: 'Seçilen: {count, number}'
+    select: 'Seç'
+    select_page: 'Bu sayfadakilerin tümünü seç'
+    select_all_matching: 'Filtrelerle eşleşen {count, number} kaydın tümünü seç'
+    all_matching_selected: 'Filtrelerle eşleşen {count, number} kaydın tümü seçildi'
+    clear_selection: 'Seçimi temizle'
+    actions: İşlemler
+    filter:
+        title: 'Filtreler'
+        more: 'Daha fazla filtre'
+        query: Ara
+        any: Tümü
+        'yes': 'Evet'
+        'no': 'Hayır'
+        from: 'Başlangıç'
+        to: 'Bitiş'
+        clear: 'Temizle'
+        time: 'Saat'
+        comparison:
+            label: '{field} karşılaştırması'
+            eq: 'eşittir'
+            neq: 'eşit değildir'
+            contains: 'içerir'
+            not_contains: 'içermez'
+            starts: 'ile başlar'
+            ends: 'ile biter'
+            gt: 'büyüktür'
+            gte: 'büyük veya eşittir'
+            lt: 'küçüktür'
+            lte: 'küçük veya eşittir'
+            between: 'arasında'
+            in: 'şunlardan biri'
+            not_in: 'şunlardan hiçbiri'
+            empty: 'boş'
+            filled: 'boş değil'
+    confirm_delete:
+        message: Bu kayıt silinsin mi?
+        hint: Bu işlem geri alınamaz.
+    confirm_bulk_delete:
+        message: 'Seçilen kayıtlar ({count, number}) silinsin mi?'
+    action:
+        details: Ayrıntılar
+        edit: Düzenle
+        delete: Sil
+        duplicate: 'Çoğalt'
+        list: Liste
+    layout:
+        errors: '{count, plural, other {# hata}}'
+    toast:
+        created: Eklendi
+        updated: Değişiklikler kaydedildi
+        deleted: Silindi
+        delete_failed: Silinemedi
+        bulk_deleted: 'Silinen: {count, number}'
+        bulk_delete_failed: 'Silinemeyen: {count, number}'
+        gone: Bu kayıt artık mevcut değil
+        bulk_failed: 'İşlem yapılmadı'
+        action_failed: 'Bu işlem yapılamadı'
+        done: 'Tamamlandı'
+    value:
+        'yes': 'Evet'
+        'no': 'Hayır'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Bulunamadı.
+        forbidden: Bunu yapma yetkiniz yok.
+        taken: Böyle bir kayıt zaten var.
+        in_use: Bu kayıt başka kayıtlar tarafından kullanılıyor ve silinemez.
+        changed: 'Bu kaydı bu arada başka biri değiştirdi. Değişiklikleri görmek için yeniden açın.'
+        retry: 'Veritabanı meşgul. Hiçbir şey kaydedilmedi - yeniden deneyin.'
+        refused: 'Veritabanı bu kaydı reddetti.'
+        input_required: 'Bu yanıt zorunludur.'
+        input_choice: 'Seçeneklerden birini seçin.'
+        input_number: 'Bir sayı girin.'
+        input_date: 'Geçerli bir tarih girin.'
+
+panel:
+    login:
+        title: Giriş yap
+        username: Kullanıcı adı
+        password: Parola
+        submit: Giriş yap
+    scope:
+        panel: Panel
+        admin: Yönetim
+    nav:
+        main_menu: Ana menü
+        close_menu: Menüyü kapat
+        dashboard: Pano
+        section:
+            start: Başlangıç
+            main: Ana
+            account: Hesap
+    dashboard:
+        subtitle: Bileşenleriniz – sürükleyin, yeniden boyutlandırın, yenilerini ekleyin.
+        subtitle_own: Kendi bileşen düzeniniz.
+        empty_title: Panoda hiç bileşen yok
+        empty_text: İlkini “Bileşen ekle” ile ekleyin.
+        add: Bileşen ekle
+        edit: Düzenle
+        done: Bitti
+        more: Daha fazla
+        reset: Varsayılana dön
+        reset_confirm: Varsayılan pano geri yüklensin mi? Kendi düzeniniz unutulacak.
+        share: Herkes için varsayılan yap
+        share_confirm: Bu düzen herkes için varsayılan yapılsın mı?
+        share_hint: Kendi düzeni olmayan herkes bunu görecek.
+        remove: '“{title}” bileşenini kaldır'
+        settings: 'Ayarlar: {title}'
+        toast:
+            failed: Pano kaydedilemedi
+            shared: Düzen artık herkes için varsayılan
+        gallery:
+            title: Bileşen ekle
+            search: Bileşen ara
+            add: Ekle
+            size: Boyut
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {panoda} other {panoda # kez}}'
+            empty: Eklenecek bileşen yok.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Saat
+            description: Yanında ikinci bir şehirle analog veya dijital saat.
+            setting:
+                style: Kadran
+                zone: İkinci şehir
+            style:
+                analog: Analog
+                digital: Dijital
+            city:
+                none: Yok
+                utc: UTC
+                london: Londra
+                warsaw: Varşova
+                berlin: Berlin
+                kyiv: Kiev
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubai
+                kolkata: Kalküta
+                shanghai: Şanghay
+                tokyo: Tokyo
+                sydney: Sidney
+        quick_actions:
+            title: Hızlı işlemler
+            description: iOS kestirmeleri gibi kayıt eklemeye götüren kutucuklar – hangilerini istediğinizi seçin.
+            setting: Hangi işlemler (hiçbiri = tümü)
+            empty: Kullanabileceğiniz işlem yok.
+        note:
+            title: Not
+            description: Siz yazarken kaydedilen bir yapışkan not. Herkesin kendine ait.
+            placeholder: Bir şeyler yazın…
+            saving: Kaydediliyor…
+            saved: Kaydedildi
+    topbar:
+        open_menu: Menüyü aç
+        open_palette: Komut paletini aç
+        search: Arayın veya bir komut yazın…
+    palette:
+        label: Komut paleti
+        placeholder: Arayın veya bir komut yazın…
+        search_label: Panelde ara
+        empty: '“{query}” için hiçbir şey bulunamadı'
+        navigate: gezin
+        open: aç
+        close: kapat
+        hint_html: 'Bir kaydın adını veya komutlar için <b>&gt;</b> deneyin'
+        verb:
+            go: Git
+            open: Aç
+            run: Çalıştır
+        group:
+            recent: Son kullanılanlar
+            suggested: Önerilenler
+            navigation: Gezinme
+            commands: Komutlar
+        item:
+            panel_switch:
+                description: Başka bir panele git
+            dashboard_edit:
+                name: Panoyu düzenle
+                description: Bileşenleri taşıyın ve yeniden boyutlandırın
+                keywords: 'dashboard, pano, bileşenler, widget, düzen, yeniden düzenle'
+            dashboard_add:
+                name: Bileşen ekle
+                description: Galeriden bir bileşen seçin
+                keywords: 'dashboard, pano, yeni bileşen, widget, galeri'
+            dashboard_reset:
+                name: Varsayılan panoyu geri yükle
+                description: Kendi bileşen düzeninizi unutun
+                keywords: 'dashboard, pano, sıfırla, reset, varsayılan'
+            theme:
+                name: Açık ve koyu tema arasında geçiş yap
+                description: Panelin görünümünü değiştirin
+                keywords: 'koyu mod, açık mod, renkler, dark, light, tema'
+    theme:
+        toggle: Temayı değiştir
+        toggle_long: Açık ve koyu tema arasında geçiş yap
+        choose: Tema
+        choose_long: Renk temasını seç
+        auto: Sistem
+    user_menu:
+        impersonating: Bu kullanıcı olarak oturum açtınız
+        exit_impersonation: Kendi hesabınıza dönün
+        label: Kullanıcı menüsü
+        logout: Çıkış yap
+        anonymous: Oturum açmadınız

@@ -1,0 +1,27 @@
+{#
+    The title row of a page: the way to it (a breadcrumb), the title and what goes next to it, the buttons of the
+    "actions" block on the other side. "breadcrumbs": the steps between the start of the panel and this page, each
+    {label, href} (href may be null); the start of the panel comes first, the title last. "icon" is not drawn here
+    (kept for the other themes).
+#}
+{% props title, meta = null, subtitle = null, icon = null, breadcrumbs = [] %}
+{% set actions %}{% block actions %}{% endblock %}{% endset %}
+{% set home = panel_scope().homeRoute %}
+<div {{ attributes.defaults({class: 'd-flex flex-wrap justify-content-between align-items-center gap-3 mb-3'}) }}>
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-1">
+                <li class="breadcrumb-item">{% if home %}<a class="text-decoration-none" href="{{ path(home) }}">{{ 'panel.nav.section.start'|trans }}</a>{% else %}{{ 'panel.nav.section.start'|trans }}{% endif %}</li>
+                {% for step in breadcrumbs %}
+                    <li class="breadcrumb-item">{% if step.href ?? null %}<a class="text-decoration-none" href="{{ step.href }}">{{ step.label }}</a>{% else %}{{ step.label }}{% endif %}</li>
+                {% endfor %}
+                <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+            </ol>
+        </nav>
+        <h1 class="h3 mb-0">{{ title }}{% if meta %} <span class="text-body-secondary fs-6 fw-normal">{{ meta }}</span>{% endif %}</h1>
+        {% if subtitle %}<p class="text-body-secondary small mb-0 mt-1">{{ subtitle }}</p>{% endif %}
+    </div>
+    {% if actions|trim is not empty %}
+        <div class="d-flex flex-wrap align-items-center gap-2">{{ actions }}</div>
+    {% endif %}
+</div>

@@ -1,0 +1,31 @@
+{# The one signed in, as panel_account() (PanelAccount) tells: also without Symfony Security, also on a firewall without "logout". Block "items": more entries. #}
+{% set account = panel_account() %}
+{% set name = account.name ?? '' %}
+{% set item = 'flex w-full items-center gap-2 text-start' %}
+<details {{ attributes.defaults({class: 'relative', 'data-dropdown': true, 'data-controller': 'dropdown', 'data-action': 'toggle->dropdown#toggle keydown.esc->dropdown#escape'}) }}>
+    <summary class="flex cursor-pointer list-none rounded-full [&::-webkit-details-marker]:hidden" aria-label="{{ 'panel.user_menu.label'|trans }}">
+        <twig:Ui:Avatar :name="name" :src="account.user.avatar ?? null" />
+    </summary>
+    <ul class="menu z-50 min-w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl" data-dropdown-target="menu" data-action="click->dropdown#choose">
+        {% if account.user %}
+            <li class="mb-1 border-b border-base-300 px-3 pt-1 pb-2">
+                <div class="text-sm font-semibold">{{ name }}</div>
+                <div class="text-xs text-base-content/60">{{ account.identifier }}</div>
+            </li>
+            {# Somebody signed in as this user (switch_user): the way back to their own account. #}
+            {% if account.impersonationExitUrl %}
+                <li class="menu-title">{{ 'panel.user_menu.impersonating'|trans }}</li>
+                <li><a class="{{ item }}" href="{{ account.impersonationExitUrl }}" data-turbo="false">{{ crud_icon('arrow-return-left') }}{{ 'panel.user_menu.exit_impersonation'|trans }}</a></li>
+                <li class="my-1 border-t border-base-300"></li>
+            {% endif %}
+            {% block items %}{% endblock %}
+            {% if account.logoutUrl %}
+                <li><form class="p-0" method="post" action="{{ account.logoutUrl }}" data-turbo="false">
+                    <button class="{{ item }} px-3 py-1.5" type="submit">{{ crud_icon('box-arrow-right') }}{{ 'panel.user_menu.logout'|trans }}</button>
+                </form></li>
+            {% endif %}
+        {% else %}
+            <li class="px-3 py-2 text-sm text-base-content/60">{{ 'panel.user_menu.anonymous'|trans }}</li>
+        {% endif %}
+    </ul>
+</details>

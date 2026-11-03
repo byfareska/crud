@@ -1,0 +1,87 @@
+{
+    "name": "byfareska/crud",
+    "description": "Symfony bundle for admin panels: CRUDs from an attribute (Doctrine or DTO + use case drivers), a UI kit of Twig components, dashboards of widgets and a command palette - built on Symfony UX Live Components.",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "keywords": [
+        "symfony",
+        "symfony-bundle",
+        "admin",
+        "admin-panel",
+        "crud",
+        "dashboard",
+        "live-component",
+        "symfony-ux",
+        "twig"
+    ],
+    "homepage": "https://github.com/byfareska/crud",
+    "authors": [
+        {
+            "name": "Karol Szarafinowski",
+            "homepage": "https://github.com/byfareska"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/byfareska/crud/issues",
+        "source": "https://github.com/byfareska/crud",
+        "security": "https://github.com/byfareska/crud/security/policy"
+    },
+    "require": {
+        "php": ">=8.4",
+        "psr/cache": "^3.0",
+        "psr/log": "^3.0",
+        "symfony/polyfill-php86": "^1.43",
+        "symfony/config": "^8.0",
+        "symfony/dependency-injection": "^8.0",
+        "symfony/event-dispatcher": "^8.0",
+        "symfony/form": "^8.0",
+        "symfony/framework-bundle": "^8.0",
+        "symfony/http-foundation": "^8.0",
+        "symfony/http-kernel": "^8.0",
+        "symfony/property-access": "^8.0",
+        "symfony/routing": "^8.0",
+        "symfony/translation": "^8.0",
+        "symfony/twig-bundle": "^8.0",
+        "symfony/ux-chartjs": "^2.20 || ^3.0",
+        "symfony/ux-live-component": "^2.20 || ^3.0",
+        "symfony/ux-twig-component": "^2.20 || ^3.0",
+        "symfony/validator": "^8.0",
+        "twig/twig": "^3.21"
+    },
+    "require-dev": {
+        "deptrac/deptrac": "^4.7",
+        "doctrine/doctrine-bundle": "^3.0",
+        "doctrine/orm": "^3.5",
+        "phpstan/phpstan": "^2.3",
+        "phpunit/phpunit": "^12.0",
+        "rector/rector": "^2.7",
+        "slevomat/coding-standard": "^8.31",
+        "squizlabs/php_codesniffer": "^4.0",
+        "symfony/security-bundle": "^8.0",
+        "symfony/ux-autocomplete": "^3.5"
+    },
+    "suggest": {
+        "doctrine/doctrine-bundle": "The doctrine driver (CRUD on entities) and dashboard layouts kept in the database",
+        "symfony/security-bundle": "The actor of the panel (roles of resources, panels and widgets)",
+        "ext-intl": "Accent-insensitive search of the command palette, ICU messages",
+        "symfony/ux-autocomplete": "(3.5 or later) Relation filters of the lists searched as you type; widget settings with many choices to search in (the zone of the clock)",
+        "symfony/ux-turbo": "Page visits without reloads",
+        "symfony/reprise": "The assets of the panel built by Vite (byfareska_crud.assets: reprise, the default); or Webpack Encore, AssetMapper's importmap"
+    },
+    "autoload": {
+        "psr-4": {
+            "Byfareska\\Crud\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Byfareska\\Crud\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": false
+        }
+    }
+}

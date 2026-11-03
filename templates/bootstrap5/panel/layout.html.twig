@@ -1,0 +1,52 @@
+{#
+    The shell of a panel: its menu (Panel:Sidebar), the top bar and the command palette. The page fills "content";
+    "page_title" is the title of the window, "topbar_start" puts something at the start of the top bar, "topbar_actions"
+    next to the user's menu, "user_menu_items" into that menu (above "sign out"), "main_class" adds classes to <main>
+    and "footer" is the line at the bottom of the page.
+#}
+{% extends '@CrudTheme/panel/base.html.twig' %}
+
+{% block title %}{% block page_title %}{{ panel_scope().label|trans }}{% endblock %} · {{ panel_brand() }}{% endblock %}
+
+{% block body %}
+    {# Taken before the component: a block of this template is not seen from inside the content of a component. #}
+    {% set topbar_start %}{% block topbar_start %}{% endblock %}{% endset %}
+    {% set topbar_actions %}{% block topbar_actions %}{% endblock %}{% endset %}
+    {% set user_menu_items %}{% block user_menu_items %}{% endblock %}{% endset %}
+    <div class="d-flex flex-column min-vh-100">
+        <twig:Panel:Topbar :userMenuItems="user_menu_items">
+            <twig:block name="start">{{ topbar_start }}</twig:block>
+            <twig:block name="actions">{{ topbar_actions }}</twig:block>
+        </twig:Panel:Topbar>
+
+        {# The menu and the page: two columns of Bootstrap's grid - the menu of its own width, the page the rest - as
+           tall as the window at least (the menu's background to the bottom on a short page too). #}
+        <div class="container-fluid d-flex flex-column flex-grow-1">
+            <div class="row flex-grow-1 align-content-start align-content-md-stretch">
+                <twig:Panel:Sidebar />
+
+                {# min-width: a wide table scrolls in its card instead of widening the page. #}
+                <main class="col-12 col-md px-md-4 py-4 {% block main_class %}{% endblock %}" style="min-width: 0">
+                    {% block content %}{% endblock %}
+
+                    {% block footer %}
+                    <footer class="d-flex flex-wrap justify-content-between text-body-secondary small border-top mt-5 pt-3">
+                        <span>&copy; {{ 'now'|date('Y') }} {{ panel_brand() }}</span>
+                        <span>{{ panel_scope().label|trans }}</span>
+                    </footer>
+                    {% endblock %}
+                </main>
+            </div>
+        </div>
+    </div>
+
+    {# Kept across Turbo visits. #}
+    <twig:Panel:CommandPaletteModal />
+    <twig:Ui:Toast id="panel-toast" data-turbo-permanent />
+    {# Where the confirm controller asks "are you sure?". #}
+    <twig:Ui:ConfirmDialog />
+    {# Messages left by the previous page, e.g. after a form was saved. #}
+    {% for title in app.flashes('toast') %}
+        <span hidden data-controller="flash" data-flash-title-value="{{ title }}"></span>
+    {% endfor %}
+{% endblock %}

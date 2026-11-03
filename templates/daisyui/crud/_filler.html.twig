@@ -1,0 +1,19 @@
+{#
+    A filler of an add form (CrudFormFiller): a field to paste something into, and its button (the live action "fill"
+    of Crud:Form), which writes the visible fields. A <details>: no script, and open again after its own re-render.
+    Its field has no name: it is no field of the form. Given: filler {name, input, filled, used}, crud.
+#}
+{% set key = crud.key('filler.' ~ filler.name) %}
+<details class="card card-border mb-4 bg-base-100 p-4 shadow-xs"{{ filler.used ? ' open' }}>
+    <summary class="cursor-pointer font-semibold">{{ crud_icon('magic', 'me-1') }}{{ (key ~ '.title')|trans }}</summary>
+    <textarea class="textarea mt-2 w-full font-mono text-sm" rows="5" spellcheck="false" aria-label="{{ (key ~ '.title')|trans }}" placeholder="{{ (key ~ '.placeholder')|trans }}" data-model="norender|fillerInput[{{ filler.name }}]">{{ filler.input }}</textarea>
+    <div class="mt-1 text-sm text-base-content/60">{{ (key ~ '.help')|trans }}</div>
+    <button class="btn btn-sm mt-2" type="button" data-action="live#action" data-live-action-param="fill" data-live-filler-param="{{ filler.name }}" data-loading="addAttribute(disabled)">{{ crud_icon('magic') }}{{ (key ~ '.button')|trans }}</button>
+    {% if filler.filled %}
+        {% if filler.filled.error %}
+            <div class="alert alert-error alert-soft mt-2 block text-sm" role="alert"><div class="font-semibold">{{ (key ~ '.unreadable')|trans }}</div>{{ filler.filled.error }}</div>
+        {% elseif filler.filled.notes is not empty %}
+            <ul class="mt-2 list-disc ps-5 text-sm">{% for note in filler.filled.notes %}<li>{{ note.key|trans(note.parameters) }}</li>{% endfor %}</ul>
+        {% endif %}
+    {% endif %}
+</details>

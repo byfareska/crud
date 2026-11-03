@@ -1,0 +1,52 @@
+{#
+    "Add a widget": every widget the user may have, by category, with a size to pick and a search field. Part of the
+    dashboard-grid controller of the page (targets and actions).
+#}
+{% set categories = this.categories %}
+<twig:Ui:Modal id="widget-gallery" size="xl">
+    <div class="flex items-center justify-between border-b border-base-300 px-5 py-3">
+        <h2 class="text-lg font-semibold">{{ 'panel.dashboard.gallery.title'|trans }}</h2>
+        <button type="button" class="btn btn-ghost btn-sm btn-square" commandfor="widget-gallery" command="close" aria-label="{{ 'ui.action.close'|trans }}">{{ crud_icon('x-lg') }}</button>
+    </div>
+    <div class="max-h-[70vh] overflow-y-auto p-5">
+        <input class="input mb-4 w-full" type="search" autocomplete="off"
+               placeholder="{{ 'panel.dashboard.gallery.search'|trans }}" aria-label="{{ 'panel.dashboard.gallery.search'|trans }}"
+               data-overlay-target="autofocus" data-dashboard-grid-target="search" data-action="input->dashboard-grid#filter">
+        {% for category, widgets in categories %}
+            <section class="mb-5" data-dashboard-grid-target="galleryCategory">
+                <h3 class="mb-2 text-xs font-semibold tracking-wide text-base-content/60 uppercase">{{ category|trans }}</h3>
+                <div class="grid gap-3 md:grid-cols-2">
+                    {% for view in widgets %}
+                        {% set widget = view.widget %}
+                        {% set title = widget.title|trans %}
+                        {% set description = widget.description|trans %}
+                        <div class="card card-border flex flex-col gap-2 bg-base-100 p-4" data-dashboard-grid-target="galleryItem" data-widget="{{ widget.key }}"
+                             data-search="{{ (title ~ ' ' ~ description ~ ' ' ~ category|trans)|lower }}">
+                            <div class="flex items-center gap-2">
+                                {{ crud_icon(widget.icon, '', {style: 'color: ' ~ (widget.accent)}) }}
+                                <span class="flex-1 font-semibold">{{ title }}</span>
+                                {% if view.placed > 0 %}<span class="badge badge-sm badge-ghost">{{ 'panel.dashboard.gallery.placed'|trans({count: view.placed}) }}</span>{% endif %}
+                            </div>
+                            <p class="flex-1 text-sm text-base-content/60">{{ description }}</p>
+                            <div class="flex items-center gap-2">
+                                <div class="join" role="radiogroup" aria-label="{{ 'panel.dashboard.gallery.size'|trans }}">
+                                    {% for name, size in view.sizes %}
+                                        <label class="join-item btn btn-xs has-checked:btn-primary" title="{{ 'panel.dashboard.gallery.size_tip'|trans({w: size.w, h: size.h}) }}">
+                                            <input class="sr-only" type="radio" name="size-{{ widget.key }}" value="{{ name }}" data-w="{{ size.w }}" data-h="{{ size.h }}" {{ name == view.size ? 'checked' }}>
+                                            {{ ('panel.dashboard.gallery.sizes.' ~ name)|trans }}
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                                <button class="btn btn-sm btn-success ms-auto" type="button" data-action="dashboard-grid#add" data-widget="{{ widget.key }}">
+                                    {{ crud_icon('plus-lg') }} {{ 'panel.dashboard.gallery.add'|trans }}
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% else %}
+            <p class="text-sm text-base-content/60">{{ 'panel.dashboard.gallery.empty'|trans }}</p>
+        {% endfor %}
+    </div>
+</twig:Ui:Modal>

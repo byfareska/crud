@@ -1,0 +1,26 @@
+{# A compact list of a widget. items: {title, meta?, time?, href?, icon?, accent?, avatar?: {name, src}, badge?}. #}
+{% props items = [], empty = null %}
+{% if items is empty %}
+    <div class="text-body-secondary small">{{ empty }}</div>
+{% else %}
+    <ul {{ attributes.defaults({class: 'list-unstyled mb-0 d-flex flex-column gap-1'}) }}>
+        {% for item in items %}
+            <li>
+                {% set tag = item.href is defined and item.href ? 'a' : 'div' %}
+                <{{ tag }} class="d-flex align-items-center gap-2 py-1 text-body text-decoration-none"{% if tag == 'a' %} href="{{ item.href }}"{% endif %}>
+                    {% if item.avatar is defined and item.avatar %}
+                        <twig:Ui:Avatar :name="item.avatar.name" :src="item.avatar.src ?? null" size="1.75rem" />
+                    {% elseif item.icon is defined and item.icon %}
+                        {{ crud_icon(item.icon, '', {style: 'color: ' ~ (item.accent ?? 'inherit')}) }}
+                    {% endif %}
+                    <span class="flex-grow-1 text-truncate">
+                        {{ item.title }}
+                        {% if item.meta is defined and item.meta %}<span class="d-block small text-body-secondary text-truncate">{{ item.meta }}</span>{% endif %}
+                    </span>
+                    {% if item.badge is defined and item.badge is not null %}<span class="badge rounded-pill text-bg-secondary">{{ item.badge }}</span>{% endif %}
+                    {% if item.time is defined and item.time %}<span class="small text-body-secondary text-nowrap">{{ item.time }}</span>{% endif %}
+                </{{ tag }}>
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}

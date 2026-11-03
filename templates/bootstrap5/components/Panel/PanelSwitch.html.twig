@@ -1,0 +1,6 @@
+{# The way to the other panels - those the one looking may go into (byfareska_crud.scopes.<name>.role). #}
+{% props panels = [] %}
+{% for panel in panels %}
+    {% set label = panel.label|trans %}
+    <a {{ attributes.defaults({class: 'nav-link px-2 py-2 d-flex align-items-center gap-1', href: path(panel.homeRoute), title: label}) }}>{{ crud_icon(panel.icon) }}<span class="d-none d-lg-inline small">{{ label }}</span></a>
+{% endfor %}

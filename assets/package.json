@@ -1,0 +1,21 @@
+{
+    "name": "@byfareska/crud",
+    "description": "Stimulus controllers of the byfareska/crud panel",
+    "private": true,
+    "type": "module",
+    "main": "index.js",
+    "exports": {
+        ".": "./index.js",
+        "./*": "./*"
+    },
+    "peerDependencies": {
+        "@hotwired/stimulus": "^3.2.0",
+        "@symfony/ux-live-component": "*",
+        "bootstrap": "^5.3.8",
+        "gridstack": "^14.0.0",
+        "vanilla-calendar-pro": "^3.4.0"
+    },
+    "peerDependenciesMeta": {
+        "bootstrap": { "optional": true }
+    }
+}

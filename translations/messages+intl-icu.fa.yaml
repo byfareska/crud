@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: ذخیره
+        save_new: 'ذخیره و افزودن مورد دیگر'
+        save_edit: 'ذخیره و ادامهٔ ویرایش'
+        cancel: لغو
+        confirm: تأیید
+        close: بستن
+    list:
+        shown_html: '{shown, plural, =0 {نمایش <strong>0</strong> از {total, number}} =1 {نمایش <strong>{from, number}</strong> از {total, number}} other {نمایش <strong>{from, number}–{to, number}</strong> از {total, number}}}'
+        shown_more_html: 'نمایش <strong>{from, number}–{to, number}</strong> از بیش از {total, number}'
+        per_page: 'در هر صفحه'
+    timezone:
+        region:
+            africa: آفریقا
+            america: آمریکا
+            antarctica: جنوبگان
+            arctic: قطب شمال
+            asia: آسیا
+            atlantic: اقیانوس اطلس
+            australia: استرالیا
+            europe: اروپا
+            indian: اقیانوس هند
+            pacific: اقیانوس آرام
+            other: سایر
+    time_ago:
+        now: همین الان
+        minutes: '{count} دقیقه پیش'
+        hours: '{count, plural, other {# ساعت پیش}}'
+        days: '{count, plural, =1 {دیروز} other {# روز پیش}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: عمومی
+            users: کاربران
+            sales: فروش
+            content: محتوا
+            system: سیستم
+        number: '{value, number}'
+    pagination:
+        previous: صفحهٔ قبل
+        next: صفحهٔ بعد
+        previous_tip: صفحهٔ قبل
+        next_tip: صفحهٔ بعد
+        jump: رفتن به صفحه
+        jump_hint: شمارهٔ صفحه را وارد کنید
+
+crud:
+    palette:
+        list: فهرست
+        create: افزودن رکورد جدید
+        own: صفحهٔ شما
+    total_html: 'مجموع: <strong>{count, number}</strong>'
+    total_more_html: 'مجموع: <strong>بیش از {count, number}</strong>'
+    search: جستجو
+    clear_filters: پاک کردن فیلترها
+    sort_tip: 'مرتب‌سازی: ستونی که کلیک شود اول می‌آید؛ به ترتیب: صعودی، نزولی، خاموش'
+    empty: نتیجه‌ای یافت نشد.
+    selected: 'انتخاب‌شده: {count, number}'
+    select: 'انتخاب'
+    select_page: 'انتخاب همه در این صفحه'
+    select_all_matching: 'انتخاب همه موارد مطابق با فیلترها ({count, number})'
+    all_matching_selected: 'همه موارد مطابق با فیلترها انتخاب شدند: {count, number}'
+    clear_selection: 'پاک کردن انتخاب'
+    actions: عملیات
+    filter:
+        title: 'فیلترها'
+        more: 'فیلترهای بیشتر'
+        query: جستجو
+        any: همه
+        'yes': 'بله'
+        'no': 'خیر'
+        from: 'از'
+        to: 'تا'
+        clear: 'پاک کردن'
+        time: 'ساعت'
+        comparison:
+            label: 'نحوه مقایسه {field}'
+            eq: 'برابر با'
+            neq: 'نابرابر با'
+            contains: 'شامل'
+            not_contains: 'شامل نیست'
+            starts: 'شروع با'
+            ends: 'پایان با'
+            gt: 'بزرگ‌تر از'
+            gte: 'بزرگ‌تر یا برابر'
+            lt: 'کوچک‌تر از'
+            lte: 'کوچک‌تر یا برابر'
+            between: 'بین'
+            in: 'یکی از'
+            not_in: 'هیچ‌کدام از'
+            empty: 'خالی است'
+            filled: 'خالی نیست'
+    confirm_delete:
+        message: این رکورد حذف شود؟
+        hint: این کار برگشت‌پذیر نیست.
+    confirm_bulk_delete:
+        message: 'رکوردهای انتخاب‌شده ({count, number}) حذف شوند؟'
+    action:
+        details: جزئیات
+        edit: ویرایش
+        delete: حذف
+        duplicate: 'تکثیر'
+        list: فهرست
+    layout:
+        errors: '{count, plural, other {# خطا}}'
+    toast:
+        created: افزوده شد
+        updated: تغییرات ذخیره شد
+        deleted: حذف شد
+        delete_failed: حذف ممکن نشد
+        bulk_deleted: 'حذف شد: {count, number}'
+        bulk_delete_failed: 'حذف نشد: {count, number}'
+        gone: این رکورد دیگر وجود ندارد
+        bulk_failed: 'این عملیات انجام نشد'
+        action_failed: 'انجام این کار ممکن نشد'
+        done: 'انجام شد'
+    value:
+        'yes': 'بله'
+        'no': 'خیر'
+        datetime: '{at, date, medium}، {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: یافت نشد.
+        forbidden: شما اجازهٔ انجام این کار را ندارید.
+        taken: چنین رکوردی از قبل وجود دارد.
+        in_use: این رکورد توسط رکوردهای دیگر استفاده می‌شود و قابل حذف نیست.
+        changed: 'شخص دیگری در این فاصله این رکورد را تغییر داده است. برای دیدن تغییرات دوباره آن را باز کنید.'
+        retry: 'پایگاه داده مشغول است. چیزی ذخیره نشد - دوباره تلاش کنید.'
+        refused: 'پایگاه داده این رکورد را رد کرد.'
+        input_required: 'این پاسخ الزامی است.'
+        input_choice: 'یکی از گزینه‌ها را انتخاب کنید.'
+        input_number: 'یک عدد وارد کنید.'
+        input_date: 'یک تاریخ معتبر وارد کنید.'
+
+panel:
+    login:
+        title: ورود
+        username: نام کاربری
+        password: گذرواژه
+        submit: ورود
+    scope:
+        panel: پنل
+        admin: مدیریت
+    nav:
+        main_menu: منوی اصلی
+        close_menu: بستن منو
+        dashboard: داشبورد
+        section:
+            start: شروع
+            main: اصلی
+            account: حساب کاربری
+    dashboard:
+        subtitle: ابزارک‌های شما – بکشید، اندازه را تغییر دهید، موارد بیشتری اضافه کنید.
+        subtitle_own: چیدمان شخصی ابزارک‌های شما.
+        empty_title: هیچ ابزارکی در داشبورد نیست
+        empty_text: اولین را با «افزودن ابزارک» اضافه کنید.
+        add: افزودن ابزارک
+        edit: ویرایش
+        done: انجام شد
+        more: بیشتر
+        reset: بازگردانی پیش‌فرض
+        reset_confirm: داشبورد پیش‌فرض بازگردانده شود؟ چیدمان شخصی شما فراموش می‌شود.
+        share: پیش‌فرض کردن برای همه
+        share_confirm: این چیدمان برای همه پیش‌فرض شود؟
+        share_hint: همهٔ کسانی که چیدمان شخصی ندارند آن را خواهند دید.
+        remove: 'حذف ابزارک «{title}»'
+        settings: 'تنظیمات: {title}'
+        toast:
+            failed: ذخیرهٔ داشبورد ممکن نشد
+            shared: این چیدمان اکنون برای همه پیش‌فرض است
+        gallery:
+            title: افزودن ابزارک
+            search: جستجوی ابزارک‌ها
+            add: افزودن
+            size: اندازه
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {روی داشبورد} other {# بار روی داشبورد}}'
+            empty: ابزارکی برای افزودن وجود ندارد.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: ساعت
+            description: ساعتی عقربه‌ای یا دیجیتال، با یک شهر دوم در کنارش.
+            setting:
+                style: صفحه
+                zone: شهر دوم
+            style:
+                analog: عقربه‌ای
+                digital: دیجیتال
+            city:
+                none: هیچ
+                utc: UTC
+                london: لندن
+                warsaw: ورشو
+                berlin: برلین
+                kyiv: کی‌یف
+                new_york: نیویورک
+                chicago: شیکاگو
+                los_angeles: لس‌آنجلس
+                sao_paulo: سائوپائولو
+                dubai: دبی
+                kolkata: کلکته
+                shanghai: شانگهای
+                tokyo: توکیو
+                sydney: سیدنی
+        quick_actions:
+            title: اقدامات سریع
+            description: کاشی‌هایی برای افزودن رکورد، مانند میان‌برهای iOS – انتخاب کنید کدام‌ها.
+            setting: کدام اقدامات (هیچ = همه)
+            empty: اقدامی برای استفادهٔ شما وجود ندارد.
+        note:
+            title: یادداشت
+            description: یادداشتی چسبان که هنگام نوشتن ذخیره می‌شود. هر کس یادداشت خودش را دارد.
+            placeholder: چیزی بنویسید…
+            saving: در حال ذخیره…
+            saved: ذخیره شد
+    topbar:
+        open_menu: باز کردن منو
+        open_palette: باز کردن پالت فرمان
+        search: جستجو کنید یا فرمانی بنویسید…
+    palette:
+        label: پالت فرمان
+        placeholder: جستجو کنید یا فرمانی بنویسید…
+        search_label: جستجو در پنل
+        empty: 'چیزی برای «{query}» یافت نشد'
+        navigate: پیمایش
+        open: باز کردن
+        close: بستن
+        hint_html: 'نام یک رکورد را امتحان کنید، یا <b>&gt;</b> برای فرمان‌ها'
+        verb:
+            go: رفتن به
+            open: باز کردن
+            run: اجرا
+        group:
+            recent: اخیر
+            suggested: پیشنهادی
+            navigation: پیمایش
+            commands: فرمان‌ها
+        item:
+            panel_switch:
+                description: رفتن به پنلی دیگر
+            dashboard_edit:
+                name: ویرایش داشبورد
+                description: جابه‌جایی و تغییر اندازهٔ ابزارک‌ها
+                keywords: 'dashboard, داشبورد, ابزارک, widget, چیدمان, مرتب کردن'
+            dashboard_add:
+                name: افزودن ابزارک
+                description: یک ابزارک از گالری انتخاب کنید
+                keywords: 'dashboard, داشبورد, ابزارک جدید, widget, گالری'
+            dashboard_reset:
+                name: بازگردانی داشبورد پیش‌فرض
+                description: فراموش کردن چیدمان شخصی ابزارک‌ها
+                keywords: 'dashboard, داشبورد, بازنشانی, reset, پیش‌فرض'
+            theme:
+                name: جابه‌جایی بین پوستهٔ روشن و تیره
+                description: تغییر ظاهر پنل
+                keywords: 'حالت تیره, حالت روشن, رنگ‌ها, dark, light, theme'
+    theme:
+        toggle: تغییر پوسته
+        toggle_long: جابه‌جایی بین پوستهٔ روشن و تیره
+        choose: پوسته
+        choose_long: انتخاب پوستهٔ رنگی
+        auto: سیستم
+    user_menu:
+        impersonating: شما با این کاربر وارد شده‌اید
+        exit_impersonation: بازگشت به حساب خودتان
+        label: منوی کاربر
+        logout: خروج
+        anonymous: شما وارد نشده‌اید

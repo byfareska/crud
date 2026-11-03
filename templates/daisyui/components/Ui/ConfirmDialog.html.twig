@@ -1,0 +1,23 @@
+{#
+    The one dialog of a page that asks "are you sure?", filled and opened by the confirm controller of the element that
+    needs the answer. The focus starts on "cancel", ← / → walk between the buttons, Esc answers no.
+#}
+{% props id = 'confirm-dialog' %}
+<twig:Ui:Modal :id="id" size="sm" role="alertdialog" aria-labelledby="{{ id }}-message" aria-describedby="{{ id }}-hint" {{ ...attributes }}>
+    <div class="p-5">
+        <div class="mb-1 font-semibold" id="{{ id }}-message" data-confirm-dialog="message"></div>
+        <div class="text-sm text-base-content/60" id="{{ id }}-hint" data-confirm-dialog="hint"></div>
+        {# What the question asks besides "yes" (ConfirmInput): a text, a number, a day or a choice. #}
+        <div class="mt-3" data-confirm-dialog="field" hidden>
+            <label class="label mb-1 text-sm font-medium text-base-content" data-confirm-dialog="label"></label>
+            <textarea class="textarea w-full" id="{{ id }}-text" rows="2" data-confirm-dialog="text"></textarea>
+            {# A number, a day or a line (ConfirmInput type), its kind set by the confirm controller. #}
+            <input class="input w-full" id="{{ id }}-input" data-confirm-dialog="input" hidden>
+            <select class="select w-full" id="{{ id }}-choice" data-confirm-dialog="choice" hidden></select>
+        </div>
+    </div>
+    <div class="modal-action m-0 gap-2 bg-base-200 px-5 py-3" data-action="keydown->overlay#walk">
+        <button type="button" class="btn btn-sm" commandfor="{{ id }}" command="close" data-overlay-target="autofocus">{{ 'ui.action.cancel'|trans }}</button>
+        <button type="button" class="btn btn-sm btn-error" commandfor="{{ id }}" command="close" data-confirm-dialog="accept" data-confirm-dialog-label="{{ 'ui.action.confirm'|trans }}">{{ 'ui.action.confirm'|trans }}</button>
+    </div>
+</twig:Ui:Modal>

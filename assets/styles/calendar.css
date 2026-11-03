@@ -1,0 +1,81 @@
+/*
+ * The calendar of the date filters (date-range controller, vanilla-calendar-pro) in the colours of the panel:
+ * Bootstrap's primary colour and body in the bootstrap5 theme, the colour theme's primary and base in the daisyui
+ * theme (the variables of daisyUI), indigo and grey in the tailwind theme. Import it after
+ * the calendar's own stylesheets (vanilla-calendar-pro/styles/core.css and months.css).
+ */
+.crud-calendar {
+    --crud-calendar-accent: var(--bs-primary, var(--color-primary, #4f46e5));
+    --crud-calendar-bg: var(--bs-body-bg, var(--color-base-100, #fff));
+    --crud-calendar-color: var(--bs-body-color, var(--color-base-content, #111827));
+    --crud-calendar-border: var(--bs-border-color, var(--color-base-300, #e5e7eb));
+    position: fixed;
+    z-index: 1080;
+    overflow: hidden;
+    border: 1px solid var(--crud-calendar-border);
+    border-radius: .75rem;
+    background: var(--crud-calendar-bg);
+    color: var(--crud-calendar-color);
+    box-shadow: 0 10px 30px rgb(0 0 0 / .15);
+}
+
+[data-theme=dark] .crud-calendar,
+[data-color-scheme=dark] .crud-calendar {
+    --crud-calendar-accent: var(--bs-primary, var(--color-primary, #6366f1));
+    --crud-calendar-bg: var(--bs-body-bg, var(--color-base-100, #1f2937));
+    --crud-calendar-color: var(--bs-body-color, var(--color-base-content, #f3f4f6));
+    --crud-calendar-border: var(--bs-border-color, var(--color-base-300, rgb(255 255 255 / .1)));
+    box-shadow: 0 10px 30px rgb(0 0 0 / .5);
+}
+
+.crud-calendar .vc[data-vc-theme] {
+    --vc-bg: transparent;
+    --vc-date-selected-bg: var(--crud-calendar-accent);
+    --vc-date-selected-color: #fff;
+    --vc-date-range-middle-bg: color-mix(in srgb, var(--crud-calendar-accent) 14%, transparent);
+    --vc-date-range-middle-color: inherit;
+    --vc-date-today-color: var(--crud-calendar-accent);
+    --vc-date-hover-edge-bg: color-mix(in srgb, var(--crud-calendar-accent) 24%, transparent);
+    --vc-months-years-bg-selected: var(--crud-calendar-accent);
+    --vc-focus-outline-color: var(--crud-calendar-accent);
+    border-radius: 0;
+}
+
+[data-theme=dark] .crud-calendar .vc[data-vc-theme],
+[data-color-scheme=dark] .crud-calendar .vc[data-vc-theme] {
+    --vc-date-range-middle-bg: color-mix(in srgb, var(--crud-calendar-accent) 28%, transparent);
+}
+
+.crud-calendar__times {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem 1.5rem;
+    padding: .75rem 1rem;
+    border-top: 1px solid var(--crud-calendar-border);
+    font-size: .875rem;
+}
+
+.crud-calendar__times label {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0;
+}
+
+.crud-calendar__times span {
+    opacity: .7;
+}
+
+.crud-calendar__times input {
+    padding: .25rem .5rem;
+    border: 1px solid var(--crud-calendar-border);
+    border-radius: .375rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+}
+
+.crud-calendar__times input:focus {
+    outline: 2px solid var(--crud-calendar-accent);
+    outline-offset: -1px;
+}

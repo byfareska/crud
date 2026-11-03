@@ -1,0 +1,44 @@
+{#
+    The top bar, dark in both colour schemes and across the whole width: the name of the panel (as wide as the menu
+    under it), the command palette, the way to the other panels, the theme, the user's menu and - on small screens -
+    the button of the menu. Blocks of a theme of yours: "brand", "start" (before the palette), "actions" (before the
+    way to the other panels).
+#}
+{% set home = panel_scope().homeRoute %}
+<header {{ attributes.defaults({class: 'navbar sticky-top bg-dark flex-nowrap p-0 shadow-sm', 'data-bs-theme': 'dark'}) }}>
+    {% block brand %}
+    {# As wide as the menu under it (Panel:Sidebar); narrower on a small screen, when the bar needs the room. #}
+    <a class="navbar-brand me-0 px-3 py-3 fs-6 fw-semibold d-flex align-items-center gap-2 text-truncate" style="width: 15rem"{% if home %} href="{{ path(home) }}"{% endif %}>
+        {{ crud_icon(panel_scope().icon, 'text-primary fs-5') }} {{ panel_brand() }}
+    </a>
+    {% endblock %}
+    {% block start %}{% endblock %}
+    {% if palette %}
+        {# Looks like the search field of the bar; opens the command palette. #}
+        <div class="d-none d-md-flex flex-grow-1 px-3">
+            <button class="btn btn-sm w-100 d-flex align-items-center gap-2 border border-secondary-subtle text-body-secondary text-start" type="button" data-bs-toggle="modal" data-bs-target="#command-palette" aria-label="{{ 'panel.topbar.open_palette'|trans }}">
+                {{ crud_icon('search') }}
+                <span class="flex-grow-1 text-truncate">{{ 'panel.topbar.search'|trans }}</span>
+            </button>
+        </div>
+    {% endif %}
+    <div class="navbar-nav flex-row align-items-center gap-1 px-2 ms-auto">
+        {% if palette %}
+            <button class="btn btn-link nav-link px-2 py-2 d-md-none" type="button" data-bs-toggle="modal" data-bs-target="#command-palette" aria-label="{{ 'panel.topbar.open_palette'|trans }}">{{ crud_icon('search') }}</button>
+        {% endif %}
+        {% block actions %}{% endblock %}
+        <twig:Panel:PanelSwitch :panels="this.panels" />
+        <twig:Panel:ThemeToggle />
+        {# What the TopbarWidgetSources add. #}
+        {% for widget in this.shown %}
+            {{ component(widget.component, widget.props) }}
+        {% endfor %}
+        <twig:Panel:UserMenu>
+            {# The layout's block "user_menu_items" (more entries of the menu, above "sign out"). #}
+            <twig:block name="items">{{ userMenuItems }}</twig:block>
+        </twig:Panel:UserMenu>
+        {% if sidebar %}
+            <button class="btn btn-link nav-link px-2 py-2 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#side-nav" aria-controls="side-nav" aria-label="{{ 'panel.topbar.open_menu'|trans }}">{{ crud_icon('list', 'fs-5') }}</button>
+        {% endif %}
+    </div>
+</header>

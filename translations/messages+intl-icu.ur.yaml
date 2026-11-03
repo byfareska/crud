@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: محفوظ کریں
+        save_new: 'محفوظ کریں اور ایک اور شامل کریں'
+        save_edit: 'محفوظ کریں اور ترمیم جاری رکھیں'
+        cancel: منسوخ کریں
+        confirm: تصدیق کریں
+        close: بند کریں
+    list:
+        shown_html: '{shown, plural, =0 {{total, number} میں سے <strong>0</strong> دکھائے جا رہے ہیں} =1 {{total, number} میں سے <strong>{from, number}</strong> دکھایا جا رہا ہے} other {{total, number} میں سے <strong>{from, number}–{to, number}</strong> دکھائے جا رہے ہیں}}'
+        shown_more_html: '{total, number} سے زیادہ میں سے <strong>{from, number}–{to, number}</strong> دکھائے جا رہے ہیں'
+        per_page: 'فی صفحہ'
+    timezone:
+        region:
+            africa: افریقہ
+            america: امریکہ
+            antarctica: انٹارکٹیکا
+            arctic: آرکٹک
+            asia: ایشیا
+            atlantic: اٹلانٹک
+            australia: آسٹریلیا
+            europe: یورپ
+            indian: بحر ہند
+            pacific: بحرالکاہل
+            other: دیگر
+    time_ago:
+        now: ابھی ابھی
+        minutes: '{count} منٹ پہلے'
+        hours: '{count, plural, one {# گھنٹہ پہلے} other {# گھنٹے پہلے}}'
+        days: '{count, plural, =1 {کل} other {# دن پہلے}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: عمومی
+            users: صارفین
+            sales: فروخت
+            content: مواد
+            system: سسٹم
+        number: '{value, number}'
+    pagination:
+        previous: پچھلا صفحہ
+        next: اگلا صفحہ
+        previous_tip: پچھلا صفحہ
+        next_tip: اگلا صفحہ
+        jump: صفحے پر جائیں
+        jump_hint: صفحہ نمبر لکھیں
+
+crud:
+    palette:
+        list: فہرست
+        create: نیا ریکارڈ شامل کریں
+        own: آپ کا صفحہ
+    total_html: 'کل: <strong>{count, number}</strong>'
+    total_more_html: 'کل: <strong>{count, number} سے زیادہ</strong>'
+    search: تلاش کریں
+    clear_filters: فلٹر صاف کریں
+    sort_tip: 'ترتیب دیں: کلک کیا گیا کالم پہلے آتا ہے؛ باری باری: صعودی، نزولی، بند'
+    empty: کوئی نتیجہ نہیں۔
+    selected: 'منتخب: {count, number}'
+    select: 'منتخب کریں'
+    select_page: 'اس صفحے پر سب منتخب کریں'
+    select_all_matching: 'فلٹرز سے مطابقت رکھنے والے تمام منتخب کریں ({count, number})'
+    all_matching_selected: 'فلٹرز سے مطابقت رکھنے والے تمام منتخب ہیں: {count, number}'
+    clear_selection: 'انتخاب صاف کریں'
+    actions: کارروائیاں
+    filter:
+        title: 'فلٹرز'
+        more: 'مزید فلٹرز'
+        query: تلاش کریں
+        any: کوئی بھی
+        'yes': 'ہاں'
+        'no': 'نہیں'
+        from: 'سے'
+        to: 'تک'
+        clear: 'صاف کریں'
+        time: 'وقت'
+        comparison:
+            label: '{field} کا موازنہ کیسے ہو'
+            eq: 'برابر'
+            neq: 'برابر نہیں'
+            contains: 'شامل ہے'
+            not_contains: 'شامل نہیں'
+            starts: 'سے شروع'
+            ends: 'پر ختم'
+            gt: 'سے زیادہ'
+            gte: 'زیادہ یا برابر'
+            lt: 'سے کم'
+            lte: 'کم یا برابر'
+            between: 'کے درمیان'
+            in: 'ان میں سے ایک'
+            not_in: 'ان میں سے کوئی نہیں'
+            empty: 'خالی ہے'
+            filled: 'خالی نہیں ہے'
+    confirm_delete:
+        message: یہ ریکارڈ حذف کریں؟
+        hint: اسے واپس نہیں کیا جا سکتا۔
+    confirm_bulk_delete:
+        message: 'منتخب ریکارڈز ({count, number}) حذف کریں؟'
+    action:
+        details: تفصیلات
+        edit: ترمیم کریں
+        delete: حذف کریں
+        duplicate: 'نقل بنائیں'
+        list: فہرست
+    layout:
+        errors: '{count, plural, one {# خرابی} other {# خرابیاں}}'
+    toast:
+        created: شامل کر دیا گیا
+        updated: تبدیلیاں محفوظ ہو گئیں
+        deleted: حذف کر دیا گیا
+        delete_failed: حذف نہیں کیا جا سکا
+        bulk_deleted: 'حذف ہوئے: {count, number}'
+        bulk_delete_failed: 'حذف نہیں ہوئے: {count, number}'
+        gone: یہ ریکارڈ اب موجود نہیں ہے
+        bulk_failed: 'کارروائی نہیں ہوئی'
+        action_failed: 'یہ نہیں ہو سکا'
+        done: 'ہو گیا'
+    value:
+        'yes': 'ہاں'
+        'no': 'نہیں'
+        datetime: '{at, date, medium}، {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: نہیں ملا۔
+        forbidden: آپ کو ایسا کرنے کی اجازت نہیں ہے۔
+        taken: ایسا ریکارڈ پہلے سے موجود ہے۔
+        in_use: یہ ریکارڈ دوسرے ریکارڈز استعمال کر رہے ہیں اور اسے حذف نہیں کیا جا سکتا۔
+        changed: 'اس دوران کسی اور نے یہ ریکارڈ تبدیل کر دیا ہے۔ تبدیلیاں دیکھنے کے لیے اسے دوبارہ کھولیں۔'
+        retry: 'ڈیٹا بیس مصروف ہے۔ کچھ بھی محفوظ نہیں ہوا - دوبارہ کوشش کریں۔'
+        refused: 'ڈیٹا بیس نے یہ ریکارڈ مسترد کر دیا۔'
+        input_required: 'یہ جواب لازمی ہے۔'
+        input_choice: 'اختیارات میں سے ایک منتخب کریں۔'
+        input_number: 'ایک عدد درج کریں۔'
+        input_date: 'درست تاریخ درج کریں۔'
+
+panel:
+    login:
+        title: سائن ان
+        username: صارف نام
+        password: پاس ورڈ
+        submit: سائن ان کریں
+    scope:
+        panel: پینل
+        admin: انتظامیہ
+    nav:
+        main_menu: مرکزی مینو
+        close_menu: مینو بند کریں
+        dashboard: ڈیش بورڈ
+        section:
+            start: آغاز
+            main: مرکزی
+            account: اکاؤنٹ
+    dashboard:
+        subtitle: آپ کے وجیٹس – گھسیٹیں، سائز بدلیں، مزید شامل کریں۔
+        subtitle_own: وجیٹس کی آپ کی اپنی ترتیب۔
+        empty_title: ڈیش بورڈ پر کوئی وجیٹ نہیں ہے
+        empty_text: “وجیٹ شامل کریں” سے پہلا وجیٹ شامل کریں۔
+        add: وجیٹ شامل کریں
+        edit: ترمیم کریں
+        done: ہو گیا
+        more: مزید
+        reset: ڈیفالٹ بحال کریں
+        reset_confirm: ڈیفالٹ ڈیش بورڈ بحال کریں؟ آپ کی اپنی ترتیب بھلا دی جائے گی۔
+        share: سب کے لیے ڈیفالٹ بنائیں
+        share_confirm: اس ترتیب کو سب کے لیے ڈیفالٹ بنائیں؟
+        share_hint: جن کی اپنی ترتیب نہیں ہے، وہ سب اسے دیکھیں گے۔
+        remove: 'وجیٹ “{title}” ہٹائیں'
+        settings: 'ترتیبات: {title}'
+        toast:
+            failed: ڈیش بورڈ محفوظ نہیں کیا جا سکا
+            shared: یہ ترتیب اب سب کے لیے ڈیفالٹ ہے
+        gallery:
+            title: وجیٹ شامل کریں
+            search: وجیٹس تلاش کریں
+            add: شامل کریں
+            size: سائز
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {ڈیش بورڈ پر} other {ڈیش بورڈ پر # بار}}'
+            empty: شامل کرنے کے لیے کوئی وجیٹ نہیں ہے۔
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: گھڑی
+            description: اینالاگ یا ڈیجیٹل گھڑی، ساتھ میں دوسرے شہر کے ساتھ۔
+            setting:
+                style: ڈائل
+                zone: دوسرا شہر
+            style:
+                analog: اینالاگ
+                digital: ڈیجیٹل
+            city:
+                none: کوئی نہیں
+                utc: UTC
+                london: لندن
+                warsaw: وارسا
+                berlin: برلن
+                kyiv: کیف
+                new_york: نیو یارک
+                chicago: شکاگو
+                los_angeles: لاس اینجلس
+                sao_paulo: ساؤ پاؤلو
+                dubai: دبئی
+                kolkata: کولکتہ
+                shanghai: شنگھائی
+                tokyo: ٹوکیو
+                sydney: سڈنی
+        quick_actions:
+            title: فوری کارروائیاں
+            description: ریکارڈ شامل کرنے تک لے جانے والی ٹائلیں، iOS کے شارٹ کٹس کی طرح – منتخب کریں کون سی۔
+            setting: کون سی کارروائیاں (کوئی نہیں = سب)
+            empty: کوئی ایسی کارروائی نہیں جو آپ استعمال کر سکیں۔
+        note:
+            title: نوٹ
+            description: ایک چپکنے والا نوٹ جو لکھتے وقت محفوظ ہوتا ہے۔ ہر ایک کا اپنا ہوتا ہے۔
+            placeholder: کچھ لکھیں…
+            saving: محفوظ ہو رہا ہے…
+            saved: محفوظ ہو گیا
+    topbar:
+        open_menu: مینو کھولیں
+        open_palette: کمانڈ پیلیٹ کھولیں
+        search: تلاش کریں یا کمانڈ لکھیں…
+    palette:
+        label: کمانڈ پیلیٹ
+        placeholder: تلاش کریں یا کمانڈ لکھیں…
+        search_label: پینل میں تلاش کریں
+        empty: '“{query}” کے لیے کچھ نہیں ملا'
+        navigate: نیویگیٹ
+        open: کھولیں
+        close: بند کریں
+        hint_html: 'کسی ریکارڈ کا نام آزمائیں، یا کمانڈز کے لیے <b>&gt;</b>'
+        verb:
+            go: جائیں
+            open: کھولیں
+            run: چلائیں
+        group:
+            recent: حالیہ
+            suggested: تجویز کردہ
+            navigation: نیویگیشن
+            commands: کمانڈز
+        item:
+            panel_switch:
+                description: کسی دوسرے پینل پر جائیں
+            dashboard_edit:
+                name: ڈیش بورڈ میں ترمیم کریں
+                description: وجیٹس کو منتقل کریں اور ان کا سائز بدلیں
+                keywords: 'dashboard, ڈیش بورڈ, وجیٹس, widgets, ترتیب, دوبارہ ترتیب'
+            dashboard_add:
+                name: وجیٹ شامل کریں
+                description: گیلری سے کوئی وجیٹ منتخب کریں
+                keywords: 'dashboard, ڈیش بورڈ, نیا وجیٹ, widget, گیلری'
+            dashboard_reset:
+                name: ڈیفالٹ ڈیش بورڈ بحال کریں
+                description: وجیٹس کی اپنی ترتیب بھول جائیں
+                keywords: 'dashboard, ڈیش بورڈ, ری سیٹ, reset, ڈیفالٹ'
+            theme:
+                name: ہلکی اور گہری تھیم کے درمیان سوئچ کریں
+                description: پینل کی شکل بدلیں
+                keywords: 'ڈارک موڈ, لائٹ موڈ, رنگ, dark, light, theme'
+    theme:
+        toggle: تھیم بدلیں
+        toggle_long: ہلکی اور گہری تھیم کے درمیان سوئچ کریں
+        choose: تھیم
+        choose_long: رنگوں کی تھیم منتخب کریں
+        auto: سسٹم
+    user_menu:
+        impersonating: آپ اس صارف کے طور پر سائن ان ہیں
+        exit_impersonation: اپنے اکاؤنٹ پر واپس جائیں
+        label: صارف مینو
+        logout: سائن آؤٹ
+        anonymous: آپ سائن ان نہیں ہیں

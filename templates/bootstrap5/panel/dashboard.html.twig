@@ -1,0 +1,109 @@
+{#
+    The dashboard of a panel ("/" of its scope; dashboard.board is the name of the scope) - each with layouts of its own.
+    Blocks: "dashboard_head" (the heading and its buttons), "dashboard_filters" (a form of what every widget goes by - see
+    DashboardContext), "dashboard_actions" (more buttons next to them), "dashboard_grid".
+#}
+{% extends layout %}
+
+{% set ownLayout = dashboard.source == enum('Byfareska\\Crud\\Dashboard\\LayoutSource').Own %}
+
+{# The name of the board: "Dashboard", or the label of a board of its own ("Sales"). #}
+{% set title = title ?? 'panel.nav.dashboard' %}
+
+{% block page_title %}{{ title|trans }}{% endblock %}
+
+{#
+    The widgets of the DashboardWidgetSources on a grid of gridstack (dashboard-grid controller; the application loads
+    gridstack's stylesheet). A widget is a component, given the id of its place and its settings; a live one is loaded
+    after the page, with a placeholder until then. In edit mode (E) the widgets are dragged and resized, and saved as
+    the user's own layout at once; [data-dashboard-edit] is shown only then.
+#}
+{% block content %}
+    <div data-controller="dashboard-grid"
+         data-dashboard-grid-save-url-value="{{ path(scope.boardRoute(dashboard.board, 'save')) }}"
+         data-dashboard-grid-add-url-value="{{ path(scope.boardRoute(dashboard.board, 'add')) }}"
+         data-dashboard-grid-remove-url-value="{{ path(scope.boardRoute(dashboard.board, 'remove'), {id: '__id__'}) }}"
+         data-dashboard-grid-reset-url-value="{{ path(scope.boardRoute(dashboard.board, 'reset')) }}"
+         data-dashboard-grid-default-url-value="{{ path(scope.boardRoute(dashboard.board, 'share')) }}"
+         data-dashboard-grid-failed-text-value="{{ 'panel.dashboard.toast.failed'|trans }}"
+         data-dashboard-grid-shared-text-value="{{ 'panel.dashboard.toast.shared'|trans }}"
+         data-dashboard-grid-columns-value="{{ dashboard.columns }}"
+         data-action="keydown->dashboard-grid#key dashboard:changed->dashboard-grid#changed dashboard:edit@window->dashboard-grid#edit dashboard:add@window->dashboard-grid#openGallery dashboard:reset@window->dashboard-grid#askReset">
+        {# Taken before the component: a block of this template is not seen from inside the content of a component. #}
+        {% set dashboard_actions %}{% block dashboard_actions %}{% endblock %}{% endset %}
+        {# What the whole dashboard is looked at for - a period, a branch: a GET form setting ?context[...] (DashboardContext). #}
+        {% set dashboard_filters %}{% block dashboard_filters %}{% endblock %}{% endset %}
+        {% block dashboard_head %}
+        <twig:Ui:PageHead :title="title|trans" :subtitle="(ownLayout ? 'panel.dashboard.subtitle_own' : 'panel.dashboard.subtitle')|trans">
+            <twig:block name="actions">
+                {{ dashboard_filters }}
+                {{ dashboard_actions }}
+                <button class="btn btn-sm btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#widget-gallery" data-dashboard-grid-target="addButton">
+                    {{ crud_icon('plus-lg', 'me-1') }}{{ 'panel.dashboard.add'|trans }}
+                </button>
+                <button class="btn btn-sm btn-outline-warning" type="button" data-dashboard-grid-target="editButton" data-action="dashboard-grid#edit">
+                    {{ crud_icon('grid-1x2', 'me-1') }}{{ 'panel.dashboard.edit'|trans }}
+                </button>
+                <button class="btn btn-sm btn-primary" type="button" hidden disabled data-dashboard-grid-target="doneButton" data-action="dashboard-grid#done">
+                    {{ crud_icon('check-lg', 'me-1') }}{{ 'panel.dashboard.done'|trans }}
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                            title="{{ 'panel.dashboard.more'|trans }}" aria-label="{{ 'panel.dashboard.more'|trans }}">{{ crud_icon('three-dots') }}</button>
+                    <div class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <button class="dropdown-item" type="button" data-dashboard-grid-target="resetButton" {{ not ownLayout ? 'disabled' }}
+                                data-controller="confirm" data-action="confirm#ask dashboard-grid#reset"
+                                data-confirm-message-value="{{ 'panel.dashboard.reset_confirm'|trans }}"
+                                data-confirm-accept-value="{{ 'panel.dashboard.reset'|trans }}">
+                            {{ crud_icon('arrow-counterclockwise', 'me-2') }}{{ 'panel.dashboard.reset'|trans }}
+                        </button>
+                        {% if dashboard.mayShare %}
+                            <button class="dropdown-item" type="button"
+                                    data-controller="confirm" data-action="confirm#ask dashboard-grid#share"
+                                    data-confirm-message-value="{{ 'panel.dashboard.share_confirm'|trans }}"
+                                    data-confirm-hint-value="{{ 'panel.dashboard.share_hint'|trans }}"
+                                    data-confirm-accept-value="{{ 'panel.dashboard.share'|trans }}">
+                                {{ crud_icon('people', 'me-2') }}{{ 'panel.dashboard.share'|trans }}
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </twig:block>
+        </twig:Ui:PageHead>
+        {% endblock %}
+
+        {% block dashboard_grid %}
+        <div class="grid-stack" data-dashboard-grid-target="grid">
+            {% for placement in dashboard.placements %}
+                {% set title = placement.widget.title|trans %}
+                <div class="grid-stack-item" tabindex="0" aria-label="{{ title }}"
+                     gs-id="{{ placement.id }}" gs-x="{{ placement.x }}" gs-y="{{ placement.y }}" gs-w="{{ placement.w }}" gs-h="{{ placement.h }}"
+                     gs-min-w="{{ placement.widget.minSize.w }}" gs-min-h="{{ placement.widget.minSize.h }}" gs-max-w="{{ placement.widget.maxSize.w }}" gs-max-h="{{ placement.widget.maxSize.h }}">
+                    <div class="grid-stack-item-content">
+                        <div class="position-absolute top-0 end-0 m-2 hstack gap-1" style="z-index: 3" data-dashboard-edit hidden>
+                            {% if placement.widget.configurable %}
+                                <button class="btn btn-sm btn-light border shadow-sm" type="button" data-action="dashboard-grid#settings" data-id="{{ placement.id }}"
+                                        title="{{ 'panel.dashboard.settings'|trans({title: title}) }}" aria-label="{{ 'panel.dashboard.settings'|trans({title: title}) }}">{{ crud_icon('gear') }}</button>
+                            {% endif %}
+                            <button class="btn btn-sm btn-danger shadow-sm" type="button" data-action="dashboard-grid#remove" data-id="{{ placement.id }}" data-dashboard-remove
+                                    title="{{ 'panel.dashboard.remove'|trans({title: title}) }}" aria-label="{{ 'panel.dashboard.remove'|trans({title: title}) }}">{{ crud_icon('x-lg') }}</button>
+                        </div>
+                        {{ component(placement.widget.component, placement.widget.props|merge({placement: placement.id, board: dashboard.board, settings: placement.settings})|merge(placement.widget.lazy ? {loading: 'defer', 'loading-template': '@CrudTheme/components/Ui/WidgetSkeleton.html.twig'} : {})) }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endblock %}
+
+        {% if dashboard.placements is empty %}
+            <twig:Ui:EmptyState icon="grid-1x2" :title="'panel.dashboard.empty_title'|trans">
+                {{ 'panel.dashboard.empty_text'|trans }}
+            </twig:Ui:EmptyState>
+        {% endif %}
+
+        <twig:Panel:WidgetGallery :widgets="dashboard.widgets" />
+        <twig:Ui:Modal id="widget-settings">
+            <twig:Panel:WidgetSettings :board="dashboard.board" data-dashboard-grid-target="settings" />
+        </twig:Ui:Modal>
+    </div>
+{% endblock %}

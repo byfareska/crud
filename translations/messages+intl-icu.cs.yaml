@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: Uložit
+        save_new: 'Uložit a přidat další'
+        save_edit: 'Uložit a pokračovat v úpravách'
+        cancel: Zrušit
+        confirm: Potvrdit
+        close: Zavřít
+    list:
+        shown_html: '{shown, plural, =0 {Zobrazeno <strong>0</strong> z {total, number}} =1 {Zobrazeno <strong>{from, number}</strong> z {total, number}} other {Zobrazeno <strong>{from, number}–{to, number}</strong> z {total, number}}}'
+        shown_more_html: 'Zobrazeno <strong>{from, number}–{to, number}</strong> z více než {total, number}'
+        per_page: 'Na stránku'
+    timezone:
+        region:
+            africa: Afrika
+            america: Amerika
+            antarctica: Antarktida
+            arctic: Arktida
+            asia: Asie
+            atlantic: Atlantik
+            australia: Austrálie
+            europe: Evropa
+            indian: Indický oceán
+            pacific: Tichomoří
+            other: Ostatní
+    time_ago:
+        now: právě teď
+        minutes: 'před {count} min'
+        hours: '{count, plural, one {před # hodinou} other {před # hodinami}}'
+        days: '{count, plural, one {včera} few {před # dny} many {před # dne} other {před # dny}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: Obecné
+            users: Uživatelé
+            sales: Prodej
+            content: Obsah
+            system: Systém
+        number: '{value, number}'
+    pagination:
+        previous: Předchozí stránka
+        next: Další stránka
+        previous_tip: Předchozí stránka
+        next_tip: Další stránka
+        jump: Přejít na stránku
+        jump_hint: Zadejte číslo stránky
+
+crud:
+    palette:
+        list: Seznam
+        create: Přidat nový záznam
+        own: Vaše stránka
+    total_html: 'Celkem: <strong>{count, number}</strong>'
+    total_more_html: 'Celkem: <strong>více než {count, number}</strong>'
+    search: Hledat
+    clear_filters: Vymazat filtry
+    sort_tip: 'Řazení: kliknutý sloupec jde první; postupně: vzestupně, sestupně, vypnuto'
+    empty: Žádné výsledky.
+    selected: 'Vybráno: {count, number}'
+    select: 'Vybrat'
+    select_page: 'Vybrat vše na této stránce'
+    select_all_matching: 'Vybrat všech {count, number} odpovídajících filtrům'
+    all_matching_selected: 'Vybráno všech {count, number} odpovídajících filtrům'
+    clear_selection: 'Zrušit výběr'
+    actions: Akce
+    filter:
+        title: 'Filtry'
+        more: 'Další filtry'
+        query: Hledat
+        any: Vše
+        'yes': 'Ano'
+        'no': 'Ne'
+        from: 'Od'
+        to: 'Do'
+        clear: 'Vymazat'
+        time: 'Čas'
+        comparison:
+            label: 'Způsob porovnání: {field}'
+            eq: 'rovná se'
+            neq: 'nerovná se'
+            contains: 'obsahuje'
+            not_contains: 'neobsahuje'
+            starts: 'začíná na'
+            ends: 'končí na'
+            gt: 'větší než'
+            gte: 'větší nebo rovno'
+            lt: 'menší než'
+            lte: 'menší nebo rovno'
+            between: 'mezi'
+            in: 'je jedno z'
+            not_in: 'není žádné z'
+            empty: 'je prázdné'
+            filled: 'není prázdné'
+    confirm_delete:
+        message: Smazat tento záznam?
+        hint: Tuto akci nelze vrátit zpět.
+    confirm_bulk_delete:
+        message: 'Smazat vybrané záznamy ({count, number})?'
+    action:
+        details: Podrobnosti
+        edit: Upravit
+        delete: Smazat
+        duplicate: 'Duplikovat'
+        list: Seznam
+    layout:
+        errors: '{count, plural, one {# chyba} few {# chyby} many {# chyby} other {# chyb}}'
+    toast:
+        created: Přidáno
+        updated: Změny uloženy
+        deleted: Smazáno
+        delete_failed: Smazání se nezdařilo
+        bulk_deleted: 'Smazáno: {count, number}'
+        bulk_delete_failed: 'Nesmazáno: {count, number}'
+        gone: Tento záznam už neexistuje
+        bulk_failed: 'Akci nelze provést'
+        action_failed: 'Akci se nepodařilo provést'
+        done: 'Hotovo'
+    value:
+        'yes': 'Ano'
+        'no': 'Ne'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: Nenalezeno.
+        forbidden: K tomu nemáte oprávnění.
+        taken: Takový záznam už existuje.
+        in_use: Tento záznam používají jiné záznamy a nelze jej smazat.
+        changed: 'Někdo jiný mezitím tento záznam změnil. Otevřete ho znovu, abyste viděli změny.'
+        retry: 'Databáze je zaneprázdněná. Nic nebylo uloženo - zkuste to znovu.'
+        refused: 'Databáze tento záznam odmítla.'
+        input_required: 'Tento údaj je povinný.'
+        input_choice: 'Vyberte jednu z možností.'
+        input_number: 'Zadejte číslo.'
+        input_date: 'Zadejte platné datum.'
+
+panel:
+    login:
+        title: Přihlášení
+        username: Uživatelské jméno
+        password: Heslo
+        submit: Přihlásit se
+    scope:
+        panel: Panel
+        admin: Administrace
+    nav:
+        main_menu: Hlavní nabídka
+        close_menu: Zavřít nabídku
+        dashboard: Nástěnka
+        section:
+            start: Start
+            main: Hlavní
+            account: Účet
+    dashboard:
+        subtitle: Vaše widgety – přetahujte, měňte velikost, přidávejte další.
+        subtitle_own: Vaše vlastní rozložení widgetů.
+        empty_title: Na nástěnce nejsou žádné widgety
+        empty_text: Přidejte první pomocí „Přidat widget“.
+        add: Přidat widget
+        edit: Upravit
+        done: Hotovo
+        more: Více
+        reset: Obnovit výchozí
+        reset_confirm: Obnovit výchozí nástěnku? Vaše vlastní rozložení bude zapomenuto.
+        share: Nastavit jako výchozí pro všechny
+        share_confirm: Nastavit toto rozložení jako výchozí pro všechny?
+        share_hint: Uvidí ho všichni, kdo nemají vlastní rozložení.
+        remove: 'Odebrat widget „{title}“'
+        settings: 'Nastavení: {title}'
+        toast:
+            failed: Nástěnku se nepodařilo uložit
+            shared: Rozložení je nyní výchozí pro všechny
+        gallery:
+            title: Přidat widget
+            search: Hledat widgety
+            add: Přidat
+            size: Velikost
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, one {na nástěnce} other {#× na nástěnce}}'
+            empty: Nejsou žádné widgety k přidání.
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: Hodiny
+            description: Analogové nebo digitální hodiny, s druhým městem vedle.
+            setting:
+                style: Ciferník
+                zone: Druhé město
+            style:
+                analog: Analogové
+                digital: Digitální
+            city:
+                none: Žádné
+                utc: UTC
+                london: Londýn
+                warsaw: Varšava
+                berlin: Berlín
+                kyiv: Kyjev
+                new_york: New York
+                chicago: Chicago
+                los_angeles: Los Angeles
+                sao_paulo: São Paulo
+                dubai: Dubaj
+                kolkata: Kalkata
+                shanghai: Šanghaj
+                tokyo: Tokio
+                sydney: Sydney
+        quick_actions:
+            title: Rychlé akce
+            description: Dlaždice vedoucí k přidávání záznamů, jako zkratky v iOS – vyberte které.
+            setting: Které akce (žádná = všechny)
+            empty: Nejsou žádné akce, které můžete použít.
+        note:
+            title: Poznámka
+            description: Lísteček, který se ukládá během psaní. Každý má svůj.
+            placeholder: Napište něco…
+            saving: Ukládání…
+            saved: Uloženo
+    topbar:
+        open_menu: Otevřít nabídku
+        open_palette: Otevřít paletu příkazů
+        search: Hledejte nebo zadejte příkaz…
+    palette:
+        label: Paleta příkazů
+        placeholder: Hledejte nebo zadejte příkaz…
+        search_label: Hledat v panelu
+        empty: 'Pro „{query}“ nebylo nic nalezeno'
+        navigate: pohyb
+        open: otevřít
+        close: zavřít
+        hint_html: 'Zkuste název záznamu nebo <b>&gt;</b> pro příkazy'
+        verb:
+            go: Přejít
+            open: Otevřít
+            run: Spustit
+        group:
+            recent: Nedávné
+            suggested: Navrhované
+            navigation: Navigace
+            commands: Příkazy
+        item:
+            panel_switch:
+                description: Přejít do jiného panelu
+            dashboard_edit:
+                name: Upravit nástěnku
+                description: Přesouvat widgety a měnit jejich velikost
+                keywords: 'dashboard, nástěnka, widgety, rozložení, přeuspořádat'
+            dashboard_add:
+                name: Přidat widget
+                description: Vybrat widget z galerie
+                keywords: 'dashboard, nástěnka, nový widget, galerie'
+            dashboard_reset:
+                name: Obnovit výchozí nástěnku
+                description: Zapomenout vlastní rozložení widgetů
+                keywords: 'dashboard, nástěnka, obnovit, reset, výchozí'
+            theme:
+                name: Přepnout mezi světlým a tmavým motivem
+                description: Změnit vzhled panelu
+                keywords: 'tmavý režim, světlý režim, barvy, dark, light, motiv'
+    theme:
+        toggle: Přepnout motiv
+        toggle_long: Přepnout mezi světlým a tmavým motivem
+        choose: Motiv
+        choose_long: Vybrat barevný motiv
+        auto: Podle systému
+    user_menu:
+        impersonating: Jste přihlášeni jako tento uživatel
+        exit_impersonation: Zpět na vlastní účet
+        label: Uživatelská nabídka
+        logout: Odhlásit se
+        anonymous: Nejste přihlášeni

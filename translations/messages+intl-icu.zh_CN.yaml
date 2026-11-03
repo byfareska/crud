@@ -1,0 +1,277 @@
+# Texts of byfareska/crud: the UI kit (ui.*), the CRUD pages (crud.*) and the panel - menu, palette, dashboards (panel.*).
+# ICU MessageFormat. Texts of one resource are the application's, under crud.<name>.
+ui:
+    action:
+        save: 保存
+        save_new: '保存并继续添加'
+        save_edit: '保存并继续编辑'
+        cancel: 取消
+        confirm: 确认
+        close: 关闭
+    list:
+        shown_html: '{shown, plural, =0 {显示第 <strong>0</strong> 条，共 {total, number} 条} =1 {显示第 <strong>{from, number}</strong> 条，共 {total, number} 条} other {显示第 <strong>{from, number}–{to, number}</strong> 条，共 {total, number} 条}}'
+        shown_more_html: '显示超过 {total, number} 条中的 <strong>{from, number}–{to, number}</strong>'
+        per_page: '每页'
+    timezone:
+        region:
+            africa: 非洲
+            america: 美洲
+            antarctica: 南极洲
+            arctic: 北极
+            asia: 亚洲
+            atlantic: 大西洋
+            australia: 澳大利亚
+            europe: 欧洲
+            indian: 印度洋
+            pacific: 太平洋
+            other: 其他
+    time_ago:
+        now: 刚刚
+        minutes: '{count} 分钟前'
+        hours: '{count, plural, other {# 小时前}}'
+        days: '{count, plural, =1 {昨天} other {# 天前}}'
+        date: '{at, date, short}'
+    dashboard:
+        category:
+            general: 常规
+            users: 用户
+            sales: 销售
+            content: 内容
+            system: 系统
+        number: '{value, number}'
+    pagination:
+        previous: 上一页
+        next: 下一页
+        previous_tip: 上一页
+        next_tip: 下一页
+        jump: 跳转到页面
+        jump_hint: 输入页码
+
+crud:
+    palette:
+        list: 列表
+        create: 添加新记录
+        own: 您的页面
+    total_html: '共计：<strong>{count, number}</strong>'
+    total_more_html: '总计：<strong>超过 {count, number}</strong>'
+    search: 搜索
+    clear_filters: 清除筛选
+    sort_tip: '排序：点击的列排在最前；依次为：升序、降序、关闭'
+    empty: 没有结果。
+    selected: '已选择：{count, number}'
+    select: '选择'
+    select_page: '选择本页全部'
+    select_all_matching: '选择所有符合筛选条件的 {count, number} 项'
+    all_matching_selected: '已选择所有符合筛选条件的 {count, number} 项'
+    clear_selection: '清除选择'
+    actions: 操作
+    filter:
+        title: '筛选'
+        more: '更多筛选'
+        query: 搜索
+        any: 全部
+        'yes': '是'
+        'no': '否'
+        from: '从'
+        to: '至'
+        clear: '清除'
+        time: '时间'
+        comparison:
+            label: '{field} 的比较方式'
+            eq: '等于'
+            neq: '不等于'
+            contains: '包含'
+            not_contains: '不包含'
+            starts: '开头是'
+            ends: '结尾是'
+            gt: '大于'
+            gte: '大于或等于'
+            lt: '小于'
+            lte: '小于或等于'
+            between: '介于'
+            in: '是其中之一'
+            not_in: '不是其中任何一个'
+            empty: '为空'
+            filled: '不为空'
+    confirm_delete:
+        message: 删除此记录？
+        hint: 此操作无法撤销。
+    confirm_bulk_delete:
+        message: '删除所选记录（{count, number}）？'
+    action:
+        details: 详情
+        edit: 编辑
+        delete: 删除
+        duplicate: '复制'
+        list: 列表
+    layout:
+        errors: '{count, plural, other {# 个错误}}'
+    toast:
+        created: 已添加
+        updated: 更改已保存
+        deleted: 已删除
+        delete_failed: 无法删除
+        bulk_deleted: '已删除：{count, number}'
+        bulk_delete_failed: '未删除：{count, number}'
+        gone: 此记录已不存在
+        bulk_failed: '操作未执行'
+        action_failed: '无法执行'
+        done: '已完成'
+    value:
+        'yes': '是'
+        'no': '否'
+        datetime: '{at, date, medium} {at, time, short}'
+        day: '{at, date, medium}'
+    error:
+        not_found: 未找到。
+        forbidden: 您无权执行此操作。
+        taken: 已存在相同的记录。
+        in_use: 此记录正被其他记录使用，无法删除。
+        changed: '在此期间，其他人修改了此记录。请重新打开以查看其更改。'
+        retry: '数据库繁忙。未保存任何内容，请重试。'
+        refused: '数据库拒绝了此记录。'
+        input_required: '此项为必填。'
+        input_choice: '请选择其中一个选项。'
+        input_number: '请输入数字。'
+        input_date: '请输入有效日期。'
+
+panel:
+    login:
+        title: 登录
+        username: 用户名
+        password: 密码
+        submit: 登录
+    scope:
+        panel: 面板
+        admin: 管理
+    nav:
+        main_menu: 主菜单
+        close_menu: 关闭菜单
+        dashboard: 仪表板
+        section:
+            start: 开始
+            main: 主要
+            account: 账户
+    dashboard:
+        subtitle: 您的小组件 – 拖动、调整大小、添加更多。
+        subtitle_own: 您自己的小组件布局。
+        empty_title: 仪表板上没有小组件
+        empty_text: 使用“添加小组件”添加第一个。
+        add: 添加小组件
+        edit: 编辑
+        done: 完成
+        more: 更多
+        reset: 恢复默认
+        reset_confirm: 恢复默认仪表板？您自己的布局将被清除。
+        share: 设为所有人的默认布局
+        share_confirm: 将此布局设为所有人的默认布局？
+        share_hint: 所有没有自己布局的人都会看到它。
+        remove: '移除小组件“{title}”'
+        settings: '设置：{title}'
+        toast:
+            failed: 无法保存仪表板
+            shared: 此布局现已成为所有人的默认布局
+        gallery:
+            title: 添加小组件
+            search: 搜索小组件
+            add: 添加
+            size: 尺寸
+            size_tip: '{w} × {h}'
+            placed: '{count, plural, =1 {已在仪表板上} other {在仪表板上 # 次}}'
+            empty: 没有可添加的小组件。
+            sizes:
+                s: S
+                m: M
+                l: L
+                xl: XL
+                default: '•'
+    widget:
+        clock:
+            title: 时钟
+            description: 指针或数字时钟，旁边显示第二个城市。
+            setting:
+                style: 表盘
+                zone: 第二个城市
+            style:
+                analog: 指针
+                digital: 数字
+            city:
+                none: 无
+                utc: UTC
+                london: 伦敦
+                warsaw: 华沙
+                berlin: 柏林
+                kyiv: 基辅
+                new_york: 纽约
+                chicago: 芝加哥
+                los_angeles: 洛杉矶
+                sao_paulo: 圣保罗
+                dubai: 迪拜
+                kolkata: 加尔各答
+                shanghai: 上海
+                tokyo: 东京
+                sydney: 悉尼
+        quick_actions:
+            title: 快捷操作
+            description: 用于添加记录的磁贴，类似 iOS 的快捷指令 – 选择要显示哪些。
+            setting: 哪些操作（不选 = 全部）
+            empty: 没有您可以使用的操作。
+        note:
+            title: 便签
+            description: 输入时自动保存的便签。每个人都有自己的便签。
+            placeholder: 写点什么…
+            saving: 正在保存…
+            saved: 已保存
+    topbar:
+        open_menu: 打开菜单
+        open_palette: 打开命令面板
+        search: 搜索或输入命令…
+    palette:
+        label: 命令面板
+        placeholder: 搜索或输入命令…
+        search_label: 在面板中搜索
+        empty: '未找到与“{query}”相关的内容'
+        navigate: 导航
+        open: 打开
+        close: 关闭
+        hint_html: '试试输入记录名称，或输入 <b>&gt;</b> 使用命令'
+        verb:
+            go: 前往
+            open: 打开
+            run: 运行
+        group:
+            recent: 最近
+            suggested: 推荐
+            navigation: 导航
+            commands: 命令
+        item:
+            panel_switch:
+                description: 前往其他面板
+            dashboard_edit:
+                name: 编辑仪表板
+                description: 移动小组件并调整其大小
+                keywords: 'dashboard, 仪表板, 小组件, widgets, 布局, 重新排列'
+            dashboard_add:
+                name: 添加小组件
+                description: 从库中选择一个小组件
+                keywords: 'dashboard, 仪表板, 新小组件, widget, 库'
+            dashboard_reset:
+                name: 恢复默认仪表板
+                description: 清除您自己的小组件布局
+                keywords: 'dashboard, 仪表板, 重置, reset, 默认'
+            theme:
+                name: 在浅色和深色主题之间切换
+                description: 更改面板外观
+                keywords: '深色模式, 浅色模式, 颜色, dark, light, theme'
+    theme:
+        toggle: 切换主题
+        toggle_long: 在浅色和深色主题之间切换
+        choose: 主题
+        choose_long: 选择配色主题
+        auto: 跟随系统
+    user_menu:
+        impersonating: 您正以此用户身份登录
+        exit_impersonation: 返回您自己的账户
+        label: 用户菜单
+        logout: 退出登录
+        anonymous: 您尚未登录

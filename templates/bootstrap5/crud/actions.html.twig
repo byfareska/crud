@@ -1,0 +1,19 @@
+{#
+    How an action of a record (an ActionButton) is drawn in each place - crud_action(button, place), see
+    Byfareska\Crud\Twig\ActionButtonRenderer. Each block gets "button"; its attributes are escaped by crud_attrs().
+    Its colour is button.tone (ActionTone: a colour of Bootstrap) - adding green, editing yellow, deleting red...
+#}
+{# A button of a row of the list, showing its icon. #}
+{% block action_row %}
+    <{{ button.tag }} class="btn btn-sm btn-outline-{{ button.tone.value }}"{{ crud_attrs(button.attributes) }} title="{{ button.label|trans }}" aria-label="{{ button.label|trans }}">{{ crud_icon(button.icon) }}</{{ button.tag }}>
+{% endblock %}
+
+{# An item of the menu of a row: its icon in its colour, its text red only when it destroys. #}
+{% block action_menu %}
+    <{{ button.tag }} class="dropdown-item d-flex align-items-center gap-2{{ button.danger ? ' text-danger' }}"{{ crud_attrs(button.attributes) }}>{{ crud_icon(button.icon, button.tone.value == 'secondary' ? '' : 'text-' ~ button.tone.value) }}<span class="flex-grow-1">{{ button.label|trans }}</span></{{ button.tag }}>
+{% endblock %}
+
+{# A button among those of a record: the details page, the edit form, the preview drawer. The main one is filled. #}
+{% block action_bar %}
+    <{{ button.tag }} class="btn btn-sm {{ button.primary ? 'btn-' : 'btn-outline-' }}{{ button.tone.value }}"{{ crud_attrs(button.attributes) }}>{{ crud_icon(button.icon, 'me-1') }} {{ button.label|trans }}</{{ button.tag }}>
+{% endblock %}
