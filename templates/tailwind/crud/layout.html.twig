@@ -9,7 +9,7 @@
 {# The heading of a group: its icon, its name and how many errors the form has in it. #}
 {% macro heading(layout, node, label, tag = 'h3') %}
     {% set errors = layout.errors(node) %}
-    {# A legend floated: drawn inside its fieldset, not on its border. #}
+    {# A legend floated: drawn inside its fieldset, not on its border; what follows it clears it (layout_fieldset). #}
     <{{ tag }} class="mb-3 flex items-center gap-2 text-sm font-semibold{{ tag == 'legend' ? ' float-left w-full' }}">
         {% if node.icon %}{{ crud_icon(node.icon) }}{% endif %}
         <span>{{ label|trans }}</span>
@@ -106,7 +106,7 @@
     {% set foldable = node.foldable and not layout.compact %}
     {% set tag = foldable ? 'details' : (layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form ? 'fieldset' : 'section') %}
     {% set open = not node.collapsed or layout.errors(node) > 0 %}
-    <{{ tag }} class="crud-fieldset mb-6{{ label ? ' rounded-lg border border-gray-200 p-4 dark:border-white/10' : '' }} {{ node.class }}"{{ foldable and open ? ' open' }}{% if node.showIf and layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form %} data-show-if="{{ node.showIf }}"{% endif %}>
+    <{{ tag }} class="crud-fieldset mb-6 [&>legend~*]:clear-both{{ label ? ' rounded-lg border border-gray-200 p-4 dark:border-white/10' : '' }} {{ node.class }}"{{ foldable and open ? ' open' }}{% if node.showIf and layout.view == enum('Byfareska\\Crud\\Layout\\LayoutPage').Form %} data-show-if="{{ node.showIf }}"{% endif %}>
         {% if label %}
             {{ _self.heading(layout, node, label, foldable ? 'summary' : (tag == 'fieldset' ? 'legend' : 'h3')) }}
             {% if help %}<p class="mb-4 text-sm text-gray-500 dark:text-gray-400">{{ help|trans }}</p>{% endif %}

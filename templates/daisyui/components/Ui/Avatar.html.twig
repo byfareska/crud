@@ -1,8 +1,11 @@
-{# Somebody's picture, or the first letters of their name. Decoration next to the name it stands by. #}
+{#
+    Somebody's picture, or the first letters of their name. Decoration next to the name it stands by. The letters are
+    in a <span> (it may stand in a <summary>), which daisyUI's avatar-placeholder does not centre - only a <div>.
+#}
 {% props name = '', src = null, size = '2rem' %}
 {% set initials = name|split(' ')|filter(part => part != '')|slice(0, 2)|map(part => part|first|upper)|join %}
 {%- if src -%}
     <span class="avatar"><img {{ attributes.defaults({class: 'rounded-full object-cover', src: src, alt: '', loading: 'lazy', decoding: 'async', width: 32, height: 32, style: 'width: ' ~ size ~ '; height: ' ~ size, 'aria-hidden': 'true'}) }}></span>
 {%- else -%}
-    <span {{ attributes.defaults({class: 'avatar avatar-placeholder shrink-0', 'aria-hidden': 'true'}) }}><span class="rounded-full bg-primary/15 text-xs font-semibold text-primary" style="width: {{ size }}; height: {{ size }}">{{ initials }}</span></span>
+    <span {{ attributes.defaults({class: 'avatar avatar-placeholder shrink-0', 'aria-hidden': 'true'}) }}><span class="flex items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary" style="width: {{ size }}; height: {{ size }}">{{ initials }}</span></span>
 {%- endif -%}

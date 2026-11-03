@@ -20,6 +20,22 @@
     line-height: 1.25rem;
 }
 
+/*
+ * The chosen item of a single select stays on one line, cut short with "…" (or, drawn in HTML - options_as_html - cut
+ * off) where the room for the arrow begins: without min-width 0 a long label is as wide as its longest unbroken part
+ * and runs under the arrow.
+ */
+.ts-wrapper.single .ts-control {
+    flex-wrap: nowrap;
+}
+
+.ts-wrapper.single .ts-control > .item {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .ts-control input {
     color: inherit;
     font-size: inherit;
