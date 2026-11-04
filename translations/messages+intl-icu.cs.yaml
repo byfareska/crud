@@ -5,6 +5,8 @@ ui:
         save: Uložit
         save_new: 'Uložit a přidat další'
         save_edit: 'Uložit a pokračovat v úpravách'
+        save_return: 'Uložit a zpět na seznam'
+        save_show: 'Uložit a zobrazit'
         cancel: Zrušit
         confirm: Potvrdit
         close: Zavřít

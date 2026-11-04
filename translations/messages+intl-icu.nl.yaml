@@ -5,6 +5,8 @@ ui:
         save: Opslaan
         save_new: 'Opslaan en nog een toevoegen'
         save_edit: 'Opslaan en verder bewerken'
+        save_return: 'Opslaan en terug naar de lijst'
+        save_show: 'Opslaan en bekijken'
         cancel: Annuleren
         confirm: Bevestigen
         close: Sluiten

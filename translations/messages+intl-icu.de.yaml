@@ -5,6 +5,8 @@ ui:
         save: Speichern
         save_new: 'Speichern und weiteren hinzufügen'
         save_edit: 'Speichern und weiter bearbeiten'
+        save_return: 'Speichern und zurück zur Liste'
+        save_show: 'Speichern und anzeigen'
         cancel: Abbrechen
         confirm: Bestätigen
         close: Schließen

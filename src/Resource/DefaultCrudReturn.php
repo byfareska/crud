@@ -47,7 +47,8 @@ final readonly class DefaultCrudReturn implements CrudSaveReturn
 
     /**
      * "Save and add another": the add form (if the resource still adds); "save and keep editing": the edit form of
-     * the record (if it is known and edited) - else where a save leads.
+     * the record (if it is known and edited); "save and view": its details (if it is known and read) - else the way
+     * back (afterSave()).
      */
     public function afterSaveTo(AsCrud $crud, ?string $id, bool $created, AfterSave $then): string
     {
@@ -56,6 +57,8 @@ final readonly class DefaultCrudReturn implements CrudSaveReturn
                 => $this->urls->generate($crud->route('new')),
             $then === AfterSave::Edit && ($id !== null || $crud->own) && $crud->can(CrudOperation::Update)
                 => $this->urls->generate($crud->route('edit'), $crud->recordParameters($id)),
+            $then === AfterSave::Show && ($id !== null || $crud->own) && $crud->can(CrudOperation::Read)
+                => $this->urls->generate($crud->route('show'), $crud->recordParameters($id)),
             default => $this->afterSave($crud, $id, $created),
         };
     }

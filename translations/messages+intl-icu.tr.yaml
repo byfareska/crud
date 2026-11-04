@@ -5,6 +5,8 @@ ui:
         save: Kaydet
         save_new: 'Kaydet ve yenisini ekle'
         save_edit: 'Kaydet ve düzenlemeye devam et'
+        save_return: 'Kaydet ve listeye dön'
+        save_show: 'Kaydet ve görüntüle'
         cancel: İptal
         confirm: Onayla
         close: Kapat

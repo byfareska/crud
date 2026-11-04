@@ -102,6 +102,9 @@ byfareska_crud:
     preview: true # a click on a row opens the preview drawer; AsCrud's preview: decides per resource
     per_page: [15, 30, 50, 100] # the sizes of a page of a list to choose from; AsCrud's perPage: per resource
     default_per_page: ~ # the one shown at first (null = the first); AsCrud's defaultPerPage: per resource
+    form:
+        save: edit # where "save" leads: edit (stay on the record, a new one too) | return (the list) | show | new | a CrudSaveButton; AsCrud's save: per resource
+        save_buttons: [] # more buttons of the form: [return] = "save" stays, "save and back to the list" leaves; AsCrud's afterSave: per resource
     scopes:
         panel: { icon: house-door }
         admin: { icon: shield-lock, role: ROLE_ADMIN } # label: panel.scope.<name> by default
@@ -585,13 +588,21 @@ mistake: to change the bundle's, decorate it.
   every one of them for each guard and delete; named in `details:` it is read.
 - `preview: false` - a click on a row does not open the preview drawer; the first column leads to the details page.
   Without it, `byfareska_crud.preview` decides (default true).
-- `afterSave: [AfterSave::New, AfterSave::Edit]` - buttons of the form besides "save": "save and add another" (the add
-  form again; only when adding), "save and keep editing". Where they lead is the `CrudReturn`'s, when it is a
+- `save: AfterSave::Show` - where "save" of the form leads: `AfterSave::Edit` (the edit form of the record - of a new
+  one too, once it is added; on the tab that was in view), `AfterSave::Return` (the list, or where `CrudReturn` leads
+  back), `AfterSave::Show` (its details), `AfterSave::New` (the add form again), or the name of a `CrudSaveButton`
+  (`save: 'products'`: where that button leads; it is then not drawn as a button of its own). Without it,
+  `byfareska_crud.form.save` decides (default `edit`); `save: AfterSave::Return` is "save" leaving the form.
+- `afterSave: [AfterSave::Return]` - buttons of the form besides "save": "save and back to the list"
+  (`AfterSave::Return`), "save and add another" (`AfterSave::New`, the add form again; only when adding), "save and
+  keep editing" (`AfterSave::Edit`), "save and view" (`AfterSave::Show`); the one "save" leads to is left out. Without
+  it, `byfareska_crud.form.save_buttons` decides (default none). Where they lead is the `CrudReturn`'s, when it is a
   `CrudSaveReturn` (`afterSaveTo()`; the bundle's is). A button of your own - "save and go to the lines", "save and
   send" - is a `CrudSaveButton` service (`name()`, `label()`, `isFor($crud, $id)`, `afterSave()` giving where it leads;
   [`src/Crud/Doctrine/Maximal/SaveAndSeeProducts.php`](https://github.com/byfareska/crud-example/blob/main/src/Crud/Doctrine/Maximal/SaveAndSeeProducts.php)). `RecordSaving::$then` and `RecordSaved::$then` say which
-  button saved, so a listener does what it promises in the transaction of the save. Validation groups are the form's:
-  a "save as draft" checking less is a form type whose `validation_groups` closure looks at the data.
+  button saved ("save" by where it leads), so a listener does what it promises in the transaction of the save.
+  Validation groups are the form's: a "save as draft" checking less is a form type whose `validation_groups` closure
+  looks at the data.
 - `requirements: ['category' => '\d+']` - what the parameters of your application in its path
   (`/categories/{category}/products`) are made of.
 - `idPattern: '\d+'` - what the id in the address is made of: `/products/export`, a route of your own, is then not
@@ -727,7 +738,7 @@ the interface to your own, or decorate it with `#[AsDecorator(CrudReturn::class)
 
 | Interface | What it says |
 | --- | --- |
-| `CrudReturn` | where the pages of a record lead: `url()` (their "back"), `afterSave()` (e.g. the edit form again, the details of a new record), `afterDelete()` |
+| `CrudReturn` | where the pages of a record lead: `url()` (their "back"), `afterSave()` (the way back of a save, `AfterSave::Return`; `CrudSaveReturn::afterSaveTo()` the others - e.g. the page of a parent), `afterDelete()` |
 | `CrudAccess` | whether a resource, an operation of it and a page of a record are for the one asking - one more rule (a tenant, a licence) for every way at once |
 | `RecordDeletion` | how a record is deleted from the list, its pages and the bulk delete: around it a transaction or an archive, or another way (marked deleted) |
 | `FailureMessage` | the text of a refusal (a form, a toast, an error page) |

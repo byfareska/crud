@@ -5,6 +5,8 @@ ui:
         save: Salvează
         save_new: 'Salvează și adaugă altul'
         save_edit: 'Salvează și continuă editarea'
+        save_return: 'Salvează și înapoi la listă'
+        save_show: 'Salvează și vezi'
         cancel: Anulează
         confirm: Confirmă
         close: Închide

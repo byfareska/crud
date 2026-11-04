@@ -5,6 +5,8 @@ ui:
         save: Zapisz
         save_new: 'Zapisz i dodaj kolejny'
         save_edit: 'Zapisz i edytuj dalej'
+        save_return: 'Zapisz i wróć do listy'
+        save_show: 'Zapisz i pokaż'
         cancel: Anuluj
         confirm: Potwierdź
         close: Zamknij

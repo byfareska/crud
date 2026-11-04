@@ -69,9 +69,11 @@ use Byfareska\Crud\Driver\Dto\ConstructorDtoFactory;
 use Byfareska\Crud\Driver\Dto\DtoFactory;
 use Byfareska\Crud\Page\CrudPages;
 use Byfareska\Crud\Page\DefaultCrudPages;
+use Byfareska\Crud\Resource\AfterSave;
 use Byfareska\Crud\Resource\CrudAccess;
 use Byfareska\Crud\Resource\CrudRecords;
 use Byfareska\Crud\Resource\CrudReturn;
+use Byfareska\Crud\Resource\CrudSaveButton;
 use Byfareska\Crud\Resource\DefaultCrudAccess;
 use Byfareska\Crud\Resource\DefaultCrudRecords;
 use Byfareska\Crud\Resource\DefaultCrudReturn;
@@ -227,6 +229,37 @@ final class CrudBundle extends AbstractBundle
                     )
                     ->min(1)
                     ->defaultNull()
+                ->end()
+                ->arrayNode('form')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('save')
+                            ->info(
+                                'Where "save" of the add and edit forms leads, for a resource that does not say '
+                                . '(AsCrud::$save): edit (the edit form of the record, of a new one too), return '
+                                . '(the list), show (its details), new (the add form again), or the name of a '
+                                . 'CrudSaveButton.',
+                            )
+                            ->defaultValue(AfterSave::Edit->value)
+                            ->cannotBeEmpty()
+                            ->validate()
+                                ->ifTrue(static fn (mixed $save): bool => !is_string($save)
+                                    || preg_match(CrudSaveButton::NAME, $save) !== 1)
+                                ->thenInvalid('%s is not a case of AfterSave nor the name of a CrudSaveButton.')
+                            ->end()
+                        ->end()
+                        ->arrayNode('save_buttons')
+                            ->info(
+                                'The buttons of the forms besides "save", for a resource that does not say '
+                                . '(AsCrud::$afterSave): return ("save and back to the list"), new ("save and add '
+                                . 'another"), edit ("save and keep editing"), show ("save and view").',
+                            )
+                            ->enumPrototype()
+                                ->values(array_column(AfterSave::cases(), 'value'))
+                            ->end()
+                            ->defaultValue([])
+                        ->end()
+                    ->end()
                 ->end()
                 ->arrayNode('scopes')
                     ->info('The panels (route scopes), each imported with `type: byfareska_crud, resource: <name>`.')
@@ -483,6 +516,7 @@ final class CrudBundle extends AbstractBundle
      *     paths: array{new: string, edit: string, page: string},
      *     per_page: list<int>,
      *     default_per_page: int|null,
+     *     form: array{save: string, save_buttons: list<string>},
      *     entries: list<string>,
      *     assets: string,
      *     theme: string,
@@ -516,6 +550,11 @@ final class CrudBundle extends AbstractBundle
         $parameters->set('byfareska_crud.preview', $config['preview']);
         $parameters->set('byfareska_crud.per_page', array_values($config['per_page']));
         $parameters->set('byfareska_crud.default_per_page', $config['default_per_page']);
+        $parameters->set('byfareska_crud.form.save', $config['form']['save']);
+        $parameters->set(
+            'byfareska_crud.form.save_buttons',
+            array_values(array_unique($config['form']['save_buttons'])),
+        );
         $parameters->set('byfareska_crud.entries', $config['entries']);
         $parameters->set('byfareska_crud.assets', $config['assets']);
         $parameters->set('byfareska_crud.paths', $config['paths']);

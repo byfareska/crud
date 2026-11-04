@@ -5,6 +5,8 @@ ui:
         save: Spara
         save_new: 'Spara och lägg till en till'
         save_edit: 'Spara och fortsätt redigera'
+        save_return: 'Spara och tillbaka till listan'
+        save_show: 'Spara och visa'
         cancel: Avbryt
         confirm: Bekräfta
         close: Stäng

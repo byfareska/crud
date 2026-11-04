@@ -5,6 +5,8 @@ ui:
         save: บันทึก
         save_new: 'บันทึกและเพิ่มอีกรายการ'
         save_edit: 'บันทึกและแก้ไขต่อ'
+        save_return: 'บันทึกและกลับไปที่รายการ'
+        save_show: 'บันทึกและดู'
         cancel: ยกเลิก
         confirm: ยืนยัน
         close: ปิด

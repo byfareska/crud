@@ -5,6 +5,8 @@ ui:
         save: حفظ
         save_new: 'حفظ وإضافة آخر'
         save_edit: 'حفظ ومتابعة التعديل'
+        save_return: 'حفظ والعودة إلى القائمة'
+        save_show: 'حفظ وعرض'
         cancel: إلغاء
         confirm: تأكيد
         close: إغلاق

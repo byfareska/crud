@@ -8,8 +8,8 @@ use Byfareska\Crud\Attribute\AsCrud;
 
 /**
  * A {@see CrudReturn} that also says where the other buttons of a form lead (AfterSave: "save and add another", "save
- * and keep editing"). The bundle's DefaultCrudReturn is one; a CrudReturn of the application's own that is not one
- * sends every save to afterSave().
+ * and keep editing", "save and view"; AfterSave::Return is afterSave()). The bundle's DefaultCrudReturn is one; a
+ * CrudReturn of the application's own that is not one sends every save to afterSave().
  */
 interface CrudSaveReturn extends CrudReturn
 {

@@ -18,13 +18,19 @@ interface CrudSaveButton
 {
     public const string TAG = 'byfareska_crud.save_button';
 
+    /** What a name of a button is made of. */
+    public const string NAME = '/^[a-z0-9_-]+$/';
+
     /** A button of the forms of every resource. */
     public const string EVERY = '*';
 
     /** The name of the resource, as in #[AsCrud]; EVERY for all. */
     public function resource(): string;
 
-    /** What the button is told by (data-live-then-param): lower-case letters, digits, "_" and "-". */
+    /**
+     * What the button is told by (data-live-then-param; AsCrud::$save, to be where "save" leads): lower-case letters,
+     * digits, "_" and "-" - not one of AfterSave.
+     */
     public function name(): string;
 
     /** Translation key of the text of the button. */

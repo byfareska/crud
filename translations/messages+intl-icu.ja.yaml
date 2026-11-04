@@ -5,6 +5,8 @@ ui:
         save: 保存
         save_new: '保存して続けて追加'
         save_edit: '保存して編集を続ける'
+        save_return: '保存して一覧に戻る'
+        save_show: '保存して表示'
         cancel: キャンセル
         confirm: 確認
         close: 閉じる

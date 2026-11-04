@@ -5,6 +5,8 @@ ui:
         save: ذخیره
         save_new: 'ذخیره و افزودن مورد دیگر'
         save_edit: 'ذخیره و ادامهٔ ویرایش'
+        save_return: 'ذخیره و بازگشت به فهرست'
+        save_show: 'ذخیره و مشاهده'
         cancel: لغو
         confirm: تأیید
         close: بستن

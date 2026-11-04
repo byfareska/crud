@@ -5,6 +5,8 @@ ui:
         save: Lưu
         save_new: 'Lưu và thêm mục khác'
         save_edit: 'Lưu và tiếp tục chỉnh sửa'
+        save_return: 'Lưu và quay lại danh sách'
+        save_show: 'Lưu và xem'
         cancel: Hủy
         confirm: Xác nhận
         close: Đóng

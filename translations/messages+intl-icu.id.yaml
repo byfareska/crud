@@ -5,6 +5,8 @@ ui:
         save: Simpan
         save_new: 'Simpan dan tambah lagi'
         save_edit: 'Simpan dan lanjutkan mengedit'
+        save_return: 'Simpan dan kembali ke daftar'
+        save_show: 'Simpan dan lihat'
         cancel: Batal
         confirm: Konfirmasi
         close: Tutup
