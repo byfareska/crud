@@ -123,3 +123,60 @@
     {%- set error_item_class = error_item_class|default('mt-1 text-sm text-error') -%}
     {{- parent() -}}
 {%- endblock form_errors -%}
+
+{#
+    A field of files (CrudFileType): a hidden input with the JSON of its files, kept by the file-field controller -
+    uploaded at once when chosen or dropped, picked in the window of the library, sorted by dragging, taken away. The
+    files drawn here are those of the value; the controller draws a new one from the <template>.
+#}
+{%- block crud_file_widget -%}
+    {%- set gallery = gallery and multiple -%}
+    <div class="rounded-box border border-dashed border-base-300 p-3 transition-colors data-[over]:border-primary data-[over]:bg-primary/5{{ errors|length ? ' border-error' }}"
+         data-controller="file-field"
+         data-file-field-upload-url-value="{{ upload_url }}"
+         data-file-field-token-value="{{ library_token }}"
+         data-file-field-multiple-value="{{ multiple ? 'true' : 'false' }}"
+         data-file-field-max-value="{{ max_files }}"
+         data-action="dragover->file-field#over dragleave->file-field#leave drop->file-field#drop">
+        <input type="hidden" id="{{ id }}" name="{{ full_name }}" value="{{ value }}" data-file-field-target="input"{% if disabled %} disabled{% endif %}>
+        <ul class="{{ gallery ? 'grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-3' : 'flex flex-col gap-2' }} empty:hidden mb-3"
+            data-file-field-target="list"
+            data-action="dragstart->file-field#dragStart dragover->file-field#dragOver drop->file-field#dropItem dragend->file-field#dragEnd">
+            {%- for file in files -%}{{ block('crud_file_item') }}{%- endfor -%}
+        </ul>
+        <template data-file-field-target="template">{%- with {file: null} -%}{{ block('crud_file_item') }}{%- endwith -%}</template>
+        {%- if not disabled -%}
+        <div class="flex flex-wrap items-center gap-2">
+            {%- if upload_url -%}
+                <input type="file" class="hidden" accept="{{ accept }}"{% if multiple %} multiple{% endif %} data-file-field-target="picker" data-action="change->file-field#picked">
+                <button type="button" class="btn btn-sm" data-action="file-field#choose">{{ crud_icon('upload') }} {{ (multiple ? 'file.field.upload_many' : 'file.field.upload')|trans }}</button>
+            {%- endif -%}
+            {%- if library_token -%}
+                <button type="button" class="btn btn-sm" data-action="file-field#browse">{{ crud_icon('collection') }} {{ 'file.field.browse'|trans }}</button>
+            {%- endif -%}
+            {%- if upload_url -%}<span class="text-sm text-base-content/60">{{ 'file.field.drop'|trans }}</span>{%- endif -%}
+        </div>
+        {%- endif -%}
+    </div>
+{%- endblock crud_file_widget -%}
+
+{# A file of a field of files; "file" is null in the <template> a new one is drawn from. #}
+{%- block crud_file_item -%}
+    {%- set shown = file is not null and file.image and file.url -%}
+    <li class="group relative {{ gallery ? 'flex flex-col gap-1' : 'flex items-center gap-3 rounded-box bg-base-200/50 p-2' }}"
+        data-file-field-target="item" data-ref="{{ file.ref|default('') }}" data-sig="{{ file.sig|default('') }}"{% if multiple and not disabled %} draggable="true"{% endif %}>
+        <a data-role="link" href="{{ file.url|default('#') }}" target="_blank" rel="noopener" class="{{ gallery ? 'block aspect-square overflow-hidden rounded-box bg-base-200' : 'flex size-10 shrink-0 items-center justify-center overflow-hidden rounded bg-base-200' }}">
+            <img data-role="image" src="{{ shown ? file.url : '' }}" alt="" loading="lazy" class="size-full object-cover"{% if not shown %} hidden{% endif %}>
+            <span data-role="icon" class="flex size-full items-center justify-center text-2xl text-base-content/50"{% if shown %} hidden{% endif %}>{{ crud_icon('file-earmark') }}</span>
+        </a>
+        <span data-role="name" class="min-w-0 flex-1 truncate text-sm" title="{{ file.name|default('') }}">{{ file.name|default('') }}</span>
+        <progress data-role="progress" class="progress progress-primary w-full" value="0" max="100" hidden></progress>
+        <span data-role="error" class="text-xs text-error" hidden></span>
+        {%- for name in meta -%}
+            <input type="text" class="input input-xs w-full" data-meta="{{ name }}" value="{{ file.meta[name]|default('') }}" placeholder="{{ ('file.field.meta.' ~ name)|trans }}" aria-label="{{ ('file.field.meta.' ~ name)|trans }}" data-action="input->file-field#sync"{% if disabled %} disabled{% endif %}>
+        {%- endfor -%}
+        {%- if not disabled -%}
+            <button type="button" class="btn btn-circle btn-xs {{ gallery ? 'absolute end-1 top-1 btn-neutral opacity-80 group-hover:opacity-100' : 'btn-ghost' }}" data-action="file-field#remove" aria-label="{{ 'file.field.remove'|trans }}" title="{{ 'file.field.remove'|trans }}">{{ crud_icon('x-lg') }}</button>
+        {%- endif -%}
+    </li>
+{%- endblock crud_file_item -%}

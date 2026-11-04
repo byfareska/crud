@@ -8,6 +8,8 @@ import Confirm from './controllers/confirm_controller.js';
 import DashboardGrid from './controllers/dashboard_grid_controller.js';
 import DateRange from './controllers/date_range_controller.js';
 import Dropdown from './controllers/dropdown_controller.js';
+import FileField from './controllers/file_field_controller.js';
+import FileLibrary from './controllers/file_library_controller.js';
 import FiltersPanel from './controllers/filters_panel_controller.js';
 import Flash from './controllers/flash_controller.js';
 import FocusFirst from './controllers/focus_first_controller.js';
@@ -24,6 +26,8 @@ import Toast from './controllers/toast_controller.js';
 export { useBootstrap, openOverlay, closeOverlay, toggleOverlay, closeMenus, anyOverlayOpen, registerOverlayAdapter } from './lib/overlay.js';
 // For an application that registers single controllers of the map below instead of calling registerControllers().
 export { installCsrfProtection };
+// Files of the panel: an upload to the address of a field, the window of the library - see lib/files.js.
+export { uploadFile, pickFiles } from './lib/files.js';
 // Functions of charts by name: "formatter(currency)" in the description of a chart - see lib/chart_formatters.js.
 export { registerChartFormatter } from './lib/chart_formatters.js';
 
@@ -40,6 +44,8 @@ export const controllers = {
     'dashboard-grid': DashboardGrid,
     'date-range': DateRange,
     'dropdown': Dropdown,
+    'file-field': FileField,
+    'file-library': FileLibrary,
     'filters-panel': FiltersPanel,
     'flash': Flash,
     'focus-first': FocusFirst,

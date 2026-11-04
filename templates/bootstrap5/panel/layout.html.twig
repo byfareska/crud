@@ -45,6 +45,14 @@
     <twig:Ui:Toast id="panel-toast" data-turbo-permanent />
     {# Where the confirm controller asks "are you sure?". #}
     <twig:Ui:ConfirmDialog />
+    {# The window of the library, for the fields of files of the page (byfareska_crud.files) - see pickFiles(). #}
+    {% if crud_files_enabled %}
+        <twig:Ui:Modal id="crud-file-library" size="xl" aria-label="{{ 'file.library.title'|trans }}"
+            data-controller="overlay file-library" data-file-library-chosen-class="border-primary bg-primary-subtle"
+            data-action="overlay:shown->overlay#focus overlay:hidden->file-library#closed file-library:open->file-library#open">
+            <twig:Crud:FileLibrary :scope="panel_scope().name" />
+        </twig:Ui:Modal>
+    {% endif %}
     {# Messages left by the previous page, e.g. after a form was saved. #}
     {% for title in app.flashes('toast') %}
         <span hidden data-controller="flash" data-flash-title-value="{{ title }}"></span>

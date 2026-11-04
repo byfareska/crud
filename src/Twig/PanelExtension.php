@@ -34,15 +34,18 @@ final class PanelExtension extends AbstractExtension implements GlobalsInterface
         private readonly Themes $themes,
         private readonly CurrentCrud $currentCrud,
         private readonly PanelAccount $account = new NoPanelAccount(),
+        #[Autowire(param: 'byfareska_crud.files.enabled')]
+        private readonly bool $files = false,
     ) {
     }
 
     /**
-     * @return array{panel_name: string}
+     * @return array{panel_name: string, crud_files_enabled: bool}
      */
     public function getGlobals(): array
     {
-        return ['panel_name' => $this->name];
+        // Whether byfareska_crud.files is enabled: the layout has the window of the library then.
+        return ['panel_name' => $this->name, 'crud_files_enabled' => $this->files];
     }
 
     public function getFilters(): array

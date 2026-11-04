@@ -1,4 +1,4 @@
-# The optional dependencies of the bundle (Doctrine, Symfony Security, Symfony UX Autocomplete) are used only by
+# The optional dependencies of the bundle (Doctrine, Symfony Security, Symfony UX Autocomplete, Flysystem) are used only by
 # their integrations, which CrudBundle registers when the package is there. The rest of the bundle must work without
 # them.
 deptrac:
@@ -25,6 +25,12 @@ deptrac:
                     type: classNameRegex
                     value: '#^Symfony\\UX\\Autocomplete\\#'
         -
+            name: Flysystem
+            collectors:
+                -
+                    type: classNameRegex
+                    value: '#^League\\Flysystem\\#'
+        -
             name: DoctrineIntegration
             collectors:
                 -
@@ -33,6 +39,9 @@ deptrac:
                 -
                     type: directory
                     value: src/Chart/Sql/.*
+                -
+                    type: directory
+                    value: src/Files/Doctrine/.*
                 -
                     type: classNameRegex
                     value: '#^Byfareska\\Crud\\Dashboard\\Storage\\(DoctrineDashboardLayouts|DashboardLayoutRecord)$#'
@@ -48,6 +57,12 @@ deptrac:
                 -
                     type: directory
                     value: src/Autocomplete/.*
+        -
+            name: FlysystemIntegration
+            collectors:
+                -
+                    type: directory
+                    value: src/Files/Flysystem/.*
         -
             # Registers the integrations when their packages are there.
             name: Wiring
@@ -76,6 +91,9 @@ deptrac:
                             value: AutocompleteIntegration
                         -
                             type: layer
+                            value: FlysystemIntegration
+                        -
+                            type: layer
                             value: Wiring
 
     ruleset:
@@ -93,11 +111,16 @@ deptrac:
             - Doctrine
             - UxAutocomplete
             - SymfonySecurity
+        FlysystemIntegration:
+            - Bundle
+            - Flysystem
         Wiring:
             - Bundle
             - DoctrineIntegration
             - SecurityIntegration
             - AutocompleteIntegration
+            - FlysystemIntegration
             - Doctrine
             - SymfonySecurity
             - UxAutocomplete
+            - Flysystem

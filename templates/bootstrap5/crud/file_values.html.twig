@@ -1,0 +1,10 @@
+{#
+    How files are printed among the values of the CRUD pages (byfareska_crud.files; looked into after the value themes
+    of the application, before values.html.twig). Their value is their reference: an image as its thumbnail, another
+    file by its name; a link only in the details - a cell of the list opens the preview.
+#}
+{% block type_image %}{% set url = crud_file_url(value) %}{% if url %}<img src="{{ url }}" alt="" loading="lazy" class="rounded object-fit-cover" width="40" height="40">{% else %}{{ crud_icon('image') }}{% endif %}{% endblock %}
+{% block type_image_detail %}{% set url = crud_file_url(value) %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener"><img src="{{ url }}" alt="" loading="lazy" class="img-fluid rounded" style="max-height: 12rem"></a>{% else %}{{ crud_icon('image') }}{% endif %}{% endblock %}
+{% block type_image_entry %}{% set url = crud_file_url(value) %}{% if url %}<img src="{{ url }}" alt="" loading="lazy" class="rounded object-fit-cover me-1" width="40" height="40">{% endif %}{% endblock %}
+{% block type_file %}<span class="d-inline-flex align-items-center gap-1 mw-100">{{ crud_icon('file-earmark') }}<span class="text-truncate">{{ value|split('/')|last }}</span></span>{% endblock %}
+{% block type_file_detail %}{% set url = crud_file_url(value) %}<span class="d-inline-flex align-items-center gap-1 mw-100 me-2">{{ crud_icon('file-earmark') }}{% if url %}<a class="text-truncate" href="{{ url }}" target="_blank" rel="noopener">{{ crud_file(value).name }}</a>{% else %}<span class="text-truncate">{{ crud_file(value).name }}</span>{% endif %}</span>{% endblock %}
