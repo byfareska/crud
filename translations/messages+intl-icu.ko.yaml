@@ -5,6 +5,8 @@ ui:
         save: 저장
         save_new: '저장하고 하나 더 추가'
         save_edit: '저장하고 계속 편집'
+        save_return: '저장하고 목록으로 돌아가기'
+        save_show: '저장하고 보기'
         cancel: 취소
         confirm: 확인
         close: 닫기
@@ -275,3 +277,34 @@ panel:
         label: 사용자 메뉴
         logout: 로그아웃
         anonymous: 로그인하지 않았습니다
+file:
+    refused:
+        too_big: '파일이 너무 큽니다: 최대 {max}.'
+        kind: '이 종류의 파일({kind})은 여기에서 받지 않습니다.'
+        not_uploaded: '파일이 도착하지 않았습니다. 다시 시도하세요.'
+        storage: '여기에는 파일을 업로드할 수 없습니다.'
+        failed: '파일을 저장하지 못했습니다. 다시 시도하세요.'
+    field:
+        upload: '파일 업로드'
+        upload_many: '파일 업로드'
+        browse: '라이브러리에서 선택'
+        drop: '또는 여기에 끌어다 놓기'
+        remove: '제거'
+        invalid: '이 파일은 여기에서 선택할 수 없습니다.'
+        kind: '이 종류의 파일은 여기에서 받지 않습니다.'
+        too_many: '최대 {max, plural, other {#개}}까지입니다.'
+        meta:
+            alt: '대체 텍스트'
+            caption: '캡션'
+    library:
+        title: '파일'
+        search: '이름으로 검색'
+        empty: '아직 파일이 없습니다.'
+        not_found: '찾은 항목이 없습니다.'
+        choose: '선택'
+        remove: '파일 삭제'
+        in_use: '“{name}”은(는) {count, plural, other {#곳}}에서 사용 중입니다:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: '그래도 삭제'
+        previous: '이전 페이지'
+        next: '다음 페이지'

@@ -21,8 +21,8 @@ final readonly class RecordSaving
      * @param mixed $data what the form made: the entity (doctrine), the DTO (dto)
      * @param RecordView|null $before the record as it was before the form changed it - every property, when the
      *     resource can read one (empty else); null when it is added. What a diff of an audit log compares the data with
-     * @param string|null $then the button that saved: an AfterSave ("new", "edit"), the name of a CrudSaveButton
-     *     ("send"); null = "save"
+     * @param string|null $then where the save leads, by the button that saved: an AfterSave ("edit", "return",
+     *     "new", "show"), the name of a CrudSaveButton ("send") - "save" is told by where it leads (AsCrud::$save)
      */
     public function __construct(
         public AsCrud $crud,

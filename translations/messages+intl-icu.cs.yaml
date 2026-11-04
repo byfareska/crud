@@ -5,6 +5,8 @@ ui:
         save: Uložit
         save_new: 'Uložit a přidat další'
         save_edit: 'Uložit a pokračovat v úpravách'
+        save_return: 'Uložit a zpět na seznam'
+        save_show: 'Uložit a zobrazit'
         cancel: Zrušit
         confirm: Potvrdit
         close: Zavřít
@@ -275,3 +277,34 @@ panel:
         label: Uživatelská nabídka
         logout: Odhlásit se
         anonymous: Nejste přihlášeni
+file:
+    refused:
+        too_big: 'Soubor je příliš velký: nejvýše {max}.'
+        kind: 'Soubory tohoto druhu ({kind}) se zde nepřijímají.'
+        not_uploaded: 'Soubor nedorazil. Zkuste to znovu.'
+        storage: 'Sem nelze nahrávat soubory.'
+        failed: 'Soubor se nepodařilo uložit. Zkuste to znovu.'
+    field:
+        upload: 'Nahrát soubor'
+        upload_many: 'Nahrát soubory'
+        browse: 'Vybrat z knihovny'
+        drop: 'nebo je přetáhněte sem'
+        remove: 'Odebrat'
+        invalid: 'Tento soubor zde nelze vybrat.'
+        kind: 'Soubory tohoto druhu se zde nepřijímají.'
+        too_many: 'Nejvýše {max, plural, one {# soubor} few {# soubory} many {# souboru} other {# souborů}}.'
+        meta:
+            alt: 'Alternativní text'
+            caption: 'Popisek'
+    library:
+        title: 'Soubory'
+        search: 'Hledat podle názvu'
+        empty: 'Zatím žádné soubory.'
+        not_found: 'Nic nenalezeno.'
+        choose: 'Vybrat'
+        remove: 'Smazat soubor'
+        in_use: '„{name}“ se používá {count, plural, one {na # místě} few {na # místech} many {na # místa} other {na # místech}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Přesto smazat'
+        previous: 'Předchozí stránka'
+        next: 'Další stránka'

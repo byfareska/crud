@@ -5,6 +5,8 @@ ui:
         save: Zapisz
         save_new: 'Zapisz i dodaj kolejny'
         save_edit: 'Zapisz i edytuj dalej'
+        save_return: 'Zapisz i wróć do listy'
+        save_show: 'Zapisz i pokaż'
         cancel: Anuluj
         confirm: Potwierdź
         close: Zamknij
@@ -276,3 +278,35 @@ panel:
         label: Menu użytkownika
         logout: Wyloguj
         anonymous: Nie jesteś zalogowany
+
+file:
+    refused:
+        too_big: 'Plik jest za duży: najwyżej {max}.'
+        kind: 'Pliki tego rodzaju ({kind}) nie są tu przyjmowane.'
+        not_uploaded: 'Plik nie dotarł. Spróbuj ponownie.'
+        storage: 'Tu nie można wgrywać plików.'
+        failed: 'Nie udało się zapisać pliku. Spróbuj ponownie.'
+    field:
+        upload: 'Wgraj plik'
+        upload_many: 'Wgraj pliki'
+        browse: 'Wybierz z biblioteki'
+        drop: 'albo upuść je tutaj'
+        remove: 'Usuń'
+        invalid: 'Tego pliku nie można tu wybrać.'
+        kind: 'Pliki tego rodzaju nie są tu przyjmowane.'
+        too_many: 'Najwyżej {max, plural, one {# plik} few {# pliki} many {# plików} other {# pliku}}.'
+        meta:
+            alt: 'Tekst alternatywny'
+            caption: 'Podpis'
+    library:
+        title: 'Pliki'
+        search: 'Szukaj po nazwie'
+        empty: 'Nie ma jeszcze plików.'
+        not_found: 'Nic nie znaleziono.'
+        choose: 'Wybierz'
+        remove: 'Usuń plik'
+        in_use: '„{name}” jest używany {count, plural, one {w # miejscu} other {w # miejscach}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Usuń mimo to'
+        previous: 'Poprzednia strona'
+        next: 'Następna strona'

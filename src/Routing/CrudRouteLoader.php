@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Routing;
 
 use Byfareska\Crud\Controller\DashboardController;
+use Byfareska\Crud\Controller\FilesController;
+use Byfareska\Crud\Files\FileRoutes;
 use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Panel\Scopes;
 use InvalidArgumentException;
 use Symfony\Component\Config\Loader\Loader;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -23,7 +26,8 @@ use Symfony\Component\Routing\RouteCollection;
  *
  * The CRUD pages of the #[AsCrud] resources of the scope and, when the scope has one, its dashboard at "/" (with the
  * endpoints its grid saves through, under "/_dashboard"), and the endpoint of the live components drawn on them
- * ("/_crud/{component}/{action}"), so live requests are in the firewall of the panel too. Every route gets the default
+ * ("/_crud/{component}/{action}"), so live requests are in the firewall of the panel too; with byfareska_crud.files,
+ * the upload and the download of files ("/_files", "/_files/download"). Every route gets the default
  * "_scope", which the menu, the palette and the layout go by, and which access_control can go by: `attributes: {
  * _scope: admin }` - besides the role of the scope, which the bundle checks itself on every way to its resources.
  */
@@ -38,6 +42,8 @@ final class CrudRouteLoader extends Loader
     public function __construct(
         private readonly CrudRoutes $crudRoutes,
         private readonly Scopes $scopes,
+        #[Autowire(param: 'byfareska_crud.files.enabled')]
+        private readonly bool $files = false,
     ) {
         parent::__construct();
     }
@@ -79,6 +85,18 @@ final class CrudRouteLoader extends Loader
             $routes->addCollection($this->dashboard($board, rtrim($settings['path'], '/')));
         }
         $routes->addCollection($resources);
+        if ($this->files) {
+            $routes->add(FileRoutes::upload($scope->name), new Route(
+                '/_files',
+                ['_controller' => FilesController::class . '::upload'],
+                methods: ['POST'],
+            ));
+            $routes->add(FileRoutes::download($scope->name), new Route(
+                '/_files/download',
+                ['_controller' => FilesController::class . '::download'],
+                methods: ['GET'],
+            ));
+        }
         // The live components of its pages, under its prefix: in the firewall of the panel (PanelLiveUrls).
         $routes->add($scope->liveRoute(), new Route(
             '/_crud/{_live_component}/{_live_action}',

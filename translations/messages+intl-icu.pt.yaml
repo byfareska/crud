@@ -5,6 +5,8 @@ ui:
         save: Salvar
         save_new: 'Guardar e adicionar outro'
         save_edit: 'Guardar e continuar a editar'
+        save_return: 'Guardar e voltar à lista'
+        save_show: 'Guardar e ver'
         cancel: Cancelar
         confirm: Confirmar
         close: Fechar
@@ -275,3 +277,34 @@ panel:
         label: Menu do usuário
         logout: Sair
         anonymous: Você não está conectado
+file:
+    refused:
+        too_big: 'O arquivo é grande demais: no máximo {max}.'
+        kind: 'Arquivos deste tipo ({kind}) não são aceitos aqui.'
+        not_uploaded: 'O arquivo não chegou. Tente novamente.'
+        storage: 'Não é possível enviar arquivos aqui.'
+        failed: 'Não foi possível salvar o arquivo. Tente novamente.'
+    field:
+        upload: 'Enviar um arquivo'
+        upload_many: 'Enviar arquivos'
+        browse: 'Escolher da biblioteca'
+        drop: 'ou solte-os aqui'
+        remove: 'Remover'
+        invalid: 'Este arquivo não pode ser escolhido aqui.'
+        kind: 'Arquivos deste tipo não são aceitos aqui.'
+        too_many: 'No máximo {max, plural, one {# arquivo} other {# arquivos}}.'
+        meta:
+            alt: 'Texto alternativo'
+            caption: 'Legenda'
+    library:
+        title: 'Arquivos'
+        search: 'Pesquisar por nome'
+        empty: 'Ainda não há arquivos.'
+        not_found: 'Nada encontrado.'
+        choose: 'Escolher'
+        remove: 'Excluir o arquivo'
+        in_use: '“{name}” é usado {count, plural, one {em # lugar} other {em # lugares}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Excluir mesmo assim'
+        previous: 'Página anterior'
+        next: 'Próxima página'

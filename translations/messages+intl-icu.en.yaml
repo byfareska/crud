@@ -5,6 +5,8 @@ ui:
         save: Save
         save_new: 'Save and add another'
         save_edit: 'Save and keep editing'
+        save_return: 'Save and back to the list'
+        save_show: 'Save and view'
         cancel: Cancel
         confirm: Confirm
         close: Close
@@ -275,3 +277,35 @@ panel:
         label: User menu
         logout: Sign out
         anonymous: You are not signed in
+
+file:
+    refused:
+        too_big: 'The file is too big: at most {max}.'
+        kind: 'Files of this kind ({kind}) are not taken here.'
+        not_uploaded: 'The file did not arrive. Try again.'
+        storage: 'Files cannot be uploaded here.'
+        failed: 'The file could not be saved. Try again.'
+    field:
+        upload: 'Upload a file'
+        upload_many: 'Upload files'
+        browse: 'Choose from the library'
+        drop: 'or drop them here'
+        remove: 'Remove'
+        invalid: 'This file cannot be chosen here.'
+        kind: 'Files of this kind are not taken here.'
+        too_many: 'At most {max, plural, one {# file} other {# files}}.'
+        meta:
+            alt: 'Alternative text'
+            caption: 'Caption'
+    library:
+        title: 'Files'
+        search: 'Search by name'
+        empty: 'No files yet.'
+        not_found: 'Nothing found.'
+        choose: 'Choose'
+        remove: 'Delete the file'
+        in_use: '"{name}" is used {count, plural, one {in # place} other {in # places}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Delete it anyway'
+        previous: 'Previous page'
+        next: 'Next page'

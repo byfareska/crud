@@ -21,8 +21,8 @@ final readonly class RecordSaved
      * @param string|null $id of the record; null when the driver could not tell the id of a new one
      * @param mixed $data what was saved: the entity (doctrine), the DTO (dto)
      * @param RecordView|null $before the record as it was before (see RecordSaving::$before); null when it was added
-     * @param string|null $then the button that saved: an AfterSave ("new", "edit"), the name of a CrudSaveButton
-     *     ("send"); null = "save"
+     * @param string|null $then where the save leads, by the button that saved: an AfterSave ("edit", "return",
+     *     "new", "show"), the name of a CrudSaveButton ("send") - "save" is told by where it leads (AsCrud::$save)
      */
     public function __construct(
         public AsCrud $crud,

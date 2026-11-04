@@ -15,6 +15,7 @@ use Byfareska\Crud\Resource\AfterSave;
 use Byfareska\Crud\Resource\Column;
 use Byfareska\Crud\Resource\CrudListedIn;
 use Byfareska\Crud\Resource\CrudOperation;
+use Byfareska\Crud\Resource\CrudSaveButton;
 use Byfareska\Crud\Routing\PageParametersListener;
 use Byfareska\Crud\UseCase\MapsToRequest;
 use Byfareska\Crud\Value\ValueFormat;
@@ -121,8 +122,8 @@ final readonly class AsCrud
     public const array CHANGEABLE = [
         'source', 'icon', 'columns', 'details', 'theme', 'palette', 'search', 'title', 'section', 'priority', 'actions',
         'fields', 'formLayout', 'detailsLayout', 'listHead', 'listActions', 'preview', 'bulkActions', 'perPage',
-        'filtersInView', 'defaultPerPage', 'listComponent', 'formComponent', 'hidden', 'afterSave', 'pageTemplates',
-        'options',
+        'filtersInView', 'defaultPerPage', 'listComponent', 'formComponent', 'hidden', 'save', 'afterSave',
+        'pageTemplates', 'options',
     ];
 
     /** Where the records are, and which driver reads them. */
@@ -219,9 +220,14 @@ final readonly class AsCrud
      *     "@CrudTheme/crud/<page>.html.twig" and change a block of it
      * @param string|null $idPattern what the id in the address is made of, a regular expression: "\\d+" for numbers, so
      *     /products/export (a route of the application's own) is not taken for a record; null = anything but "/"
-     * @param list<AfterSave> $afterSave the buttons the form has besides "save", in order: AfterSave::New ("save and
-     *     add another", on the add form), AfterSave::Edit ("save and keep editing") - where they lead is CrudReturn's
-     *     (CrudSaveReturn)
+     * @param AfterSave|string|null $save where "save" of the form leads: AfterSave::Edit (the edit form of the record,
+     *     of a new one too), AfterSave::Return (the list), AfterSave::Show (its details), AfterSave::New (the add form
+     *     again), or the name of a CrudSaveButton (where it leads; then it is not a button of its own). Null =
+     *     byfareska_crud.form.save
+     * @param list<AfterSave>|null $afterSave the buttons the form has besides "save", in order: AfterSave::Return
+     *     ("save and back to the list"), AfterSave::New ("save and add another", on the add form), AfterSave::Edit
+     *     ("save and keep editing"), AfterSave::Show ("save and view") - where they lead is CrudReturn's
+     *     (CrudSaveReturn); the one "save" leads to is left out. Null = byfareska_crud.form.save_buttons
      * @param list<CrudOperation> $refused what is taken away for a request (see refusing()), whatever the source can
      *     do - not to be declared: the routes are there, the pages answer 403
      * @param array<string, string> $requirements what the parameters of the application in its path are made of, a
@@ -269,7 +275,8 @@ final readonly class AsCrud
         public string $listComponent = 'Crud:List',
         public string $formComponent = 'Crud:Form',
         public array $hidden = [],
-        public array $afterSave = [],
+        public AfterSave|string|null $save = null,
+        public ?array $afterSave = null,
         public ?string $idPattern = null,
         public array $pageTemplates = [],
         public array $options = [],
@@ -437,7 +444,20 @@ final readonly class AsCrud
                 ));
             }
         }
-        if (!array_all($afterSave, static fn (mixed $then): bool => $then instanceof AfterSave)) {
+        if (is_string($save) && preg_match(CrudSaveButton::NAME, $save) !== 1) {
+            throw new InvalidArgumentException(sprintf(
+                'CRUD resource "%s": save is an %s case or the name of a %s (lower-case letters, digits, "_" and '
+                . '"-"), not "%s".',
+                $name,
+                AfterSave::class,
+                CrudSaveButton::class,
+                $save,
+            ));
+        }
+        if (
+            $afterSave !== null
+            && !array_all($afterSave, static fn (mixed $then): bool => $then instanceof AfterSave)
+        ) {
             throw new InvalidArgumentException(sprintf(
                 'CRUD resource "%s": afterSave is a list of %s cases.',
                 $name,
@@ -645,6 +665,7 @@ final readonly class AsCrud
             'listComponent' => $this->listComponent,
             'formComponent' => $this->formComponent,
             'hidden' => $this->hidden,
+            'save' => $this->save,
             'afterSave' => $this->afterSave,
             'idPattern' => $this->idPattern,
             'pageTemplates' => $this->pageTemplates,

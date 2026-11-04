@@ -38,17 +38,61 @@ final class DoctrineMappingTest extends TestCase
         self::assertSame(['shop'], array_keys($orm['entity_managers'] ?? []));
     }
 
+    public function testNoTablesOfFilesUntilFilesAreEnabled(): void
+    {
+        $storages = ['storages' => ['public' => ['service' => 'app.storage']]];
+
+        foreach ([[], ['files' => false], ['files' => ['enabled' => false] + $storages]] as $crud) {
+            self::assertSame(['ByfareskaCrud'], array_keys($this->prepended([], $crud)['mappings'] ?? []));
+        }
+    }
+
+    public function testTheTablesOfFilesWhenTheyAreKeptByDoctrine(): void
+    {
+        $orm = $this->prepended([], ['files' => ['storages' => ['public' => ['service' => 'app.storage']]]]);
+
+        self::assertSame(
+            ['ByfareskaCrud', 'ByfareskaCrudFilesMapped', 'ByfareskaCrudFilesRecord', 'ByfareskaCrudFilesUsage'],
+            array_keys($orm['mappings'] ?? []),
+        );
+    }
+
+    public function testNoTableOfTheBundleForAnEntityOfTheApplication(): void
+    {
+        $orm = $this->prepended([], ['files' => [
+            'storages' => ['public' => ['service' => 'app.storage']],
+            'entity' => 'App\\Entity\\Media',
+            'usages' => 'none',
+        ]]);
+
+        self::assertSame(['ByfareskaCrud', 'ByfareskaCrudFilesMapped'], array_keys($orm['mappings'] ?? []));
+    }
+
+    public function testNoTablesOfFilesForLibrariesOfTheStorages(): void
+    {
+        $orm = $this->prepended([], ['files' => [
+            'storages' => [
+                'public' => ['service' => 'app.storage', 'library' => 'storage'],
+                'private' => ['service' => 'app.private', 'library' => 'none'],
+            ],
+            'usages' => 'none',
+        ]]);
+
+        self::assertSame(['ByfareskaCrud'], array_keys($orm['mappings'] ?? []));
+    }
+
     /**
      * The "orm" part of what the bundle prepends to the configuration of DoctrineBundle.
      *
      * @param array<string, mixed> $doctrine
+     * @param array<string, mixed>|null $crud the configuration of byfareska_crud; null = none
      *
      * @return array{
      *     mappings?: array<string, mixed>,
      *     entity_managers?: array<string, array{mappings?: array<string, mixed>}>,
      * }
      */
-    private function prepended(array $doctrine): array
+    private function prepended(array $doctrine, ?array $crud = null): array
     {
         // What the kernel sets: the configurator of a bundle reads the environment (symfony/dependency-injection 8.0).
         $builder = new ContainerBuilder();
@@ -58,6 +102,9 @@ final class DoctrineMappingTest extends TestCase
         $extension = new CrudBundle()->getContainerExtension();
         self::assertInstanceOf(PrependExtensionInterface::class, $extension);
         $builder->registerExtension($extension);
+        if ($crud !== null) {
+            $builder->loadFromExtension('byfareska_crud', $crud);
+        }
 
         $extension->prepend($builder);
 

@@ -40,6 +40,7 @@ use Byfareska\Crud\Resource\RecordView;
 use Byfareska\Crud\UseCase\MapsToRequest;
 use Byfareska\Crud\UseCase\UseCaseExecutor;
 use LogicException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
@@ -143,6 +144,8 @@ class CrudForm implements ScopedComponent
      *
      * @param iterable<CrudFormExtension> $formExtensions
      * @param iterable<CrudSaveButton> $saveButtons
+     * @param string $defaultSave where "save" leads for a resource that does not say (AsCrud::$save)
+     * @param list<string> $defaultSaveButtons the AfterSave buttons for one that does not say (AsCrud::$afterSave)
      */
     public function __construct(
         protected readonly CrudRegistry $registry,
@@ -166,6 +169,10 @@ class CrudForm implements ScopedComponent
         #[AutowireIterator(CrudSaveButton::TAG)]
         protected readonly iterable $saveButtons = [],
         protected readonly ?RecordActions $recordActions = null,
+        #[Autowire(param: 'byfareska_crud.form.save')]
+        protected readonly string $defaultSave = 'edit',
+        #[Autowire(param: 'byfareska_crud.form.save_buttons')]
+        protected readonly array $defaultSaveButtons = [],
     ) {
     }
 
@@ -265,21 +272,37 @@ class CrudForm implements ScopedComponent
     }
 
     /**
-     * The buttons of the form besides "save" (AsCrud::$afterSave): "save and add another" on the add form, "save and
-     * keep editing".
+     * Where "save" leads: AsCrud::$save, else byfareska_crud.form.save - the value of an AfterSave, or the name of a
+     * CrudSaveButton.
+     */
+    public function getSaveTarget(): string
+    {
+        $save = $this->getDefinition()->save ?? $this->defaultSave;
+
+        return $save instanceof AfterSave ? $save->value : $save;
+    }
+
+    /**
+     * The buttons of the form besides "save" (AsCrud::$afterSave, else byfareska_crud.form.save_buttons): "save and
+     * back to the list", "save and add another" on the add form, "save and keep editing", "save and view" - not the
+     * one "save" leads to.
      *
      * @return list<AfterSave>
      */
     public function getSaveChoices(): array
     {
         $crud = $this->getDefinition();
+        $target = $this->getSaveTarget();
+        $choices = $crud->afterSave ?? array_map(AfterSave::from(...), $this->defaultSaveButtons);
 
         return array_values(array_filter(
-            $crud->afterSave,
-            fn (AfterSave $then): bool => match ($then) {
+            $choices,
+            fn (AfterSave $then): bool => $then->value !== $target && match ($then) {
                 AfterSave::New => $this->id === null && $crud->can(CrudOperation::Create),
                 AfterSave::Edit => $crud->can(CrudOperation::Update),
-                AfterSave::Return => false,
+                AfterSave::Show => $crud->can(CrudOperation::Read),
+                // One's own record has no list to go back to.
+                AfterSave::Return => !$crud->own,
             },
         ));
     }
@@ -326,11 +349,27 @@ class CrudForm implements ScopedComponent
     }
 
     /**
-     * The buttons of the application's own besides "save" (CrudSaveButton), for this form.
+     * The buttons of the application's own besides "save" (CrudSaveButton), for this form - not the one "save" leads
+     * to (AsCrud::$save).
      *
      * @return list<CrudSaveButton>
      */
     public function getSaveButtons(): array
+    {
+        $target = $this->getSaveTarget();
+
+        return array_values(array_filter(
+            $this->saveButtonsOfForm(),
+            static fn (CrudSaveButton $button): bool => $button->name() !== $target,
+        ));
+    }
+
+    /**
+     * Every button of the application's own (CrudSaveButton) for this form.
+     *
+     * @return list<CrudSaveButton>
+     */
+    protected function saveButtonsOfForm(): array
     {
         $crud = $this->getDefinition();
         $buttons = [];
@@ -348,7 +387,7 @@ class CrudForm implements ScopedComponent
 
     /**
      * @param string|null $then where the save leads: the button that saved - AfterSave, or the name of a
-     *     CrudSaveButton; null = the way back
+     *     CrudSaveButton; null = "save", which leads where getSaveTarget() says
      */
     #[LiveAction]
     public function save(#[LiveArg] ?string $then = null): ?RedirectResponse
@@ -365,6 +404,8 @@ class CrudForm implements ScopedComponent
         $crud = $this->getDefinition();
         $before = $this->before;
         $created = $this->id === null;
+        // What the events are told too, so a listener of a button does what it promises when "save" leads there.
+        $then ??= $this->getSaveTarget();
 
         // Invalid: the trait answers 422 and the form is rendered again with its errors.
         $this->submitForm();
@@ -425,19 +466,32 @@ class CrudForm implements ScopedComponent
         }
 
         $button = array_find(
-            $this->getSaveButtons(),
+            $this->saveButtonsOfForm(),
             static fn (CrudSaveButton $button): bool => $button->name() === $then,
         );
         if ($button instanceof CrudSaveButton) {
             return new RedirectResponse($button->afterSave($crud, $savedId, $created));
         }
-        $after = AfterSave::tryFrom((string) $then) ?? AfterSave::Return;
+        // A button not there (not for this record: "save" leading to one only of the edit form, on the add form) leads
+        // where byfareska_crud.form.save does, else back.
+        $after = AfterSave::tryFrom($then) ?? AfterSave::tryFrom($this->defaultSave) ?? AfterSave::Return;
+        $url = $after !== AfterSave::Return && $this->return instanceof CrudSaveReturn
+            ? $this->return->afterSaveTo($crud, $savedId, $created, $after)
+            : $this->return->afterSave($crud, $savedId, $created);
 
-        return new RedirectResponse(
-            $after !== AfterSave::Return && $this->return instanceof CrudSaveReturn
-                ? $this->return->afterSaveTo($crud, $savedId, $created, $after)
-                : $this->return->afterSave($crud, $savedId, $created),
-        );
+        return new RedirectResponse($after === AfterSave::Edit ? $this->keepTab($url, $created) : $url);
+    }
+
+    /**
+     * The edit form again on the tab that was in view - not for a new record, whose add form may have other tabs.
+     */
+    protected function keepTab(string $url, bool $created): string
+    {
+        if ($created || $this->tab === null || $this->tab === '' || str_contains($url, 'tab=')) {
+            return $url;
+        }
+
+        return $url . (str_contains($url, '?') ? '&' : '?') . http_build_query(['tab' => $this->tab]);
     }
 
     /**

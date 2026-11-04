@@ -13,9 +13,11 @@
         "@symfony/ux-live-component": "*",
         "bootstrap": "^5.3.8",
         "gridstack": "^14.0.0",
+        "tinymce": ">=7",
         "vanilla-calendar-pro": "^3.4.0"
     },
     "peerDependenciesMeta": {
-        "bootstrap": { "optional": true }
+        "bootstrap": { "optional": true },
+        "tinymce": { "optional": true }
     }
 }

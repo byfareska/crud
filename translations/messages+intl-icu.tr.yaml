@@ -5,6 +5,8 @@ ui:
         save: Kaydet
         save_new: 'Kaydet ve yenisini ekle'
         save_edit: 'Kaydet ve düzenlemeye devam et'
+        save_return: 'Kaydet ve listeye dön'
+        save_show: 'Kaydet ve görüntüle'
         cancel: İptal
         confirm: Onayla
         close: Kapat
@@ -275,3 +277,34 @@ panel:
         label: Kullanıcı menüsü
         logout: Çıkış yap
         anonymous: Oturum açmadınız
+file:
+    refused:
+        too_big: 'Dosya çok büyük: en fazla {max}.'
+        kind: 'Bu türdeki dosyalar ({kind}) burada kabul edilmiyor.'
+        not_uploaded: 'Dosya ulaşmadı. Yeniden deneyin.'
+        storage: 'Buraya dosya yüklenemez.'
+        failed: 'Dosya kaydedilemedi. Yeniden deneyin.'
+    field:
+        upload: 'Dosya yükle'
+        upload_many: 'Dosyaları yükle'
+        browse: 'Kitaplıktan seç'
+        drop: 'ya da buraya bırakın'
+        remove: 'Kaldır'
+        invalid: 'Bu dosya burada seçilemez.'
+        kind: 'Bu türdeki dosyalar burada kabul edilmiyor.'
+        too_many: 'En fazla {max, plural, one {# dosya} other {# dosya}}.'
+        meta:
+            alt: 'Alternatif metin'
+            caption: 'Açıklama'
+    library:
+        title: 'Dosyalar'
+        search: 'Ada göre ara'
+        empty: 'Henüz dosya yok.'
+        not_found: 'Hiçbir şey bulunamadı.'
+        choose: 'Seç'
+        remove: 'Dosyayı sil'
+        in_use: '“{name}” {count, plural, one {# yerde} other {# yerde}} kullanılıyor:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Yine de sil'
+        previous: 'Önceki sayfa'
+        next: 'Sonraki sayfa'

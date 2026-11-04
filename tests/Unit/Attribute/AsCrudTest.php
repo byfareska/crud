@@ -11,6 +11,7 @@ use Byfareska\Crud\Attribute\AsCrudPage;
 use Byfareska\Crud\Driver\Doctrine\DoctrineSource;
 use Byfareska\Crud\Driver\Doctrine\FieldSort;
 use Byfareska\Crud\Driver\Dto\DtoSource;
+use Byfareska\Crud\Resource\AfterSave;
 use Byfareska\Crud\Resource\Column;
 use Byfareska\Crud\Resource\CrudOperation;
 use Byfareska\Crud\Tests\Unit\Fixtures\Gadget;
@@ -45,6 +46,40 @@ final class AsCrudTest extends TestCase
         self::assertSame('query', $crud->search);
         self::assertTrue($crud->inPalette(CrudOperation::Read));
         self::assertFalse($crud->inPalette(CrudOperation::Create));
+    }
+
+    public function testWhereSaveLeadsIsTheConfigsUnlessTheResourceSays(): void
+    {
+        $crud = new AsCrud('thing', '/things', 'box', list: ListThingsDto::class);
+        self::assertNull($crud->save);
+        self::assertNull($crud->afterSave);
+
+        $crud = new AsCrud(
+            'thing',
+            '/things',
+            'box',
+            list: ListThingsDto::class,
+            save: AfterSave::Show,
+            afterSave: [AfterSave::Return],
+        );
+        self::assertSame(AfterSave::Show, $crud->save);
+        self::assertSame([AfterSave::Return], $crud->afterSave);
+        self::assertSame('send-now', $crud->with(save: 'send-now')->save);
+    }
+
+    public function testSaveNamesACaseOrAButton(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new AsCrud('thing', '/things', 'box', list: ListThingsDto::class, save: 'Send Now');
+    }
+
+    public function testTheButtonsBesidesSaveAreCases(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        // @phpstan-ignore argument.type
+        new AsCrud('thing', '/things', 'box', list: ListThingsDto::class, afterSave: ['return']);
     }
 
     public function testASourceAndDtosNextToItAreAMistake(): void

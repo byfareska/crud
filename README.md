@@ -102,6 +102,9 @@ byfareska_crud:
     preview: true # a click on a row opens the preview drawer; AsCrud's preview: decides per resource
     per_page: [15, 30, 50, 100] # the sizes of a page of a list to choose from; AsCrud's perPage: per resource
     default_per_page: ~ # the one shown at first (null = the first); AsCrud's defaultPerPage: per resource
+    form:
+        save: edit # where "save" leads: edit (stay on the record, a new one too) | return (the list) | show | new | a CrudSaveButton; AsCrud's save: per resource
+        save_buttons: [] # more buttons of the form: [return] = "save" stays, "save and back to the list" leaves; AsCrud's afterSave: per resource
     scopes:
         panel: { icon: house-door }
         admin: { icon: shield-lock, role: ROLE_ADMIN } # label: panel.scope.<name> by default
@@ -585,13 +588,21 @@ mistake: to change the bundle's, decorate it.
   every one of them for each guard and delete; named in `details:` it is read.
 - `preview: false` - a click on a row does not open the preview drawer; the first column leads to the details page.
   Without it, `byfareska_crud.preview` decides (default true).
-- `afterSave: [AfterSave::New, AfterSave::Edit]` - buttons of the form besides "save": "save and add another" (the add
-  form again; only when adding), "save and keep editing". Where they lead is the `CrudReturn`'s, when it is a
+- `save: AfterSave::Show` - where "save" of the form leads: `AfterSave::Edit` (the edit form of the record - of a new
+  one too, once it is added; on the tab that was in view), `AfterSave::Return` (the list, or where `CrudReturn` leads
+  back), `AfterSave::Show` (its details), `AfterSave::New` (the add form again), or the name of a `CrudSaveButton`
+  (`save: 'products'`: where that button leads; it is then not drawn as a button of its own). Without it,
+  `byfareska_crud.form.save` decides (default `edit`); `save: AfterSave::Return` is "save" leaving the form.
+- `afterSave: [AfterSave::Return]` - buttons of the form besides "save": "save and back to the list"
+  (`AfterSave::Return`), "save and add another" (`AfterSave::New`, the add form again; only when adding), "save and
+  keep editing" (`AfterSave::Edit`), "save and view" (`AfterSave::Show`); the one "save" leads to is left out. Without
+  it, `byfareska_crud.form.save_buttons` decides (default none). Where they lead is the `CrudReturn`'s, when it is a
   `CrudSaveReturn` (`afterSaveTo()`; the bundle's is). A button of your own - "save and go to the lines", "save and
   send" - is a `CrudSaveButton` service (`name()`, `label()`, `isFor($crud, $id)`, `afterSave()` giving where it leads;
   [`src/Crud/Doctrine/Maximal/SaveAndSeeProducts.php`](https://github.com/byfareska/crud-example/blob/main/src/Crud/Doctrine/Maximal/SaveAndSeeProducts.php)). `RecordSaving::$then` and `RecordSaved::$then` say which
-  button saved, so a listener does what it promises in the transaction of the save. Validation groups are the form's:
-  a "save as draft" checking less is a form type whose `validation_groups` closure looks at the data.
+  button saved ("save" by where it leads), so a listener does what it promises in the transaction of the save.
+  Validation groups are the form's: a "save as draft" checking less is a form type whose `validation_groups` closure
+  looks at the data.
 - `requirements: ['category' => '\d+']` - what the parameters of your application in its path
   (`/categories/{category}/products`) are made of.
 - `idPattern: '\d+'` - what the id in the address is made of: `/products/export`, a route of your own, is then not
@@ -727,7 +738,7 @@ the interface to your own, or decorate it with `#[AsDecorator(CrudReturn::class)
 
 | Interface | What it says |
 | --- | --- |
-| `CrudReturn` | where the pages of a record lead: `url()` (their "back"), `afterSave()` (e.g. the edit form again, the details of a new record), `afterDelete()` |
+| `CrudReturn` | where the pages of a record lead: `url()` (their "back"), `afterSave()` (the way back of a save, `AfterSave::Return`; `CrudSaveReturn::afterSaveTo()` the others - e.g. the page of a parent), `afterDelete()` |
 | `CrudAccess` | whether a resource, an operation of it and a page of a record are for the one asking - one more rule (a tenant, a licence) for every way at once |
 | `RecordDeletion` | how a record is deleted from the list, its pages and the bulk delete: around it a transaction or an archive, or another way (marked deleted) |
 | `FailureMessage` | the text of a refusal (a form, a toast, an error page) |
@@ -1340,6 +1351,203 @@ half of the places for the entries, so records do not push the pages out; alias 
 `ScopedRecordSource` is told the panel (`searchIn($query, $limit, $scope)`) and searches only there - the bundle's
 does. An entry of your own becomes a tile of the quick actions widget with `quickAction: true` (besides the entries
 `….create`). The recent items are kept in the browser under a key of the one signed in.
+
+## Files
+
+Fields of files and galleries, a library to pick an uploaded file again, and rich text with images - off until
+enabled: without `byfareska_crud.files` there is no service, route, form type or table of them. They need
+`symfony/mime` (what a file is, read from its bytes) and, for storages of Flysystem, `league/flysystem`:
+
+```sh
+composer require symfony/mime league/flysystem
+```
+
+```yaml
+# config/packages/byfareska_crud.yaml
+byfareska_crud:
+    files:
+        storages:
+            # Served by the web server as they are: <img src="/uploads/ab/cd/x7k2....jpg">.
+            public: { service: app.public_storage, public_url: /uploads }
+            # Off the web root: opened through the panel's address, signed for "ttl" seconds.
+            private: { service: app.private_storage, url: signed, role: ROLE_ADMIN }
+```
+
+```yaml
+# config/services.yaml - or the storages of league/flysystem-bundle ("default.storage")
+services:
+    app.public_storage:
+        class: League\Flysystem\Filesystem
+        arguments: [!service { class: League\Flysystem\Local\LocalFilesystemAdapter, arguments: ['%kernel.project_dir%/public/uploads'] }]
+    app.private_storage:
+        class: League\Flysystem\Filesystem
+        arguments: [!service { class: League\Flysystem\Local\LocalFilesystemAdapter, arguments: ['%kernel.project_dir%/var/uploads'] }]
+```
+
+With Doctrine ORM the bundle keeps two tables (`crud_file`: the library; `crud_file_usage`: where each file is used):
+make a migration (`doctrine:migrations:diff`) once files are enabled.
+
+**A file is kept as a reference** - its storage and its path, `public://ab/cd/x7k2....jpg` - in a column, a JSON list,
+an entity of a file or an item of a gallery. The name of a storage is a part of every reference: renaming one is a
+migration of the data. `http(s)://...` is a file of somewhere else, shown but never uploaded to.
+
+An upload gets a random name of lower-case letters and digits in random directories (`path: { levels: 2, width: 2,
+length: 32 }`; `levels: 0` on S3 and the like, `keep_name: true` adds the name it came with), and the extension of what
+it is - read from its bytes, never from its name: a `.php` sent as a JPEG is refused. SVG and HTML are taken only when a
+field names their MIME type.
+
+### Fields of files
+
+`#[CrudFile]` on a property is all a guessed form needs (a `DoctrineSource` without a form type, a DTO's `#[FormField]`
+without a type):
+
+```php
+#[ORM\Column(nullable: true)]
+#[CrudFile(accept: ['images'])]
+public ?string $logo = null;          // "public://ab/cd/....png"
+
+/** @var list<string> */
+#[CrudFile(storage: 'private', options: ['max_files' => 5])]
+public array $attachments = [];       // a JSON list of references - an array of a DTO too
+```
+
+In a form type of your own it is `CrudFileType`. A file is uploaded as soon as it is chosen or dropped, or picked in
+the window of the library; many files are sorted by dragging, and a field that takes only images is a gallery. The
+options: `storage`, `multiple`, `accept` (`images`, `image/*`, `application/pdf`, `.pdf`), `max_size`, `max_files`,
+`meta` (what is said of each file: `['alt', 'caption']`; an alternative text is filled in with the name the file
+came with, made plain by Symfony's slugger, until one is typed), `browse` (more storages to pick from), `library` (false: no
+picking), `gallery`.
+
+How the record holds the files is the field's `binding`:
+
+- `column` (the default): a reference, or a list of them - `[{"ref": "...", "alt": "..."}]` with `meta`;
+- `items`: entities of the application, one per file, with its position and what `meta` says - the way for a gallery
+  of Doctrine:
+
+  ```php
+  $builder->add('images', CrudFileType::class, [
+      'multiple' => true,
+      'accept' => ['images'],
+      'meta' => ['alt'],
+      'binding' => 'items',
+      'item_class' => ProductImage::class, // $file, $position, $alt; added through addImage() / removeImage()
+  ]);
+  ```
+
+  `item_file`, `item_position` and `item_meta` name its properties when they are not `file`, `position` and the names
+  of `meta`; `item_factory` makes one that is not made without arguments. An item that implements `ProvidesFile` is
+  shown as its file in lists.
+- `record`: an entity of a file (`record_class`) - a relation to one, or ManyToMany with `multiple`;
+- an object of `FileBinding` of your own.
+
+A list or the details show a reference as an image or a link to the file; in Twig, `crud_file_url(ref)` is its address
+and `crud_file(ref)` what the library knows of it (name, type, size).
+
+**The browser cannot choose a storage or a file it was not given.** The address a field uploads to is signed with its
+storage and what it takes, and a reference the form receives must be signed by the upload or the library - or be one
+the record already had. A storage with a `role` is uploaded to and picked from only by those who have it.
+
+### Rich text
+
+`CrudRichTextType` (or `#[CrudRichText]` on a property) is a textarea of HTML that an editor of the browser draws over.
+The bundle has an adapter of TinyMCE; TinyMCE is the application's (`npm i tinymce`, or a CDN):
+
+```js
+// assets/tinymce.js - TinyMCE with what it loads
+import tinymce from 'tinymce';
+import 'tinymce/models/dom/model';
+import 'tinymce/themes/silver';
+import 'tinymce/icons/default';
+import 'tinymce/skins/ui/oxide/skin.js';
+import 'tinymce/skins/ui/oxide/content.js';
+import 'tinymce/skins/content/default/content.js';
+import 'tinymce/plugins/autolink';
+import 'tinymce/plugins/code';
+import 'tinymce/plugins/image';
+import 'tinymce/plugins/link';
+import 'tinymce/plugins/lists';
+import 'tinymce/plugins/table';
+// The editor speaks the language of the page (<html lang>) when its pack is loaded (npm i tinymce-i18n).
+import 'tinymce-i18n/langs8/pl.js';
+export default tinymce;
+
+// assets/app.js - loaded with the first field of rich text on a page
+import { registerRichTextEditor } from '@byfareska/crud';
+import { tinymceEditor } from '@byfareska/crud/editors/tinymce.js';
+
+registerRichTextEditor('tinymce', tinymceEditor(() => import('./tinymce.js').then((module) => module.default)));
+```
+
+```yaml
+byfareska_crud:
+    rich_text:
+        editor: tinymce                  # the name registered in the browser
+        options: { license_key: gpl }    # TinyMCE asks for a licence: "gpl" or the key bought
+        files: false                     # uploading into the text: off unless a field says
+```
+
+```php
+$builder->add('description', CrudRichTextType::class, [
+    'editor_options' => ['toolbar' => 'bold italic | bullist numlist | link image'],
+    'files' => ['accept' => ['images']], // or true: the default storage, anything
+]);
+```
+
+With `files`, an image pasted, dropped or uploaded in the editor goes to the storage, and the dialogs of an image and a
+link pick from the library. The HTML keeps the addresses of its files, so only a storage with lasting public addresses
+(`url: public`) is taken. The HTML is what the browser sent: sanitize it where it is shown (`sanitize_html` of
+symfony/html-sanitizer on the field, or the template).
+
+The editor speaks the language of the page: `<html lang>`, matched with the packs loaded (`pt-BR`, or `fr-FR` for
+`fr`); without the pack it is English and says so in the console. `language` in the options chooses another.
+
+Another editor is an object with `mount(textarea, { options, files, changed })` that returns `{ destroy() }` - see
+`assets/lib/rich_text.js`.
+
+### Storages, libraries and addresses
+
+Each storage says:
+
+- `url`: how its files are opened:
+  - `public`: the storage's address, or `public_url` + the path;
+  - `temporary`: an address of the storage that works for `ttl` seconds (S3);
+  - `signed`: the panel's download address, signed for `ttl` seconds;
+  - `none`.
+- `offload`: a signed file sent by the web server, not PHP: `{ header: X-Accel-Redirect, prefix: /_protected/ }` of
+  nginx, or `X-Sendfile`.
+- `role`, `upload` (false: only picked), `library`, `urls` (a `FileUrls` of your own: a CDN with its own signatures).
+
+A signed address is a pass to the file while it works: whoever has it opens it, as long as they may use the storage
+(`role`).
+
+The library of a storage is where the window of the library looks:
+
+- `doctrine`: the table `crud_file`, the default with Doctrine ORM; `files.entity` names an entity of your own,
+  extending `AbstractFileRecord` or implementing `FileRecord` with `files.entity_fields`;
+- `storage`: the storage listed, with a cache;
+- `none`;
+- a `FileLibrary` of your own: a DAM, an API.
+
+What a library can do (`capabilities()`: browse, search, remove) is what the window offers.
+
+`FileStorage`, `FileLibrary`, `FileRecordMapper` (an entity of a file you cannot change) and `PathGenerator` are the
+interfaces to write for another source; `Byfareska\Crud\Files\Testing\*ContractTestCase` test one as the bundle's own
+are tested. Events: `FileUploading` (refuse a file, change it), `FileUploaded`, `FileRemoving`.
+
+### Usages and pruning
+
+What every saved record uses - its fields of files and the files of its rich text - is kept in an index
+(`files.usages`: `doctrine`, `none`, or a `FileUsages`). The window of the library tells where a file is used before
+it is deleted, and an upload never saved is pruned:
+
+```sh
+bin/console byfareska:crud:files:prune                    # lists the files no record uses, older than prune_after (PT24H)
+bin/console byfareska:crud:files:prune --force            # deletes them
+bin/console byfareska:crud:files:reindex                  # the index again from the records (--resource=product)
+```
+
+The index knows what is saved through the panel. Run `reindex` after records were changed by code of yours (an import,
+an API), or tell `FileUsages` yourself.
 
 ## Tests
 

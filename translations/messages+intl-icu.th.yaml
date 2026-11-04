@@ -5,6 +5,8 @@ ui:
         save: บันทึก
         save_new: 'บันทึกและเพิ่มอีกรายการ'
         save_edit: 'บันทึกและแก้ไขต่อ'
+        save_return: 'บันทึกและกลับไปที่รายการ'
+        save_show: 'บันทึกและดู'
         cancel: ยกเลิก
         confirm: ยืนยัน
         close: ปิด
@@ -275,3 +277,34 @@ panel:
         label: เมนูผู้ใช้
         logout: ออกจากระบบ
         anonymous: คุณยังไม่ได้เข้าสู่ระบบ
+file:
+    refused:
+        too_big: 'ไฟล์ใหญ่เกินไป: ไม่เกิน {max}'
+        kind: 'ไม่รับไฟล์ประเภทนี้ ({kind}) ที่นี่'
+        not_uploaded: 'ไฟล์ไม่มาถึง ลองอีกครั้ง'
+        storage: 'อัปโหลดไฟล์ที่นี่ไม่ได้'
+        failed: 'บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง'
+    field:
+        upload: 'อัปโหลดไฟล์'
+        upload_many: 'อัปโหลดไฟล์หลายไฟล์'
+        browse: 'เลือกจากคลัง'
+        drop: 'หรือวางไฟล์ที่นี่'
+        remove: 'นำออก'
+        invalid: 'เลือกไฟล์นี้ที่นี่ไม่ได้'
+        kind: 'ไม่รับไฟล์ประเภทนี้ที่นี่'
+        too_many: 'ไม่เกิน {max, plural, other {# ไฟล์}}'
+        meta:
+            alt: 'ข้อความแสดงแทน'
+            caption: 'คำบรรยาย'
+    library:
+        title: 'ไฟล์'
+        search: 'ค้นหาตามชื่อ'
+        empty: 'ยังไม่มีไฟล์'
+        not_found: 'ไม่พบสิ่งใด'
+        choose: 'เลือก'
+        remove: 'ลบไฟล์'
+        in_use: '“{name}” ถูกใช้อยู่ {count, plural, other {# แห่ง}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'ลบอยู่ดี'
+        previous: 'หน้าก่อนหน้า'
+        next: 'หน้าถัดไป'

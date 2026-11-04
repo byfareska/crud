@@ -67,11 +67,58 @@ use Byfareska\Crud\Driver\Doctrine\RelationFilterField;
 use Byfareska\Crud\Driver\Doctrine\WordsSearch;
 use Byfareska\Crud\Driver\Dto\ConstructorDtoFactory;
 use Byfareska\Crud\Driver\Dto\DtoFactory;
+use Byfareska\Crud\Controller\FilesController;
+use Byfareska\Crud\Files\BrowserFiles;
+use Byfareska\Crud\Files\Command\PruneFilesCommand;
+use Byfareska\Crud\Files\ConstructorFileRecordFactory;
+use Byfareska\Crud\Files\Doctrine\DoctrineFileLibrary;
+use Byfareska\Crud\Files\Doctrine\DoctrineFileRecordMapper;
+use Byfareska\Crud\Files\Doctrine\DoctrineFileUsages;
+use Byfareska\Crud\Files\Doctrine\Record\CrudFileRecord;
+use Byfareska\Crud\Files\Doctrine\RecordFields;
+use Byfareska\Crud\Files\FileRecordFactory;
+use Byfareska\Crud\Files\FileRecordMapper;
+use Byfareska\Crud\Files\FileRecordMappers;
+use Byfareska\Crud\Files\FileRemover;
+use Byfareska\Crud\Files\FileUsageListener;
+use Byfareska\Crud\Files\FileUsages;
+use Byfareska\Crud\Files\NoFileUsages;
+use Byfareska\Crud\Files\SubmittedFiles;
+use Byfareska\Crud\Event\RecordDeleted;
+use Byfareska\Crud\Event\RecordSaved;
+use Byfareska\Crud\Files\FileDownload;
+use Byfareska\Crud\Files\Command\ReindexFilesCommand;
+use Byfareska\Crud\Files\Form\CrudFileType;
+use Byfareska\Crud\Files\Form\FileTypeGuesser;
+use Byfareska\Crud\Files\FileValueNormalizer;
+use Byfareska\Crud\Files\Twig\FilesExtension;
+use Byfareska\Crud\Files\Component\FileLibrary;
+use Byfareska\Crud\Files\FileLibraries;
+use Byfareska\Crud\Files\FileReference;
+use Byfareska\Crud\Files\FileReferenceSigner;
+use Byfareska\Crud\Files\FileStorage;
+use Byfareska\Crud\Files\FileStorages;
+use Byfareska\Crud\Files\FileUploader;
+use Byfareska\Crud\Files\FileUrls;
+use Byfareska\Crud\Files\Flysystem\FlysystemFileStorage;
+use Byfareska\Crud\Files\NoFileLibrary;
+use Byfareska\Crud\Files\PathGenerator;
+use Byfareska\Crud\Files\RichTextFiles;
+use Byfareska\Crud\Files\ShardedPathGenerator;
+use Byfareska\Crud\Files\StorageFileLibrary;
+use Byfareska\Crud\Files\StorageFileUrls;
+use Byfareska\Crud\Files\OffloadHeader;
+use Byfareska\Crud\Files\UrlMode;
+use League\Flysystem\FilesystemOperator;
+use LogicException;
+use Symfony\Component\Mime\MimeTypes;
 use Byfareska\Crud\Page\CrudPages;
 use Byfareska\Crud\Page\DefaultCrudPages;
+use Byfareska\Crud\Resource\AfterSave;
 use Byfareska\Crud\Resource\CrudAccess;
 use Byfareska\Crud\Resource\CrudRecords;
 use Byfareska\Crud\Resource\CrudReturn;
+use Byfareska\Crud\Resource\CrudSaveButton;
 use Byfareska\Crud\Resource\DefaultCrudAccess;
 use Byfareska\Crud\Resource\DefaultCrudRecords;
 use Byfareska\Crud\Resource\DefaultCrudReturn;
@@ -114,6 +161,10 @@ use Byfareska\Crud\Routing\PanelLiveUrls;
 use Symfony\Component\DependencyInjection\Reference;
 use Byfareska\Crud\Chart\ChartTimezone;
 use Byfareska\Crud\Chart\TwigChartTimezone;
+
+use function Symfony\Component\DependencyInjection\Loader\Configurator\inline_service;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service_locator;
 
 /**
  * Panels of CRUD pages, dashboards and a command palette, declared with #[AsCrud] and drawn with Twig and live
@@ -227,6 +278,258 @@ final class CrudBundle extends AbstractBundle
                     )
                     ->min(1)
                     ->defaultNull()
+                ->end()
+                ->arrayNode('form')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('save')
+                            ->info(
+                                'Where "save" of the add and edit forms leads, for a resource that does not say '
+                                . '(AsCrud::$save): edit (the edit form of the record, of a new one too), return '
+                                . '(the list), show (its details), new (the add form again), or the name of a '
+                                . 'CrudSaveButton.',
+                            )
+                            ->defaultValue(AfterSave::Edit->value)
+                            ->cannotBeEmpty()
+                            ->validate()
+                                ->ifTrue(static fn (mixed $save): bool => !is_string($save)
+                                    || preg_match(CrudSaveButton::NAME, $save) !== 1)
+                                ->thenInvalid('%s is not a case of AfterSave nor the name of a CrudSaveButton.')
+                            ->end()
+                        ->end()
+                        ->arrayNode('save_buttons')
+                            ->info(
+                                'The buttons of the forms besides "save", for a resource that does not say '
+                                . '(AsCrud::$afterSave): return ("save and back to the list"), new ("save and add '
+                                . 'another"), edit ("save and keep editing"), show ("save and view").',
+                            )
+                            ->enumPrototype()
+                                ->values(array_column(AfterSave::cases(), 'value'))
+                            ->end()
+                            ->defaultValue([])
+                        ->end()
+                    ->end()
+                ->end()
+                ->arrayNode('files')
+                    ->info(
+                        'Uploading files: fields of files and galleries, a library to pick them again. Off until '
+                        . 'enabled - nothing of it (services, routes, tables) is there before; needs symfony/mime, '
+                        . 'and league/flysystem for storages of Flysystem.',
+                    )
+                    ->canBeEnabled()
+                    ->children()
+                        ->scalarNode('default_storage')
+                            ->info('Where a field that names none uploads; default the first of "storages".')
+                            ->defaultNull()
+                        ->end()
+                        ->arrayNode('storages')
+                            ->info(
+                                'The storages by name - the name is a part of every reference kept ("public://ab/cd/'
+                                . '...jpg"): renaming one is a migration of the data.',
+                            )
+                            ->useAttributeAsKey('name')
+                            ->arrayPrototype()
+                                ->children()
+                                    ->scalarNode('service')
+                                        ->info(
+                                            'Its bytes: the id of a FilesystemOperator of Flysystem ("default.storage" '
+                                            . 'of league/flysystem-bundle) or of a FileStorage.',
+                                        )
+                                        ->isRequired()
+                                        ->cannotBeEmpty()
+                                    ->end()
+                                    ->enumNode('url')
+                                        ->info(
+                                            'How its files are opened: public (an address of the storage, or '
+                                            . 'public_url + the path), temporary (one of the storage that works for '
+                                            . '"ttl"), signed (the panel\'s download address, for "ttl"), none.',
+                                        )
+                                        ->values(array_column(UrlMode::cases(), 'value'))
+                                        ->defaultValue(UrlMode::Public->value)
+                                    ->end()
+                                    ->scalarNode('public_url')
+                                        ->info(
+                                            'What its paths are under on the web: "/uploads", '
+                                            . '"https://cdn.example.com".',
+                                        )
+                                        ->defaultNull()
+                                    ->end()
+                                    ->integerNode('ttl')
+                                        ->info('Seconds a temporary or signed address works.')
+                                        ->min(1)
+                                        ->defaultValue(3600)
+                                    ->end()
+                                    ->scalarNode('role')
+                                        ->info(
+                                            'Who may upload to it and pick its files; null = whoever the panel is for.',
+                                        )
+                                        ->defaultNull()
+                                    ->end()
+                                    ->booleanNode('upload')
+                                        ->info('Whether files may be uploaded to it; false = only picked.')
+                                        ->defaultTrue()
+                                    ->end()
+                                    ->scalarNode('library')
+                                        ->info(
+                                            'What is known of its files, to pick them again: "storage" (the storage '
+                                            . 'listed), "none", or the id of a FileLibrary; default "library".',
+                                        )
+                                        ->defaultNull()
+                                    ->end()
+                                    ->scalarNode('urls')
+                                        ->info(
+                                            'The id of a FileUrls making the addresses of its files, in place '
+                                            . 'of "url".',
+                                        )
+                                        ->defaultNull()
+                                    ->end()
+                                    ->arrayNode('offload')
+                                        ->info(
+                                            'For "url: signed" on the disk of the server: PHP checks the address, the '
+                                            . 'web server sends the file - X-Accel-Redirect to an internal location '
+                                            . 'of nginx ("location /_protected/ { internal; alias /var/app/private/; '
+                                            . '}"), or X-Sendfile with the directory of the storage on the disk.',
+                                        )
+                                        ->children()
+                                            ->enumNode('header')
+                                                ->values(array_column(OffloadHeader::cases(), 'value'))
+                                                ->isRequired()
+                                            ->end()
+                                            ->scalarNode('prefix')
+                                                ->info('"/_protected/" for nginx, "/var/app/private" for X-Sendfile.')
+                                                ->isRequired()
+                                                ->cannotBeEmpty()
+                                            ->end()
+                                        ->end()
+                                    ->end()
+                                ->end()
+                                ->validate()
+                                    ->ifTrue(static fn (array $storage): bool => isset($storage['offload'])
+                                        && $storage['url'] !== UrlMode::Signed->value)
+                                    ->thenInvalid('Only the files of a storage with "url: signed" are sent by the '
+                                        . 'web server ("offload"): %s')
+                                ->end()
+                            ->end()
+                            ->validate()
+                                ->ifTrue(static fn (array $storages): bool => array_any(
+                                    array_keys($storages),
+                                    static fn (int|string $name): bool => !FileReference::isStorageName((string) $name),
+                                ))
+                                ->thenInvalid(
+                                    'The name of a storage is lower-case letters, digits, "_" and "-", starting with a '
+                                    . 'letter, and no scheme of addresses (http, https, ftp, data...): %s',
+                                )
+                            ->end()
+                        ->end()
+                        ->arrayNode('path')
+                            ->info('Where in its storage an upload goes (ShardedPathGenerator), or a PathGenerator.')
+                            ->addDefaultsIfNotSet()
+                            ->children()
+                                ->scalarNode('generator')->defaultNull()->end()
+                                ->integerNode('levels')->min(0)->defaultValue(2)->end()
+                                ->integerNode('width')->min(1)->defaultValue(2)->end()
+                                ->integerNode('length')->min(8)->defaultValue(32)->end()
+                                ->booleanNode('keep_name')
+                                    ->info('The name it was uploaded under after the random one: findable by it.')
+                                    ->defaultFalse()
+                                ->end()
+                            ->end()
+                        ->end()
+                        ->scalarNode('library')
+                            ->info(
+                                'The library of a storage that names none: "doctrine" (a table: files.entity), '
+                                . '"storage" (the storage listed), "none", or the id of a FileLibrary; default '
+                                . 'doctrine with Doctrine ORM, else storage.',
+                            )
+                            ->defaultNull()
+                        ->end()
+                        ->scalarNode('entity')
+                            ->info(
+                                'The entity of the library "doctrine": the bundle\'s (table crud_file), or one of the '
+                                . 'application extending AbstractFileRecord or implementing FileRecord.',
+                            )
+                            ->defaultValue(CrudFileRecord::class)
+                        ->end()
+                        ->arrayNode('entity_fields')
+                            ->info(
+                                'The properties of an entity of the application implementing FileRecord with names '
+                                . 'of its own: reference (the whole "public://..." in one), or storage and path; '
+                                . 'name, mime_type, created.',
+                            )
+                            ->children()
+                                ->scalarNode('reference')->end()
+                                ->scalarNode('storage')->end()
+                                ->scalarNode('path')->end()
+                                ->scalarNode('name')->end()
+                                ->scalarNode('mime_type')->end()
+                                ->scalarNode('created')->end()
+                            ->end()
+                        ->end()
+                        ->scalarNode('record_factory')
+                            ->info(
+                                'The id of a FileRecordFactory; default the constructor of the entity, given the file.',
+                            )
+                            ->defaultNull()
+                        ->end()
+                        ->scalarNode('usages')
+                            ->info(
+                                'The index of where files are used: "doctrine" (table crud_file_usage), "none" (no '
+                                . 'pruning), or the id of a FileUsages; default doctrine with Doctrine ORM, else none.',
+                            )
+                            ->defaultNull()
+                        ->end()
+                        ->scalarNode('prune_after')
+                            ->info(
+                                'How old an unused file is before byfareska:crud:files:prune deletes it (ISO 8601): '
+                                . 'time to save the form it was uploaded in.',
+                            )
+                            ->defaultValue('PT24H')
+                        ->end()
+                        ->scalarNode('max_size')
+                            ->info('The biggest file a field takes: bytes, or "512K", "10M", "1G".')
+                            ->defaultValue('10M')
+                            ->validate()
+                                ->ifTrue(static fn (mixed $size): bool => self::bytes($size) === null)
+                                ->thenInvalid('%s is no size: bytes, or "512K", "10M", "1G".')
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->validate()
+                        ->ifTrue(static fn (array $files): bool => $files['enabled'] && $files['storages'] === [])
+                        ->thenInvalid('byfareska_crud.files is enabled without a storage: name one in "storages".')
+                    ->end()
+                ->end()
+                ->arrayNode('rich_text')
+                    ->info('The fields of rich text (CrudRichTextType): the editor that draws them in the browser.')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('editor')
+                            ->info(
+                                'The name the editor is registered under in the browser (registerRichTextEditor() of '
+                                . '@byfareska/crud): "tinymce" for the bundle\'s adapter.',
+                            )
+                            ->defaultValue('tinymce')
+                            ->cannotBeEmpty()
+                        ->end()
+                        ->variableNode('options')
+                            ->info(
+                                'What the editor of every field is given, before the field\'s "editor_options": '
+                                . '{license_key: gpl, toolbar: ...} of TinyMCE.',
+                            )
+                            ->defaultValue([])
+                            ->validate()
+                                ->ifTrue(static fn (mixed $options): bool => !is_array($options))
+                                ->thenInvalid('byfareska_crud.rich_text.options is a map of options of the editor.')
+                            ->end()
+                        ->end()
+                        ->booleanNode('files')
+                            ->info(
+                                'Whether a field uploads images and files into its text unless it says itself: into '
+                                . 'the default storage, which needs public addresses (byfareska_crud.files).',
+                            )
+                            ->defaultFalse()
+                        ->end()
+                    ->end()
                 ->end()
                 ->arrayNode('scopes')
                     ->info('The panels (route scopes), each imported with `type: byfareska_crud, resource: <name>`.')
@@ -469,6 +772,7 @@ final class CrudBundle extends AbstractBundle
         $container->registerForAutoconfiguration(RecordGuard::class)->addTag(RecordGuard::TAG);
         $container->registerForAutoconfiguration(RecordRow::class)->addTag(RecordRow::TAG);
         $container->registerForAutoconfiguration(ValueNormalizer::class)->addTag(ValueNormalizer::TAG);
+        $container->registerForAutoconfiguration(FileRecordMapper::class)->addTag(FileRecordMapper::TAG);
         $container->registerForAutoconfiguration(DoctrineFilterHandler::class)->addTag(DoctrineFilterHandler::TAG);
         $container->registerForAutoconfiguration(DoctrineListExtension::class)->addTag(DoctrineListExtension::TAG);
         $container->registerForAutoconfiguration(DoctrineScope::class)->addTag(DoctrineScope::TAG);
@@ -483,6 +787,7 @@ final class CrudBundle extends AbstractBundle
      *     paths: array{new: string, edit: string, page: string},
      *     per_page: list<int>,
      *     default_per_page: int|null,
+     *     form: array{save: string, save_buttons: list<string>},
      *     entries: list<string>,
      *     assets: string,
      *     theme: string,
@@ -506,6 +811,21 @@ final class CrudBundle extends AbstractBundle
      *         columns: int,
      *     },
      *     chart: array{day_bucket: string|null, stored_timezone: string|null},
+     *     files: array{
+     *         enabled: bool,
+     *         default_storage: string|null,
+     *         storages: array<string, array{service: string, url: string, public_url: string|null, ttl: int,
+     *             role: string|null, upload: bool, library: string|null, urls: string|null}>,
+     *         path: array{generator: string|null, levels: int, width: int, length: int, keep_name: bool},
+     *         library: string|null,
+     *         entity: string,
+     *         entity_fields: array<string, string>,
+     *         record_factory: string|null,
+     *         usages: string|null,
+     *         prune_after: string,
+     *         max_size: int|string,
+     *     },
+     *     rich_text: array{editor: string, options: array<string, mixed>, files: bool},
      * } $config
      */
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
@@ -516,6 +836,11 @@ final class CrudBundle extends AbstractBundle
         $parameters->set('byfareska_crud.preview', $config['preview']);
         $parameters->set('byfareska_crud.per_page', array_values($config['per_page']));
         $parameters->set('byfareska_crud.default_per_page', $config['default_per_page']);
+        $parameters->set('byfareska_crud.form.save', $config['form']['save']);
+        $parameters->set(
+            'byfareska_crud.form.save_buttons',
+            array_values(array_unique($config['form']['save_buttons'])),
+        );
         $parameters->set('byfareska_crud.entries', $config['entries']);
         $parameters->set('byfareska_crud.assets', $config['assets']);
         $parameters->set('byfareska_crud.paths', $config['paths']);
@@ -541,7 +866,11 @@ final class CrudBundle extends AbstractBundle
         );
         $parameters->set('byfareska_crud.dashboard.share_role', $config['dashboard']['share_role']);
         $parameters->set('byfareska_crud.dashboard.columns', $config['dashboard']['columns']);
-        $parameters->set('byfareska_crud.value_themes', array_values($config['value_themes']));
+        $parameters->set('byfareska_crud.value_themes', array_values([
+            ...$config['value_themes'],
+            // How files are printed: their blocks use the functions of files, there only when files are.
+            ...($config['files']['enabled'] ? ['@CrudTheme/crud/file_values.html.twig'] : []),
+        ]));
         $parameters->set('byfareska_crud.form_themes', array_values($config['form_themes']));
         $parameters->set('byfareska_crud.chart.stored_timezone', $config['chart']['stored_timezone']);
 
@@ -552,6 +881,9 @@ final class CrudBundle extends AbstractBundle
             ->exclude([
                 $src . '/CrudBundle.php',
                 $src . '/DependencyInjection/',
+                // Registered by loadFiles() when byfareska_crud.files is enabled.
+                $src . '/Files/',
+                $src . '/Controller/FilesController.php',
                 // Registered below when symfony/ux-autocomplete is there.
                 $src . '/Autocomplete/',
                 $src . '/Filter/{Comparison,Compared}.php',
@@ -680,6 +1012,182 @@ final class CrudBundle extends AbstractBundle
         if (!$hasDbal) {
             $services->remove(DoctrineDayBucket::class);
         }
+
+        $parameters->set('byfareska_crud.rich_text', $config['rich_text']);
+        if ($config['rich_text']['files'] && !$config['files']['enabled']) {
+            throw new LogicException('byfareska_crud.rich_text.files uploads with byfareska_crud.files enabled only.');
+        }
+        $parameters->set('byfareska_crud.files.enabled', $config['files']['enabled']);
+        if ($config['files']['enabled']) {
+            $this->loadFiles($config['files'], $container, $hasOrm);
+        }
+    }
+
+    /**
+     * The services of files, only when byfareska_crud.files is enabled: the storages, their libraries, the uploader,
+     * the addresses of files and the controller of the routes.
+     *
+     * @param array{
+     *     default_storage: string|null,
+     *     storages: array<string, array{service: string, url: string, public_url: string|null, ttl: int,
+     *         role: string|null, upload: bool, library: string|null, urls: string|null}>,
+     *     path: array{generator: string|null, levels: int, width: int, length: int, keep_name: bool},
+     *     library: string|null,
+     *     entity: string,
+     *     entity_fields: array<string, string>,
+     *     record_factory: string|null,
+     *     usages: string|null,
+     *     prune_after: string,
+     *     max_size: int|string,
+     * } $config
+     */
+    private function loadFiles(array $config, ContainerConfigurator $container, bool $hasOrm): void
+    {
+        if (!class_exists(MimeTypes::class)) {
+            throw new LogicException(
+                'byfareska_crud.files reads what an uploaded file is from its bytes: composer require symfony/mime.',
+            );
+        }
+        $flysystem = interface_exists(FilesystemOperator::class);
+        $services = $container->services();
+        $services->defaults()->autowire()->autoconfigure();
+
+        $storages = [];
+        $doctrineLibrary = false;
+        $libraries = [];
+        $urls = [];
+        $settings = [];
+        foreach ($config['storages'] as $name => $storage) {
+            $id = 'byfareska_crud.files.storage.' . $name;
+            if ($flysystem) {
+                // A FilesystemOperator is made a FileStorage; a FileStorage stays itself.
+                $services->set($id, FileStorage::class)
+                    ->factory([FlysystemFileStorage::class, 'adapt'])
+                    ->args([service($storage['service'])]);
+            } else {
+                $services->alias($id, $storage['service']);
+            }
+            $storages[$name] = service($id);
+
+            $libraryId = 'byfareska_crud.files.library.' . $name;
+            $library = $storage['library'] ?? $config['library'] ?? ($hasOrm ? 'doctrine' : 'storage');
+            match ($library) {
+                'doctrine' => $services->set($libraryId, DoctrineFileLibrary::class)->args([
+                    service('doctrine'),
+                    $config['entity'],
+                    $name,
+                    service(FileRecordFactory::class),
+                    service(FileRecordMappers::class),
+                    inline_service(RecordFields::class)
+                        ->factory(RecordFields::fromConfig(...))
+                        ->args([$config['entity_fields'] ?? []]),
+                ]),
+                'storage' => $services->set($libraryId, StorageFileLibrary::class)
+                    ->args([service($id), $name, service('cache.app')->nullOnInvalid()]),
+                'none' => $services->set($libraryId, NoFileLibrary::class),
+                default => $services->alias($libraryId, $library),
+            };
+            $doctrineLibrary = $doctrineLibrary || $library === 'doctrine';
+            $libraries[$name] = service($libraryId);
+
+            if ($storage['urls'] !== null) {
+                $urls[$name] = service($storage['urls']);
+            }
+            $settings[$name] = array_intersect_key(
+                $storage,
+                array_flip(['url', 'public_url', 'ttl', 'role', 'upload', 'offload']),
+            );
+        }
+
+        $services->set(FileStorages::class)
+            ->args([$settings, service_locator($storages), $config['default_storage']]);
+        $services->set(FileLibraries::class)->args([service_locator($libraries)]);
+
+        if ($config['path']['generator'] !== null) {
+            $services->alias(PathGenerator::class, $config['path']['generator']);
+        } else {
+            $services->set(ShardedPathGenerator::class)->args([
+                $config['path']['levels'],
+                $config['path']['width'],
+                $config['path']['length'],
+                $config['path']['keep_name'],
+            ]);
+            $services->alias(PathGenerator::class, ShardedPathGenerator::class);
+        }
+
+        $services->set(FileUploader::class)->arg('$maxSize', self::bytes($config['max_size']));
+        $services->set(FileReferenceSigner::class)->arg('$secret', '%kernel.secret%');
+        $services->set(StorageFileUrls::class)
+            ->arg('$own', service_locator($urls))
+            ->arg('$router', service('router'));
+        $services->alias(FileUrls::class, StorageFileUrls::class);
+        $services->set(BrowserFiles::class)->arg('$router', service('router'));
+        $services->set(FileDownload::class);
+        $services->set(FilesController::class);
+
+        // The entities of files, the index of their usages, and pruning.
+        if ($doctrineLibrary && !$hasOrm) {
+            throw new LogicException('The library "doctrine" of byfareska_crud.files needs Doctrine ORM.');
+        }
+        $services->set(FileRecordMappers::class);
+        if ($config['record_factory'] !== null) {
+            $services->alias(FileRecordFactory::class, $config['record_factory']);
+        } else {
+            $services->set(ConstructorFileRecordFactory::class);
+            $services->alias(FileRecordFactory::class, ConstructorFileRecordFactory::class);
+        }
+        if ($doctrineLibrary) {
+            $services->set(DoctrineFileRecordMapper::class)->arg('$class', $config['entity']);
+        }
+        $usages = $config['usages'] ?? ($hasOrm ? 'doctrine' : 'none');
+        match ($usages) {
+            'doctrine' => $hasOrm
+                ? $services->set(DoctrineFileUsages::class)->arg('$doctrine', service('doctrine'))
+                : throw new LogicException('The usages "doctrine" of byfareska_crud.files need Doctrine ORM.'),
+            'none' => $services->set(NoFileUsages::class),
+            default => null,
+        };
+        $services->alias(FileUsages::class, match ($usages) {
+            'doctrine' => DoctrineFileUsages::class,
+            'none' => NoFileUsages::class,
+            default => $usages,
+        });
+        $services->set(SubmittedFiles::class);
+        $services->set(FileUsageListener::class)
+            ->tag('kernel.event_listener', ['event' => RecordSaved::class, 'method' => 'saved'])
+            ->tag('kernel.event_listener', ['event' => RecordDeleted::class, 'method' => 'deleted']);
+        $services->set(FileRemover::class);
+        $container->parameters()->set('byfareska_crud.files.prune_after', $config['prune_after']);
+        $services->set(PruneFilesCommand::class);
+        $services->set(ReindexFilesCommand::class);
+
+        // The field, the window of the library, the values of lists.
+        $services->set(CrudFileType::class);
+        $services->set(FileTypeGuesser::class);
+        $services->set(FileValueNormalizer::class);
+        $services->set(FilesExtension::class);
+        $services->set(FileLibrary::class);
+        $services->set(RichTextFiles::class);
+    }
+
+    /**
+     * Bytes of a size of the configuration: 1048576, "512K", "10M", "1G"; null for anything else.
+     */
+    private static function bytes(mixed $size): ?int
+    {
+        if (is_int($size)) {
+            return $size > 0 ? $size : null;
+        }
+        if (!is_string($size) || preg_match('/^\s*(\d+)\s*([kmg]?)b?\s*$/i', $size, $match) !== 1) {
+            return null;
+        }
+
+        return (int) $match[1] * match (strtolower($match[2])) {
+            'k' => 1024,
+            'm' => 1024 ** 2,
+            'g' => 1024 ** 3,
+            default => 1,
+        };
     }
 
     public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
@@ -692,20 +1200,22 @@ final class CrudBundle extends AbstractBundle
                 $storage = $dashboard['storage'] ?? $storage;
             }
         }
+        $mappings = [];
         if ($builder->hasExtension('doctrine') && in_array($storage, [null, 'doctrine'], true)) {
-            $mappings = ['mappings' => ['ByfareskaCrud' => [
-                'type' => 'attribute',
-                'is_bundle' => false,
-                'dir' => $this->getPath() . '/src/Dashboard/Storage',
-                'prefix' => 'Byfareska\\Crud\\Dashboard\\Storage',
-                'alias' => 'ByfareskaCrud',
-            ]]];
+            $mappings['ByfareskaCrud'] = $this->mapping('Dashboard/Storage', 'ByfareskaCrud');
+        }
+        // The tables of files: only when files are enabled, and only those their configuration keeps in Doctrine.
+        if ($builder->hasExtension('doctrine')) {
+            $mappings += $this->fileMappings($builder->getExtensionConfig($this->extensionAlias));
+        }
+        if ($mappings !== []) {
             // Into the default entity manager of the application: a configuration of named managers would otherwise
-            // get one more, named "default", for the table alone.
+            // get one more, named "default", for the tables alone.
             $manager = $this->defaultEntityManager($builder->getExtensionConfig('doctrine'));
+            $orm = ['mappings' => $mappings];
             $builder->prependExtensionConfig('doctrine', ['orm' => $manager === null
-                ? $mappings
-                : ['entity_managers' => [$manager => $mappings]]]);
+                ? $orm
+                : ['entity_managers' => [$manager => $orm]]]);
         }
 
         // The controllers and styles of the panel for AssetMapper (byfareska_crud.assets: importmap), under the name
@@ -715,6 +1225,75 @@ final class CrudBundle extends AbstractBundle
                 $this->getPath() . '/assets' => '@byfareska/crud',
             ]]]);
         }
+    }
+
+    /**
+     * The mapping of the entities of a directory of src/ (attributes), under the alias of its namespace.
+     *
+     * @return array{type: string, is_bundle: bool, dir: string, prefix: string, alias: string}
+     */
+    private function mapping(string $directory, ?string $alias = null): array
+    {
+        return [
+            'type' => 'attribute',
+            'is_bundle' => false,
+            'dir' => $this->getPath() . '/src/' . $directory,
+            'prefix' => 'Byfareska\\Crud\\' . str_replace('/', '\\', $directory),
+            'alias' => $alias ?? 'ByfareskaCrud' . str_replace('/', '', $directory),
+        ];
+    }
+
+    /**
+     * The mappings of the entities of files the configuration needs - none while files are not enabled: the parent of
+     * the entities of a library (when a storage keeps its library in Doctrine), the bundle's entity of files (unless
+     * the application names its own) and the index of usages (when it is Doctrine's).
+     *
+     * @param array<array<array-key, mixed>> $configs of byfareska_crud, as written
+     * @return array<string, array{type: string, is_bundle: bool, dir: string, prefix: string, alias: string}>
+     */
+    private function fileMappings(array $configs): array
+    {
+        $enabled = false;
+        $library = null;
+        $libraries = [];
+        $entity = null;
+        $usages = null;
+        foreach ($configs as $config) {
+            if (!array_key_exists('files', $config)) {
+                continue;
+            }
+            $files = $config['files'];
+            // As canBeEnabled() reads it: "files: ~" and a list of settings enable them, "enabled: false" does not.
+            $enabled = is_array($files) ? ($files['enabled'] ?? true) !== false : $files !== false;
+            if (!is_array($files)) {
+                continue;
+            }
+            $library = is_string($files['library'] ?? null) ? $files['library'] : $library;
+            $entity = is_string($files['entity'] ?? null) ? $files['entity'] : $entity;
+            $usages = is_string($files['usages'] ?? null) ? $files['usages'] : $usages;
+            foreach (is_array($files['storages'] ?? null) ? $files['storages'] : [] as $name => $storage) {
+                $libraries[$name] = is_array($storage) && is_string($storage['library'] ?? null)
+                    ? $storage['library']
+                    : ($libraries[$name] ?? null);
+            }
+        }
+        if (!$enabled) {
+            return [];
+        }
+
+        $mappings = [];
+        $library ??= 'doctrine';
+        if (array_any($libraries, static fn (?string $own): bool => ($own ?? $library) === 'doctrine')) {
+            $mappings['ByfareskaCrudFilesMapped'] = $this->mapping('Files/Doctrine/Mapped');
+            if ($entity === null || $entity === CrudFileRecord::class) {
+                $mappings['ByfareskaCrudFilesRecord'] = $this->mapping('Files/Doctrine/Record');
+            }
+        }
+        if (($usages ?? 'doctrine') === 'doctrine') {
+            $mappings['ByfareskaCrudFilesUsage'] = $this->mapping('Files/Doctrine/Usage');
+        }
+
+        return $mappings;
     }
 
     /**

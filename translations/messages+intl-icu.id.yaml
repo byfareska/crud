@@ -5,6 +5,8 @@ ui:
         save: Simpan
         save_new: 'Simpan dan tambah lagi'
         save_edit: 'Simpan dan lanjutkan mengedit'
+        save_return: 'Simpan dan kembali ke daftar'
+        save_show: 'Simpan dan lihat'
         cancel: Batal
         confirm: Konfirmasi
         close: Tutup
@@ -275,3 +277,34 @@ panel:
         label: Menu pengguna
         logout: Keluar
         anonymous: Anda belum masuk
+file:
+    refused:
+        too_big: 'Berkas terlalu besar: paling banyak {max}.'
+        kind: 'Berkas jenis ini ({kind}) tidak diterima di sini.'
+        not_uploaded: 'Berkas tidak sampai. Coba lagi.'
+        storage: 'Berkas tidak dapat diunggah di sini.'
+        failed: 'Berkas tidak dapat disimpan. Coba lagi.'
+    field:
+        upload: 'Unggah berkas'
+        upload_many: 'Unggah berkas-berkas'
+        browse: 'Pilih dari pustaka'
+        drop: 'atau lepaskan di sini'
+        remove: 'Hapus'
+        invalid: 'Berkas ini tidak dapat dipilih di sini.'
+        kind: 'Berkas jenis ini tidak diterima di sini.'
+        too_many: 'Paling banyak {max, plural, other {# berkas}}.'
+        meta:
+            alt: 'Teks alternatif'
+            caption: 'Keterangan'
+    library:
+        title: 'Berkas'
+        search: 'Cari berdasarkan nama'
+        empty: 'Belum ada berkas.'
+        not_found: 'Tidak ada yang ditemukan.'
+        choose: 'Pilih'
+        remove: 'Hapus berkas'
+        in_use: '“{name}” digunakan di {count, plural, other {# tempat}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Tetap hapus'
+        previous: 'Halaman sebelumnya'
+        next: 'Halaman berikutnya'

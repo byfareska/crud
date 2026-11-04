@@ -8,11 +8,14 @@ import Confirm from './controllers/confirm_controller.js';
 import DashboardGrid from './controllers/dashboard_grid_controller.js';
 import DateRange from './controllers/date_range_controller.js';
 import Dropdown from './controllers/dropdown_controller.js';
+import FileField from './controllers/file_field_controller.js';
+import FileLibrary from './controllers/file_library_controller.js';
 import FiltersPanel from './controllers/filters_panel_controller.js';
 import Flash from './controllers/flash_controller.js';
 import FocusFirst from './controllers/focus_first_controller.js';
 import Indeterminate from './controllers/indeterminate_controller.js';
 import LiveSet from './controllers/live_set_controller.js';
+import RichText from './controllers/rich_text_controller.js';
 import Overlay from './controllers/overlay_controller.js';
 import ScrollTo from './controllers/scroll_to_controller.js';
 import ShowIf from './controllers/show_if_controller.js';
@@ -24,6 +27,11 @@ import Toast from './controllers/toast_controller.js';
 export { useBootstrap, openOverlay, closeOverlay, toggleOverlay, closeMenus, anyOverlayOpen, registerOverlayAdapter } from './lib/overlay.js';
 // For an application that registers single controllers of the map below instead of calling registerControllers().
 export { installCsrfProtection };
+// Files of the panel: an upload to the address of a field, the window of the library - see lib/files.js.
+export { uploadFile, pickFiles } from './lib/files.js';
+// Editors of the fields of rich text by name: registerRichTextEditor('tinymce', tinymceEditor(tinymce)) - see
+// lib/rich_text.js and editors/tinymce.js.
+export { registerRichTextEditor, richTextEditor } from './lib/rich_text.js';
 // Functions of charts by name: "formatter(currency)" in the description of a chart - see lib/chart_formatters.js.
 export { registerChartFormatter } from './lib/chart_formatters.js';
 
@@ -40,12 +48,15 @@ export const controllers = {
     'dashboard-grid': DashboardGrid,
     'date-range': DateRange,
     'dropdown': Dropdown,
+    'file-field': FileField,
+    'file-library': FileLibrary,
     'filters-panel': FiltersPanel,
     'flash': Flash,
     'focus-first': FocusFirst,
     'indeterminate': Indeterminate,
     'live-set': LiveSet,
     'overlay': Overlay,
+    'rich-text': RichText,
     'scroll-to': ScrollTo,
     'show-if': ShowIf,
     'tabs': Tabs,

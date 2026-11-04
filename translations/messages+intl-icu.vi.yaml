@@ -5,6 +5,8 @@ ui:
         save: Lưu
         save_new: 'Lưu và thêm mục khác'
         save_edit: 'Lưu và tiếp tục chỉnh sửa'
+        save_return: 'Lưu và quay lại danh sách'
+        save_show: 'Lưu và xem'
         cancel: Hủy
         confirm: Xác nhận
         close: Đóng
@@ -275,3 +277,34 @@ panel:
         label: Menu người dùng
         logout: Đăng xuất
         anonymous: Bạn chưa đăng nhập
+file:
+    refused:
+        too_big: 'Tệp quá lớn: tối đa {max}.'
+        kind: 'Tệp loại này ({kind}) không được nhận ở đây.'
+        not_uploaded: 'Tệp chưa đến. Hãy thử lại.'
+        storage: 'Không thể tải tệp lên đây.'
+        failed: 'Không thể lưu tệp. Hãy thử lại.'
+    field:
+        upload: 'Tải tệp lên'
+        upload_many: 'Tải các tệp lên'
+        browse: 'Chọn từ thư viện'
+        drop: 'hoặc thả chúng vào đây'
+        remove: 'Gỡ bỏ'
+        invalid: 'Không thể chọn tệp này ở đây.'
+        kind: 'Tệp loại này không được nhận ở đây.'
+        too_many: 'Tối đa {max, plural, other {# tệp}}.'
+        meta:
+            alt: 'Văn bản thay thế'
+            caption: 'Chú thích'
+    library:
+        title: 'Tệp'
+        search: 'Tìm theo tên'
+        empty: 'Chưa có tệp nào.'
+        not_found: 'Không tìm thấy gì.'
+        choose: 'Chọn'
+        remove: 'Xóa tệp'
+        in_use: '“{name}” đang được dùng ở {count, plural, other {# chỗ}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Vẫn xóa'
+        previous: 'Trang trước'
+        next: 'Trang sau'

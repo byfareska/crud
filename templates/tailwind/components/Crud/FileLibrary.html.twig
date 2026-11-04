@@ -1,0 +1,80 @@
+{#
+    The window of the library (Crud:FileLibrary): the files of the storages a field picks from, searched and paged.
+    Which are chosen is kept by the file-library controller of the dialog around it, across its re-renders.
+#}
+{% set storages = this.storages %}
+{% set current = this.currentStorage %}
+{% set results = this.results %}
+{% set files = this.files %}
+<div {{ attributes.defaults({class: 'flex max-h-[85vh] flex-col'}) }}>
+    <div class="flex items-center gap-3 border-b border-gray-200 px-5 py-3 dark:border-white/10">
+        <h2 class="flex-1 text-base font-semibold">{{ 'file.library.title'|trans }}</h2>
+        <button type="button" class="rounded-md p-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10" data-action="file-library#cancel" aria-label="{{ 'ui.action.close'|trans }}">{{ crud_icon('x-lg') }}</button>
+    </div>
+    {% if storages|length > 1 or this.searchable %}
+        <div class="flex flex-wrap items-center gap-3 px-5 pt-3">
+            {% if storages|length > 1 %}
+                <div role="tablist" class="flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5">
+                    {% for storage in storages %}
+                        <button type="button" role="tab" class="rounded-md px-3 py-1 text-sm {{ storage == current ? 'bg-white font-semibold shadow-xs dark:bg-white/10' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400' }}" aria-selected="{{ storage == current ? 'true' : 'false' }}" data-action="live#action" data-live-action-param="show" data-live-storage-param="{{ storage }}">{{ storage }}</button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% if this.searchable %}
+                <input type="search" class="ms-auto block w-full rounded-lg bg-white px-3 py-1.5 text-sm outline-1 -outline-offset-1 outline-gray-300 focus:outline-2 focus:outline-indigo-600 sm:w-64 dark:bg-white/5 dark:outline-white/10" data-model="debounce(300)|search" data-overlay-target="autofocus" placeholder="{{ 'file.library.search'|trans }}" aria-label="{{ 'file.library.search'|trans }}">
+            {% endif %}
+        </div>
+    {% endif %}
+    <div class="min-h-48 flex-1 overflow-y-auto p-5" data-loading="addClass(opacity-60)">
+        {% if this.inUse %}
+            {% set in_use = this.inUseFile %}
+            <div role="alert" class="mb-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-200">
+                <p>{{ 'file.library.in_use'|trans({name: in_use.name, count: this.usages|length}) }}</p>
+                <ul class="my-2 list-inside list-disc">
+                    {% for usage in this.usages|slice(0, 10) %}
+                        <li>{{ 'file.library.usage'|trans({resource: usage.resource, id: usage.id, field: usage.field}) }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="flex gap-2">
+                    <button type="button" class="rounded-lg bg-red-600 px-2.5 py-1.5 text-sm font-semibold text-white hover:bg-red-500" data-action="live#action" data-live-action-param="remove" data-live-ref-param="{{ in_use.reference }}" data-live-confirmed-param="true">{{ 'file.library.remove_anyway'|trans }}</button>
+                    <button type="button" class="rounded-lg bg-white px-2.5 py-1.5 text-sm font-semibold shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:bg-white/10 dark:ring-white/10 dark:hover:bg-white/20" data-action="live#$render">{{ 'ui.action.cancel'|trans }}</button>
+                </div>
+            </div>
+        {% endif %}
+        {% if files is empty %}
+            <p class="py-12 text-center text-gray-500 dark:text-gray-400">{{ (this.search ? 'file.library.not_found' : 'file.library.empty')|trans }}</p>
+        {% else %}
+            <ul class="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-3">
+                {% for file in files %}
+                    <li class="group relative" data-file-library-target="file" data-ref="{{ file.ref }}" data-file="{{ file|json_encode }}">
+                        <button type="button" class="block w-full rounded-lg border-2 border-transparent p-1 text-start hover:border-gray-200 aria-pressed:border-indigo-600 aria-pressed:bg-indigo-50 dark:hover:border-white/10 dark:aria-pressed:bg-indigo-500/10" aria-pressed="false" data-action="file-library#toggle" title="{{ file.name }}">
+                            <span class="flex aspect-square items-center justify-center overflow-hidden rounded-md bg-gray-100 dark:bg-white/10">
+                                {% if file.image and file.url %}
+                                    <img src="{{ file.url }}" alt="" loading="lazy" class="size-full object-cover">
+                                {% else %}
+                                    <span class="text-3xl text-gray-400">{{ crud_icon('file-earmark') }}</span>
+                                {% endif %}
+                            </span>
+                            <span class="mt-1 block truncate text-xs">{{ file.name }}</span>
+                        </button>
+                        {% if this.canRemove %}
+                            <button type="button" class="absolute end-2 top-2 rounded-full bg-white/90 p-1 text-xs text-gray-700 opacity-0 shadow group-hover:opacity-100 focus:opacity-100 dark:bg-gray-900/90 dark:text-gray-200" data-action="live#action" data-live-action-param="remove" data-live-ref-param="{{ file.ref }}" aria-label="{{ 'file.library.remove'|trans }}" title="{{ 'file.library.remove'|trans }}">{{ crud_icon('trash') }}</button>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if results.page > 1 or results.more %}
+            <div class="mt-4 flex items-center justify-center gap-2">
+                <button type="button" class="rounded-lg bg-white px-2.5 py-1.5 text-sm font-semibold shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:bg-white/10 dark:ring-white/10 dark:hover:bg-white/20" data-action="live#action" data-live-action-param="goTo" data-live-page-param="{{ results.page - 1 }}"{% if results.page <= 1 %} disabled{% endif %} aria-label="{{ 'file.library.previous'|trans }}">{{ crud_icon('chevron-left') }}</button>
+                <span class="text-sm">{{ results.page }}</span>
+                <button type="button" class="rounded-lg bg-white px-2.5 py-1.5 text-sm font-semibold shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:bg-white/10 dark:ring-white/10 dark:hover:bg-white/20" data-action="live#action" data-live-action-param="goTo" data-live-page-param="{{ results.page + 1 }}"{% if not results.more %} disabled{% endif %} aria-label="{{ 'file.library.next'|trans }}">{{ crud_icon('chevron-right') }}</button>
+            </div>
+        {% endif %}
+    </div>
+    <div class="flex items-center justify-end gap-2 bg-gray-50 px-5 py-3 dark:bg-white/5">
+        <span class="me-auto text-sm text-gray-500 dark:text-gray-400" data-file-library-target="count"></span>
+        <button type="button" class="rounded-lg bg-white px-2.5 py-1.5 text-sm font-semibold shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 disabled:opacity-50 dark:bg-white/10 dark:ring-white/10 dark:hover:bg-white/20" data-action="file-library#cancel">{{ 'ui.action.cancel'|trans }}</button>
+        <button type="button" class="rounded-lg bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 disabled:opacity-50" data-action="file-library#choose" data-file-library-target="choose" disabled>{{ crud_icon('check-lg') }} {{ 'file.library.choose'|trans }}</button>
+    </div>
+</div>

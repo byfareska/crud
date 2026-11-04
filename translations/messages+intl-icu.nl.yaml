@@ -5,6 +5,8 @@ ui:
         save: Opslaan
         save_new: 'Opslaan en nog een toevoegen'
         save_edit: 'Opslaan en verder bewerken'
+        save_return: 'Opslaan en terug naar de lijst'
+        save_show: 'Opslaan en bekijken'
         cancel: Annuleren
         confirm: Bevestigen
         close: Sluiten
@@ -275,3 +277,34 @@ panel:
         label: Gebruikersmenu
         logout: Uitloggen
         anonymous: Je bent niet ingelogd
+file:
+    refused:
+        too_big: 'Het bestand is te groot: hoogstens {max}.'
+        kind: 'Bestanden van dit soort ({kind}) worden hier niet aangenomen.'
+        not_uploaded: 'Het bestand is niet aangekomen. Probeer het opnieuw.'
+        storage: 'Hier kunnen geen bestanden worden geüpload.'
+        failed: 'Het bestand kon niet worden opgeslagen. Probeer het opnieuw.'
+    field:
+        upload: 'Bestand uploaden'
+        upload_many: 'Bestanden uploaden'
+        browse: 'Kiezen uit de bibliotheek'
+        drop: 'of sleep ze hierheen'
+        remove: 'Verwijderen'
+        invalid: 'Dit bestand kan hier niet worden gekozen.'
+        kind: 'Bestanden van dit soort worden hier niet aangenomen.'
+        too_many: 'Hoogstens {max, plural, one {# bestand} other {# bestanden}}.'
+        meta:
+            alt: 'Alternatieve tekst'
+            caption: 'Bijschrift'
+    library:
+        title: 'Bestanden'
+        search: 'Zoeken op naam'
+        empty: 'Nog geen bestanden.'
+        not_found: 'Niets gevonden.'
+        choose: 'Kiezen'
+        remove: 'Bestand verwijderen'
+        in_use: '‘{name}’ wordt gebruikt op {count, plural, one {# plek} other {# plekken}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Toch verwijderen'
+        previous: 'Vorige pagina'
+        next: 'Volgende pagina'

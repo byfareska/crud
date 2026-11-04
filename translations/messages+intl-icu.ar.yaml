@@ -5,6 +5,8 @@ ui:
         save: حفظ
         save_new: 'حفظ وإضافة آخر'
         save_edit: 'حفظ ومتابعة التعديل'
+        save_return: 'حفظ والعودة إلى القائمة'
+        save_show: 'حفظ وعرض'
         cancel: إلغاء
         confirm: تأكيد
         close: إغلاق
@@ -275,3 +277,34 @@ panel:
         label: قائمة المستخدم
         logout: تسجيل الخروج
         anonymous: لم تسجّل الدخول
+file:
+    refused:
+        too_big: 'الملف كبير جدًا: الحد الأقصى {max}.'
+        kind: 'لا تُقبل هنا ملفات من هذا النوع ({kind}).'
+        not_uploaded: 'لم يصل الملف. حاول مرة أخرى.'
+        storage: 'لا يمكن رفع ملفات هنا.'
+        failed: 'تعذّر حفظ الملف. حاول مرة أخرى.'
+    field:
+        upload: 'رفع ملف'
+        upload_many: 'رفع ملفات'
+        browse: 'اختيار من المكتبة'
+        drop: 'أو أفلتها هنا'
+        remove: 'إزالة'
+        invalid: 'لا يمكن اختيار هذا الملف هنا.'
+        kind: 'لا تُقبل هنا ملفات من هذا النوع.'
+        too_many: 'الحد الأقصى {max, plural, zero {# ملف} one {ملف واحد} two {ملفان} few {# ملفات} many {# ملفًا} other {# ملف}}.'
+        meta:
+            alt: 'النص البديل'
+            caption: 'التعليق'
+    library:
+        title: 'الملفات'
+        search: 'البحث بالاسم'
+        empty: 'لا توجد ملفات بعد.'
+        not_found: 'لم يُعثر على شيء.'
+        choose: 'اختيار'
+        remove: 'حذف الملف'
+        in_use: '«{name}» مستخدم {count, plural, zero {في # موضع} one {في موضع واحد} two {في موضعين} few {في # مواضع} many {في # موضعًا} other {في # موضع}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'الحذف على أي حال'
+        previous: 'الصفحة السابقة'
+        next: 'الصفحة التالية'
