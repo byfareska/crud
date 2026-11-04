@@ -277,3 +277,34 @@ panel:
         label: ユーザーメニュー
         logout: サインアウト
         anonymous: サインインしていません
+file:
+    refused:
+        too_big: 'ファイルが大きすぎます（上限 {max}）。'
+        kind: 'この種類のファイル（{kind}）はここでは受け付けていません。'
+        not_uploaded: 'ファイルが届きませんでした。もう一度お試しください。'
+        storage: 'ここにはファイルをアップロードできません。'
+        failed: 'ファイルを保存できませんでした。もう一度お試しください。'
+    field:
+        upload: 'ファイルをアップロード'
+        upload_many: 'ファイルをアップロード'
+        browse: 'ライブラリから選択'
+        drop: 'またはここにドロップ'
+        remove: '外す'
+        invalid: 'このファイルはここでは選択できません。'
+        kind: 'この種類のファイルはここでは受け付けていません。'
+        too_many: '最大 {max, plural, other {# 件}} までです。'
+        meta:
+            alt: '代替テキスト'
+            caption: 'キャプション'
+    library:
+        title: 'ファイル'
+        search: '名前で検索'
+        empty: 'まだファイルがありません。'
+        not_found: '見つかりませんでした。'
+        choose: '選択'
+        remove: 'ファイルを削除'
+        in_use: '「{name}」は {count, plural, other {# か所}} で使われています：'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'それでも削除'
+        previous: '前のページ'
+        next: '次のページ'

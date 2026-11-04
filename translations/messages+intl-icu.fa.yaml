@@ -277,3 +277,34 @@ panel:
         label: منوی کاربر
         logout: خروج
         anonymous: شما وارد نشده‌اید
+file:
+    refused:
+        too_big: 'فایل خیلی بزرگ است: حداکثر {max}.'
+        kind: 'فایل‌های این نوع ({kind}) اینجا پذیرفته نمی‌شوند.'
+        not_uploaded: 'فایل نرسید. دوباره تلاش کنید.'
+        storage: 'اینجا نمی‌توان فایل بارگذاری کرد.'
+        failed: 'ذخیرهٔ فایل ممکن نشد. دوباره تلاش کنید.'
+    field:
+        upload: 'بارگذاری فایل'
+        upload_many: 'بارگذاری فایل‌ها'
+        browse: 'انتخاب از کتابخانه'
+        drop: 'یا آن‌ها را اینجا رها کنید'
+        remove: 'حذف'
+        invalid: 'این فایل را نمی‌توان اینجا انتخاب کرد.'
+        kind: 'فایل‌های این نوع اینجا پذیرفته نمی‌شوند.'
+        too_many: 'حداکثر {max, plural, one {# فایل} other {# فایل}}.'
+        meta:
+            alt: 'متن جایگزین'
+            caption: 'زیرنویس'
+    library:
+        title: 'فایل‌ها'
+        search: 'جستجو بر اساس نام'
+        empty: 'هنوز فایلی نیست.'
+        not_found: 'چیزی پیدا نشد.'
+        choose: 'انتخاب'
+        remove: 'حذف فایل'
+        in_use: '«{name}» در {count, plural, one {# جا} other {# جا}} استفاده شده است:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'به هر حال حذف شود'
+        previous: 'صفحهٔ قبل'
+        next: 'صفحهٔ بعد'

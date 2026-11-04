@@ -9,6 +9,8 @@ use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\UriSigner;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\String\Slugger\AsciiSlugger;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 /**
  * What the browser gets of files: their JSON (with the signature a field asks of a new reference) and the signed
@@ -19,6 +21,11 @@ final readonly class BrowserFiles
     /** For how long the address of an upload a page was drawn with works. */
     public const int PROFILE_TTL = 86400;
 
+    /** The longest alternative text a file is given by its name. */
+    private const int ALT_LENGTH = 125;
+
+    private SluggerInterface $slugger;
+
     public function __construct(
         private FileUrls $urls,
         private FileReferenceSigner $signer,
@@ -26,12 +33,17 @@ final readonly class BrowserFiles
         private UrlGeneratorInterface $router,
         private FileStorages $storages,
         private Scopes $scopes,
+        ?SluggerInterface $slugger = null,
     ) {
+        $this->slugger = $slugger ?? new AsciiSlugger();
     }
 
     /**
-     * @return array{ref: string, sig: string, url: string|null, name: string, mime: string|null, size: int|null,
-     *     width: int|null, height: int|null, image: bool}
+     * "alt": the alternative text a field gives a file it takes in (when it asks for one and none is typed) - the name
+     * it was uploaded under, made plain.
+     *
+     * @return array{ref: string, sig: string, url: string|null, name: string, alt: string, mime: string|null,
+     *     size: int|null, width: int|null, height: int|null, image: bool}
      */
     public function json(StoredFile $file): array
     {
@@ -40,12 +52,29 @@ final readonly class BrowserFiles
             'sig' => $this->signer->sign($file->reference),
             'url' => $this->urls->url($file->reference),
             'name' => $file->name,
+            'alt' => $this->alt($file),
             'mime' => $file->mimeType,
             'size' => $file->size,
             'width' => $file->width,
             'height' => $file->height,
             'image' => $file->isImage(),
         ];
+    }
+
+    /**
+     * The name a file was uploaded under, without its extension, in letters, digits and spaces: "Kot na płocie (2).jpg"
+     * is "Kot na plocie 2". None for a file known only by its random name (a library that lists its storage).
+     */
+    public function alt(StoredFile $file): string
+    {
+        if ($file->name === basename($file->reference->path)) {
+            return '';
+        }
+        // Not pathinfo(): a "/" of the name ("A/B testy.png") is no directory.
+        $name = (string) preg_replace('/\.[^.]*$/', '', $file->name);
+        $alt = $this->slugger->slug($name, ' ')->toString();
+
+        return rtrim(mb_substr($alt, 0, self::ALT_LENGTH));
     }
 
     /**

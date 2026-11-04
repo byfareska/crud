@@ -11,7 +11,7 @@
         <h2 class="flex-1 text-lg font-semibold">{{ 'file.library.title'|trans }}</h2>
         <button type="button" class="btn btn-ghost btn-sm btn-square" data-action="file-library#cancel" aria-label="{{ 'ui.action.close'|trans }}">{{ crud_icon('x-lg') }}</button>
     </div>
-    {% if storages|length > 1 or this.canSearch %}
+    {% if storages|length > 1 or this.searchable %}
         <div class="flex flex-wrap items-center gap-3 px-5 pt-3">
             {% if storages|length > 1 %}
                 <div role="tablist" class="tabs tabs-box tabs-sm">
@@ -20,7 +20,7 @@
                     {% endfor %}
                 </div>
             {% endif %}
-            {% if this.canSearch %}
+            {% if this.searchable %}
                 <label class="input input-sm ms-auto w-full sm:w-64">
                     {{ crud_icon('search', 'opacity-50') }}
                     <input type="search" data-model="debounce(300)|search" data-overlay-target="autofocus" placeholder="{{ 'file.library.search'|trans }}" aria-label="{{ 'file.library.search'|trans }}">

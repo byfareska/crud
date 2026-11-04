@@ -277,3 +277,34 @@ panel:
         label: Meniul utilizatorului
         logout: Deconectează-te
         anonymous: Nu ești autentificat
+file:
+    refused:
+        too_big: 'Fișierul este prea mare: cel mult {max}.'
+        kind: 'Fișierele de acest tip ({kind}) nu sunt acceptate aici.'
+        not_uploaded: 'Fișierul nu a ajuns. Încercați din nou.'
+        storage: 'Aici nu se pot încărca fișiere.'
+        failed: 'Fișierul nu a putut fi salvat. Încercați din nou.'
+    field:
+        upload: 'Încărcați un fișier'
+        upload_many: 'Încărcați fișiere'
+        browse: 'Alegeți din bibliotecă'
+        drop: 'sau trageți-le aici'
+        remove: 'Eliminați'
+        invalid: 'Acest fișier nu poate fi ales aici.'
+        kind: 'Fișierele de acest tip nu sunt acceptate aici.'
+        too_many: 'Cel mult {max, plural, one {# fișier} few {# fișiere} other {# de fișiere}}.'
+        meta:
+            alt: 'Text alternativ'
+            caption: 'Legendă'
+    library:
+        title: 'Fișiere'
+        search: 'Căutați după nume'
+        empty: 'Încă nu există fișiere.'
+        not_found: 'Nu s-a găsit nimic.'
+        choose: 'Alegeți'
+        remove: 'Ștergeți fișierul'
+        in_use: '„{name}” este folosit {count, plural, one {într-un loc} few {în # locuri} other {în # de locuri}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Ștergeți oricum'
+        previous: 'Pagina anterioară'
+        next: 'Pagina următoare'

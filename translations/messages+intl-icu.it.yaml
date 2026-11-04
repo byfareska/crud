@@ -277,3 +277,34 @@ panel:
         label: Menu utente
         logout: Esci
         anonymous: Non hai effettuato l’accesso
+file:
+    refused:
+        too_big: 'Il file è troppo grande: al massimo {max}.'
+        kind: 'I file di questo tipo ({kind}) non sono accettati qui.'
+        not_uploaded: 'Il file non è arrivato. Riprova.'
+        storage: 'Qui non si possono caricare file.'
+        failed: 'Non è stato possibile salvare il file. Riprova.'
+    field:
+        upload: 'Carica un file'
+        upload_many: 'Carica file'
+        browse: 'Scegli dalla libreria'
+        drop: 'oppure trascinali qui'
+        remove: 'Rimuovi'
+        invalid: 'Questo file non può essere scelto qui.'
+        kind: 'I file di questo tipo non sono accettati qui.'
+        too_many: 'Al massimo {max, plural, one {# file} other {# file}}.'
+        meta:
+            alt: 'Testo alternativo'
+            caption: 'Didascalia'
+    library:
+        title: 'File'
+        search: 'Cerca per nome'
+        empty: 'Ancora nessun file.'
+        not_found: 'Nessun risultato.'
+        choose: 'Scegli'
+        remove: 'Elimina il file'
+        in_use: '«{name}» è usato {count, plural, one {in # punto} other {in # punti}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Elimina comunque'
+        previous: 'Pagina precedente'
+        next: 'Pagina successiva'

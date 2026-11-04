@@ -12,7 +12,7 @@
         <button type="button" class="btn-close" data-action="file-library#cancel" aria-label="{{ 'ui.action.close'|trans }}"></button>
     </div>
     <div class="modal-body" style="min-height: 12rem" data-loading="addClass(opacity-50)">
-        {% if storages|length > 1 or this.canSearch %}
+        {% if storages|length > 1 or this.searchable %}
             <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
                 {% if storages|length > 1 %}
                     <ul class="nav nav-pills nav-sm" role="tablist">
@@ -21,7 +21,7 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-                {% if this.canSearch %}
+                {% if this.searchable %}
                     <input type="search" class="form-control form-control-sm ms-auto" style="max-width: 16rem" data-model="debounce(300)|search" data-overlay-target="autofocus" placeholder="{{ 'file.library.search'|trans }}" aria-label="{{ 'file.library.search'|trans }}">
                 {% endif %}
             </div>

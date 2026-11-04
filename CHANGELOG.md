@@ -11,6 +11,20 @@
   that does not say (`afterSave` is now null by default) has those. `AfterSave::Return` ("save and back to the list")
   and `AfterSave::Show` ("save and view") are buttons too.
 - `RecordSaving::$then` and `RecordSaved::$then` of "save" are where it leads (`edit`, `return`...), no longer null.
+- Files, off until `byfareska_crud.files` is enabled (README: Files): storages of Flysystem or of `FileStorage` with
+  references kept as `storage://path`; random sharded paths with the extension read from the bytes; public, temporary
+  and signed addresses (sent by the web server with `offload`); libraries per storage (`doctrine`, `storage`, `none`,
+  your own) and the window of the library; `CrudFileType` and `#[CrudFile]` - a file, many, a gallery - held in a
+  column, items of a gallery (`binding: items`), entities of files or a `FileBinding`; the index of usages with
+  `byfareska:crud:files:prune` and `byfareska:crud:files:reindex`; contract tests for adapters
+  (`Files\Testing\*ContractTestCase`).
+- Rich text: `CrudRichTextType` and `#[CrudRichText]`, an editor of the browser registered by name
+  (`registerRichTextEditor()`), the adapter of TinyMCE (`@byfareska/crud/editors/tinymce.js`), images and files
+  uploaded into the text with `files` (`byfareska_crud.rich_text`); TinyMCE speaks the language of the page
+  (`<html lang>`) when its pack is loaded.
+- A file taken into a field (uploaded or picked) gets its name without the extension, made plain by Symfony's slugger,
+  as its alternative text until one is typed (`alt` of the JSON of a file).
+- `uploadFile()` and `pickFiles()` of `@byfareska/crud`: an upload to the address of a field, the window of the library.
 
 ## v0.1.0
 

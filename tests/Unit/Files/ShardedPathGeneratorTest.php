@@ -10,11 +10,24 @@ use PHPUnit\Framework\TestCase;
 
 final class ShardedPathGeneratorTest extends TestCase
 {
-    public function testARandomNameInDirectoriesOfItsFirstCharacters(): void
+    public function testARandomNameInRandomDirectories(): void
     {
         $path = new ShardedPathGenerator()->generate('public', 'jpg', 'Kot.jpg');
 
-        self::assertMatchesRegularExpression('#^([0-9a-z]{2})/([0-9a-z]{2})/\1\2[0-9a-z]{28}\.jpg$#', $path);
+        self::assertMatchesRegularExpression('#^[0-9a-z]{2}/[0-9a-z]{2}/[0-9a-z]{32}\.jpg$#', $path);
+    }
+
+    public function testTheDirectoriesAreNotTheBeginningOfTheName(): void
+    {
+        $generator = new ShardedPathGenerator();
+        $repeated = 0;
+        for ($i = 0; $i < 20; ++$i) {
+            [$first, $second, $name] = explode('/', $generator->generate('public', 'jpg', 'Kot.jpg'));
+            $repeated += (int) str_starts_with($name, $first . $second);
+        }
+
+        // By chance one in 36^4 (1.7 million) of them.
+        self::assertLessThan(2, $repeated);
     }
 
     public function testNoDirectoriesForAStorageOfPrefixes(): void
@@ -41,10 +54,10 @@ final class ShardedPathGeneratorTest extends TestCase
         self::assertNotSame($generator->generate('public', 'jpg', 'a'), $generator->generate('public', 'jpg', 'a'));
     }
 
-    public function testTheLevelsFitInTheName(): void
+    public function testANameOfEightCharactersAtLeast(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new ShardedPathGenerator(levels: 5, width: 2, length: 8);
+        new ShardedPathGenerator(length: 7);
     }
 }

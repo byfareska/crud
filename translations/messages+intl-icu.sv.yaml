@@ -277,3 +277,34 @@ panel:
         label: Användarmeny
         logout: Logga ut
         anonymous: Du är inte inloggad
+file:
+    refused:
+        too_big: 'Filen är för stor: högst {max}.'
+        kind: 'Filer av det här slaget ({kind}) tas inte emot här.'
+        not_uploaded: 'Filen kom inte fram. Försök igen.'
+        storage: 'Det går inte att ladda upp filer här.'
+        failed: 'Filen kunde inte sparas. Försök igen.'
+    field:
+        upload: 'Ladda upp en fil'
+        upload_many: 'Ladda upp filer'
+        browse: 'Välj från biblioteket'
+        drop: 'eller släpp dem här'
+        remove: 'Ta bort'
+        invalid: 'Den här filen kan inte väljas här.'
+        kind: 'Filer av det här slaget tas inte emot här.'
+        too_many: 'Högst {max, plural, one {# fil} other {# filer}}.'
+        meta:
+            alt: 'Alternativ text'
+            caption: 'Bildtext'
+    library:
+        title: 'Filer'
+        search: 'Sök på namn'
+        empty: 'Inga filer än.'
+        not_found: 'Inget hittades.'
+        choose: 'Välj'
+        remove: 'Radera filen'
+        in_use: '”{name}” används {count, plural, one {på # ställe} other {på # ställen}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Radera ändå'
+        previous: 'Föregående sida'
+        next: 'Nästa sida'

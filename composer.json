@@ -30,7 +30,6 @@
         "php": ">=8.4",
         "psr/cache": "^3.0",
         "psr/log": "^3.0",
-        "symfony/polyfill-php86": "^1.43",
         "symfony/config": "^8.0",
         "symfony/dependency-injection": "^8.0",
         "symfony/event-dispatcher": "^8.0",
@@ -38,8 +37,10 @@
         "symfony/framework-bundle": "^8.0",
         "symfony/http-foundation": "^8.0",
         "symfony/http-kernel": "^8.0",
+        "symfony/polyfill-php86": "^1.43",
         "symfony/property-access": "^8.0",
         "symfony/routing": "^8.0",
+        "symfony/string": "^8.0",
         "symfony/translation": "^8.0",
         "symfony/twig-bundle": "^8.0",
         "symfony/ux-chartjs": "^2.20 || ^3.0",
@@ -61,7 +62,8 @@
         "squizlabs/php_codesniffer": "^4.0",
         "symfony/mime": "^8.0",
         "symfony/security-bundle": "^8.0",
-        "symfony/ux-autocomplete": "^3.5"
+        "symfony/ux-autocomplete": "^3.5",
+        "symfony/yaml": "^8.0"
     },
     "suggest": {
         "doctrine/doctrine-bundle": "The doctrine driver (CRUD on entities) and dashboard layouts kept in the database",

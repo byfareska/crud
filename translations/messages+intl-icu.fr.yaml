@@ -277,3 +277,34 @@ panel:
         label: Menu utilisateur
         logout: Se déconnecter
         anonymous: Vous n’êtes pas connecté
+file:
+    refused:
+        too_big: 'Le fichier est trop volumineux : {max} au maximum.'
+        kind: 'Les fichiers de ce type ({kind}) ne sont pas acceptés ici.'
+        not_uploaded: 'Le fichier n’est pas arrivé. Réessayez.'
+        storage: 'Impossible de téléverser des fichiers ici.'
+        failed: 'Le fichier n’a pas pu être enregistré. Réessayez.'
+    field:
+        upload: 'Téléverser un fichier'
+        upload_many: 'Téléverser des fichiers'
+        browse: 'Choisir dans la bibliothèque'
+        drop: 'ou déposez-les ici'
+        remove: 'Retirer'
+        invalid: 'Ce fichier ne peut pas être choisi ici.'
+        kind: 'Les fichiers de ce type ne sont pas acceptés ici.'
+        too_many: '{max, plural, one {# fichier} other {# fichiers}} au maximum.'
+        meta:
+            alt: 'Texte alternatif'
+            caption: 'Légende'
+    library:
+        title: 'Fichiers'
+        search: 'Rechercher par nom'
+        empty: 'Aucun fichier pour l’instant.'
+        not_found: 'Aucun résultat.'
+        choose: 'Choisir'
+        remove: 'Supprimer le fichier'
+        in_use: '« {name} » est utilisé {count, plural, one {à # endroit} other {à # endroits}} :'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Supprimer quand même'
+        previous: 'Page précédente'
+        next: 'Page suivante'

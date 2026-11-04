@@ -277,3 +277,34 @@ panel:
         label: Menú de usuario
         logout: Cerrar sesión
         anonymous: No has iniciado sesión
+file:
+    refused:
+        too_big: 'El archivo es demasiado grande: como máximo {max}.'
+        kind: 'Aquí no se aceptan archivos de este tipo ({kind}).'
+        not_uploaded: 'El archivo no llegó. Inténtalo de nuevo.'
+        storage: 'Aquí no se pueden subir archivos.'
+        failed: 'No se pudo guardar el archivo. Inténtalo de nuevo.'
+    field:
+        upload: 'Subir un archivo'
+        upload_many: 'Subir archivos'
+        browse: 'Elegir de la biblioteca'
+        drop: 'o suéltalos aquí'
+        remove: 'Quitar'
+        invalid: 'Este archivo no se puede elegir aquí.'
+        kind: 'Aquí no se aceptan archivos de este tipo.'
+        too_many: 'Como máximo {max, plural, one {# archivo} other {# archivos}}.'
+        meta:
+            alt: 'Texto alternativo'
+            caption: 'Pie de foto'
+    library:
+        title: 'Archivos'
+        search: 'Buscar por nombre'
+        empty: 'Aún no hay archivos.'
+        not_found: 'No se encontró nada.'
+        choose: 'Elegir'
+        remove: 'Eliminar el archivo'
+        in_use: '«{name}» se usa {count, plural, one {en # lugar} other {en # lugares}}:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Eliminar de todos modos'
+        previous: 'Página anterior'
+        next: 'Página siguiente'

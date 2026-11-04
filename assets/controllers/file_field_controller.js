@@ -175,6 +175,12 @@ export default class extends Controller {
             name.textContent = file.name;
             name.title = file.name;
         }
+        // A file taken in: its alternative text is the name it was uploaded under (made plain by the server) until
+        // one is typed.
+        const alt = item.querySelector('[data-meta="alt"]');
+        if (alt && !alt.value && file.alt) {
+            alt.value = file.alt;
+        }
     }
 
     has(ref) {

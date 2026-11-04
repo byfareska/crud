@@ -130,7 +130,7 @@ final class FileLibrary implements ScopedComponent
         return $this->browser->libraryOf($this->token)[1] ?? false;
     }
 
-    public function canSearch(): bool
+    public function isSearchable(): bool
     {
         $storage = $this->getCurrentStorage();
 
@@ -159,7 +159,7 @@ final class FileLibrary implements ScopedComponent
 
         return $this->libraries->of($storage)->browse(new FileQuery(
             $storage,
-            $this->canSearch() ? $this->search : '',
+            $this->isSearchable() ? $this->search : '',
             $profile->accept,
             max(1, $this->page),
             self::PER_PAGE,

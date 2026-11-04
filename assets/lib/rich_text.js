@@ -8,7 +8,8 @@
  * - options: what the field and byfareska_crud.rich_text.options give the editor;
  * - files: null when the field uploads nothing, else
  *   { upload(blob, { name, onProgress }) → Promise<file>, pick({ images }) → Promise<file[]> | null }
- *   - a file is { ref, url, name, mime, size, width, height, image } (see lib/files.js); pick is null without a library;
+ *   - a file is { ref, url, name, alt, mime, size, width, height, image } (see lib/files.js); pick is null without a
+ *     library;
  * - changed(html): to be called with the HTML whenever it changes - it goes into the textarea and the live form.
  *
  * The bundle's adapter of TinyMCE is editors/tinymce.js:

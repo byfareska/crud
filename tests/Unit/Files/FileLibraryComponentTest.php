@@ -11,6 +11,9 @@ use Byfareska\Crud\Files\FileUsage;
 use Byfareska\Crud\Files\FileUsages;
 use Byfareska\Crud\Files\UploadProfile;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\UX\LiveComponent\Attribute\LiveProp;
 
 /**
  * The window of the library shows what the field it was opened for may pick, and deletes a file records use only
@@ -23,6 +26,26 @@ final class FileLibraryComponentTest extends TestCase
     protected function setUp(): void
     {
         $this->files = new FilesKit();
+    }
+
+    public function testTheLiveComponentReadsItsPropsAsTheyAre(): void
+    {
+        $library = $this->library([]);
+        $library->open($this->files->browser->libraryToken(new UploadProfile('public'), false));
+        $library->search = 'invoice';
+        $library->page = 2;
+        $accessor = PropertyAccess::createPropertyAccessor();
+
+        // As LiveComponents reads a prop: a method get…(), is…(), has…() or can…() of its name would win.
+        foreach (new ReflectionClass($library)->getProperties() as $property) {
+            if ($property->getAttributes(LiveProp::class) !== []) {
+                self::assertSame(
+                    $property->getValue($library),
+                    $accessor->getValue($library, $property->getName()),
+                    $property->getName(),
+                );
+            }
+        }
     }
 
     public function testNothingUntilOpenedForAField(): void

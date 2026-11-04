@@ -277,3 +277,34 @@ panel:
         label: Benutzermenü
         logout: Abmelden
         anonymous: Sie sind nicht angemeldet
+file:
+    refused:
+        too_big: 'Die Datei ist zu groß: höchstens {max}.'
+        kind: 'Dateien dieser Art ({kind}) werden hier nicht angenommen.'
+        not_uploaded: 'Die Datei ist nicht angekommen. Versuchen Sie es erneut.'
+        storage: 'Hier können keine Dateien hochgeladen werden.'
+        failed: 'Die Datei konnte nicht gespeichert werden. Versuchen Sie es erneut.'
+    field:
+        upload: 'Datei hochladen'
+        upload_many: 'Dateien hochladen'
+        browse: 'Aus der Bibliothek wählen'
+        drop: 'oder hier ablegen'
+        remove: 'Entfernen'
+        invalid: 'Diese Datei kann hier nicht gewählt werden.'
+        kind: 'Dateien dieser Art werden hier nicht angenommen.'
+        too_many: 'Höchstens {max, plural, one {# Datei} other {# Dateien}}.'
+        meta:
+            alt: 'Alternativtext'
+            caption: 'Bildunterschrift'
+    library:
+        title: 'Dateien'
+        search: 'Nach Namen suchen'
+        empty: 'Noch keine Dateien.'
+        not_found: 'Nichts gefunden.'
+        choose: 'Auswählen'
+        remove: 'Datei löschen'
+        in_use: '„{name}“ wird {count, plural, one {an # Stelle} other {an # Stellen}} verwendet:'
+        usage: '{resource} #{id}: {field}'
+        remove_anyway: 'Trotzdem löschen'
+        previous: 'Vorherige Seite'
+        next: 'Nächste Seite'

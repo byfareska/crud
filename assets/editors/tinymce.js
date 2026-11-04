@@ -16,6 +16,10 @@
  * Its options are DEFAULTS, then those given here, then byfareska_crud.rich_text.options, then the field's
  * "editor_options". TinyMCE asks for a licence: license_key "gpl" or the key bought.
  *
+ * It speaks the language of the page (<html lang>) when the pack of that language is loaded - the packs of TinyMCE 8
+ * of tinymce-i18n, imported after TinyMCE: `import 'tinymce-i18n/langs8/pl.js'`; "pt-BR" takes "pt-BR", "fr" takes
+ * "fr-FR". Without the pack it is English (and says so in the console); "language" in the options chooses another.
+ *
  * With files (the field's "files"), an image pasted, dropped or uploaded in the dialog goes to the field's storage, and
  * the dialogs of an image and of a link pick from the window of the library.
  */
@@ -41,8 +45,10 @@ export function tinymceEditor(tinymce = globalThis.tinymce, defaults = {}) {
                 throw new Error('@byfareska/crud: no TinyMCE - give it to tinymceEditor(tinymce).');
             }
             const dark = isDark();
+            const language = languageOf(tinymce);
             const config = {
                 ...DEFAULTS,
+                ...(language ? { language } : {}),
                 skin: dark ? 'oxide-dark' : 'oxide',
                 content_css: dark ? 'dark' : 'default',
                 ...defaults,
@@ -78,7 +84,7 @@ export function tinymceEditor(tinymce = globalThis.tinymce, defaults = {}) {
                 config.file_picker_callback = (callback, value, meta) => {
                     files.pick({ images: meta.filetype === 'image' }).then(([file]) => {
                         if (file?.url) {
-                            callback(file.url, meta.filetype === 'image' ? { alt: '' } : { text: file.name });
+                            callback(file.url, meta.filetype === 'image' ? { alt: file.alt ?? '' } : { text: file.name });
                         }
                     });
                 };
@@ -101,3 +107,27 @@ function isDark() {
     return root.getAttribute('data-color-scheme') === 'dark'
         || ['data-bs-theme', 'data-theme'].some((name) => root.getAttribute(name) === 'dark');
 }
+
+/*
+ * The pack loaded (tinymce.addI18n) of the language of the page: the same code, else one of the same language ("fr" -
+ * "fr-FR"); undefined for English, or without one.
+ */
+export function languageOf(tinymce, lang = document.documentElement.lang) {
+    const plain = (code) => code.replace('_', '-').toLowerCase();
+    const wanted = plain(lang ?? '');
+    if (wanted === '' || wanted.split('-')[0] === 'en') {
+        return undefined;
+    }
+    const codes = Object.keys(tinymce.util?.I18n?.getData?.() ?? {});
+    const code = codes.find((candidate) => plain(candidate) === wanted)
+        ?? codes.find((candidate) => plain(candidate).split('-')[0] === wanted.split('-')[0]);
+    if (code === undefined && !warned.has(wanted)) {
+        warned.add(wanted);
+        console.warn(`@byfareska/crud: no language pack of TinyMCE for "${lang}" - import it after TinyMCE, e.g. `
+            + `import 'tinymce-i18n/langs8/${wanted.split('-')[0]}.js'.`);
+    }
+
+    return code;
+}
+
+const warned = new Set();
