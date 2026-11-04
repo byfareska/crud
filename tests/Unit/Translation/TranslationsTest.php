@@ -29,8 +29,8 @@ final class TranslationsTest extends TestCase
     #[DataProvider('languages')]
     public function testTheTextsOfEnglish(string $locale): void
     {
-        $english = array_keys(self::messages('en'));
-        $own = array_keys(self::messages($locale));
+        $english = array_keys($this->messages('en'));
+        $own = array_keys($this->messages($locale));
 
         self::assertSame([], array_values(array_diff($english, $own)), 'Missing.');
         self::assertSame([], array_values(array_diff($own, $english)), 'Not in English.');
@@ -40,7 +40,7 @@ final class TranslationsTest extends TestCase
     #[RequiresPhpExtension('intl')]
     public function testMessagesOfIcu(string $locale): void
     {
-        foreach (self::messages($locale) as $key => $message) {
+        foreach ($this->messages($locale) as $key => $message) {
             self::assertInstanceOf(
                 MessageFormatter::class,
                 MessageFormatter::create(str_replace('_', '-', $locale), $message),
@@ -52,7 +52,7 @@ final class TranslationsTest extends TestCase
     /**
      * @return array<string, string> by the whole key: "file.field.upload"
      */
-    private static function messages(string $locale): array
+    private function messages(string $locale): array
     {
         $tree = Yaml::parseFile(dirname(__DIR__, 3) . '/translations/messages+intl-icu.' . $locale . '.yaml');
 

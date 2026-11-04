@@ -34,7 +34,8 @@ jobs:
       - uses: ramsey/composer-install@v3
         with:
           dependency-versions: ${{ matrix.dependencies }}
-      # The lowest versions of some dependencies (event-dispatcher-contracts 3.4) trigger deprecations of PHP itself.
+      # The lowest versions of some dependencies (event-dispatcher-contracts 3.4, league/mime-type-detection 1.x) trigger
+      # deprecations of PHP itself.
       - run: vendor/bin/phpunit ${{ matrix.dependencies == 'lowest' && '--do-not-fail-on-deprecation' || '' }}
 
   lint:

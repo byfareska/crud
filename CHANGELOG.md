@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Requires `symfony/form` and `symfony/twig-bridge` 8.1 or later: the form theme of the daisyui theme extends
+  `daisyui_5_layout.html.twig`, which Symfony has since 8.1.
 - "Save" of the add and edit forms stays on the record: it leads to the edit form (of a new record too, once it is
   added), on the tab that was in view. `byfareska_crud.form.save: return` (or `AsCrud(save: AfterSave::Return)` for a
   resource) leads back to the list as before.

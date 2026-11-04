@@ -36,9 +36,9 @@ final readonly class ShardedPathGenerator implements PathGenerator
     {
         $directories = [];
         for ($level = 0; $level < $this->levels; ++$level) {
-            $directories[] = self::random($this->width);
+            $directories[] = $this->random($this->width);
         }
-        $random = self::random($this->length);
+        $random = $this->random($this->length);
 
         // Without its extension: the kind it is gives one of its own.
         $slug = $this->keepName ? self::slug((string) preg_replace('/\.[^.\/]*$/', '', $name)) : '';
@@ -47,7 +47,7 @@ final readonly class ShardedPathGenerator implements PathGenerator
         return implode('/', [...$directories, $file]);
     }
 
-    private static function random(int $length): string
+    private function random(int $length): string
     {
         $random = '';
         for ($i = 0; $i < $length; ++$i) {

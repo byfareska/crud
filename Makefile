@@ -20,14 +20,22 @@ endif
 
 .PHONY: lint
 lint: ## Lint the bundle: optional dependencies (deptrac), code style, static analysis. make lint fix=1 fixes what it can first. ai=0 forces output for a human, ai=1 for an agent (detected by itself).
-	@if [ "$(fix)" = "1" ]; then ($(BUNDLE) vendor/bin/rector process $(RECTOR_FLAGS)) || true; fi
-	@if [ "$(fix)" = "1" ]; then ($(BUNDLE) vendor/bin/phpcbf $(PHPCS_FLAGS)) || true; fi
-	@($(BUNDLE) vendor/bin/deptrac $(DEPTRAC_FLAGS)) || true
-	@($(BUNDLE) vendor/bin/phpcs $(PHPCS_FLAGS)) || true
-	@($(BUNDLE) vendor/bin/phpstan analyse $(PHPSTAN_FLAGS)) || true
-	@if [ "$(fix)" != "1" ]; then ($(BUNDLE) vendor/bin/rector process --dry-run $(RECTOR_FLAGS)) || true; fi
-	@($(BUNDLE) composer validate --strict --no-check-publish) || true
-	@($(BUNDLE) composer audit) || true
+	@# Every tool runs, whatever the one before found; it fails at the end when any of them did, as CI does.
+	@failed=""; \
+	if [ "$(fix)" = "1" ]; then \
+		$(BUNDLE) vendor/bin/rector process $(RECTOR_FLAGS) || true; \
+		$(BUNDLE) vendor/bin/phpcbf $(PHPCS_FLAGS) || true; \
+	fi; \
+	$(BUNDLE) vendor/bin/deptrac $(DEPTRAC_FLAGS) || failed="$$failed deptrac"; \
+	$(BUNDLE) vendor/bin/phpcs $(PHPCS_FLAGS) || failed="$$failed phpcs"; \
+	$(BUNDLE) vendor/bin/phpstan analyse $(PHPSTAN_FLAGS) || failed="$$failed phpstan"; \
+	if [ "$(fix)" != "1" ]; then \
+		$(BUNDLE) vendor/bin/rector process --dry-run $(RECTOR_FLAGS) || failed="$$failed rector"; \
+	fi; \
+	$(BUNDLE) composer validate --strict --no-check-publish || failed="$$failed composer-validate"; \
+	$(BUNDLE) composer audit || failed="$$failed composer-audit"; \
+	if [ -n "$$failed" ]; then echo "lint failed:$$failed"; exit 1; fi; \
+	echo "lint passed"
 
 .PHONY: test
 test: ## The unit tests of the bundle
