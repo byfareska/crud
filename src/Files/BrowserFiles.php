@@ -62,7 +62,12 @@ final readonly class BrowserFiles
             return null;
         }
         try {
-            $url = $this->router->generate(FileRoutes::upload($scope), $profile->toQuery());
+            // Absolute: what the controller checks is the whole address of the request (UriSigner::checkRequest()).
+            $url = $this->router->generate(
+                FileRoutes::upload($scope),
+                $profile->toQuery(),
+                UrlGeneratorInterface::ABSOLUTE_URL,
+            );
         } catch (RouteNotFoundException) {
             return null;
         }

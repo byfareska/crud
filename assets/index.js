@@ -15,6 +15,7 @@ import Flash from './controllers/flash_controller.js';
 import FocusFirst from './controllers/focus_first_controller.js';
 import Indeterminate from './controllers/indeterminate_controller.js';
 import LiveSet from './controllers/live_set_controller.js';
+import RichText from './controllers/rich_text_controller.js';
 import Overlay from './controllers/overlay_controller.js';
 import ScrollTo from './controllers/scroll_to_controller.js';
 import ShowIf from './controllers/show_if_controller.js';
@@ -28,6 +29,9 @@ export { useBootstrap, openOverlay, closeOverlay, toggleOverlay, closeMenus, any
 export { installCsrfProtection };
 // Files of the panel: an upload to the address of a field, the window of the library - see lib/files.js.
 export { uploadFile, pickFiles } from './lib/files.js';
+// Editors of the fields of rich text by name: registerRichTextEditor('tinymce', tinymceEditor(tinymce)) - see
+// lib/rich_text.js and editors/tinymce.js.
+export { registerRichTextEditor, richTextEditor } from './lib/rich_text.js';
 // Functions of charts by name: "formatter(currency)" in the description of a chart - see lib/chart_formatters.js.
 export { registerChartFormatter } from './lib/chart_formatters.js';
 
@@ -52,6 +56,7 @@ export const controllers = {
     'indeterminate': Indeterminate,
     'live-set': LiveSet,
     'overlay': Overlay,
+    'rich-text': RichText,
     'scroll-to': ScrollTo,
     'show-if': ShowIf,
     'tabs': Tabs,

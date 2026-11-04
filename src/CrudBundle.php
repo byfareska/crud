@@ -103,6 +103,7 @@ use Byfareska\Crud\Files\FileUrls;
 use Byfareska\Crud\Files\Flysystem\FlysystemFileStorage;
 use Byfareska\Crud\Files\NoFileLibrary;
 use Byfareska\Crud\Files\PathGenerator;
+use Byfareska\Crud\Files\RichTextFiles;
 use Byfareska\Crud\Files\ShardedPathGenerator;
 use Byfareska\Crud\Files\StorageFileLibrary;
 use Byfareska\Crud\Files\StorageFileUrls;
@@ -498,6 +499,38 @@ final class CrudBundle extends AbstractBundle
                         ->thenInvalid('byfareska_crud.files is enabled without a storage: name one in "storages".')
                     ->end()
                 ->end()
+                ->arrayNode('rich_text')
+                    ->info('The fields of rich text (CrudRichTextType): the editor that draws them in the browser.')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('editor')
+                            ->info(
+                                'The name the editor is registered under in the browser (registerRichTextEditor() of '
+                                . '@byfareska/crud): "tinymce" for the bundle\'s adapter.',
+                            )
+                            ->defaultValue('tinymce')
+                            ->cannotBeEmpty()
+                        ->end()
+                        ->variableNode('options')
+                            ->info(
+                                'What the editor of every field is given, before the field\'s "editor_options": '
+                                . '{license_key: gpl, toolbar: ...} of TinyMCE.',
+                            )
+                            ->defaultValue([])
+                            ->validate()
+                                ->ifTrue(static fn (mixed $options): bool => !is_array($options))
+                                ->thenInvalid('byfareska_crud.rich_text.options is a map of options of the editor.')
+                            ->end()
+                        ->end()
+                        ->booleanNode('files')
+                            ->info(
+                                'Whether a field uploads images and files into its text unless it says itself: into '
+                                . 'the default storage, which needs public addresses (byfareska_crud.files).',
+                            )
+                            ->defaultFalse()
+                        ->end()
+                    ->end()
+                ->end()
                 ->arrayNode('scopes')
                     ->info('The panels (route scopes), each imported with `type: byfareska_crud, resource: <name>`.')
                     ->useAttributeAsKey('name')
@@ -792,6 +825,7 @@ final class CrudBundle extends AbstractBundle
      *         prune_after: string,
      *         max_size: int|string,
      *     },
+     *     rich_text: array{editor: string, options: array<string, mixed>, files: bool},
      * } $config
      */
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
@@ -979,6 +1013,10 @@ final class CrudBundle extends AbstractBundle
             $services->remove(DoctrineDayBucket::class);
         }
 
+        $parameters->set('byfareska_crud.rich_text', $config['rich_text']);
+        if ($config['rich_text']['files'] && !$config['files']['enabled']) {
+            throw new LogicException('byfareska_crud.rich_text.files uploads with byfareska_crud.files enabled only.');
+        }
         $parameters->set('byfareska_crud.files.enabled', $config['files']['enabled']);
         if ($config['files']['enabled']) {
             $this->loadFiles($config['files'], $container, $hasOrm);
@@ -1042,7 +1080,7 @@ final class CrudBundle extends AbstractBundle
                     service(FileRecordMappers::class),
                     inline_service(RecordFields::class)
                         ->factory(RecordFields::fromConfig(...))
-                        ->args([$config['entity_fields']]),
+                        ->args([$config['entity_fields'] ?? []]),
                 ]),
                 'storage' => $services->set($libraryId, StorageFileLibrary::class)
                     ->args([service($id), $name, service('cache.app')->nullOnInvalid()]),
@@ -1129,6 +1167,7 @@ final class CrudBundle extends AbstractBundle
         $services->set(FileValueNormalizer::class);
         $services->set(FilesExtension::class);
         $services->set(FileLibrary::class);
+        $services->set(RichTextFiles::class);
     }
 
     /**

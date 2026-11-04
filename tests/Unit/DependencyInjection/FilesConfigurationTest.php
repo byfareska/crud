@@ -7,6 +7,7 @@ namespace Byfareska\Crud\Tests\Unit\DependencyInjection;
 use Byfareska\Crud\Controller\FilesController;
 use Byfareska\Crud\CrudBundle;
 use Byfareska\Crud\Files\Component\FileLibrary;
+use Byfareska\Crud\Files\Doctrine\DoctrineFileLibrary;
 use Byfareska\Crud\Files\FileLibraries;
 use Byfareska\Crud\Files\FileValueNormalizer;
 use Byfareska\Crud\Files\Form\CrudFileType;
@@ -16,7 +17,12 @@ use Byfareska\Crud\Files\FileStorages;
 use Byfareska\Crud\Files\FileUploader;
 use Byfareska\Crud\Files\NoFileLibrary;
 use Byfareska\Crud\Files\PathGenerator;
+use Byfareska\Crud\Files\RichTextFiles;
+use Byfareska\Crud\Form\CrudRichTextType;
+use Byfareska\Crud\Form\RichTextTypeGuesser;
+use LogicException;
 use Byfareska\Crud\Files\StorageFileLibrary;
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use League\Flysystem\Filesystem;
 use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
 use PHPUnit\Framework\TestCase;
@@ -84,6 +90,60 @@ final class FilesConfigurationTest extends TestCase
         self::assertInstanceOf(NoFileLibrary::class, $libraries->of('private'));
     }
 
+    public function testWithDoctrineTheLibraryIsKeptInTheDatabase(): void
+    {
+        $builder = $this->load(
+            ['files' => ['storages' => ['public' => ['service' => 'app.storage']]]],
+            ['DoctrineBundle' => DoctrineBundle::class],
+        );
+
+        $library = $builder->getDefinition('byfareska_crud.files.library.public');
+        self::assertSame(DoctrineFileLibrary::class, $library->getClass());
+        $fields = $library->getArgument(5);
+        self::assertInstanceOf(Definition::class, $fields);
+        self::assertSame([[]], $fields->getArguments(), 'No names of its own: those of AbstractFileRecord.');
+    }
+
+    public function testRichTextIsThereWithoutFiles(): void
+    {
+        $builder = $this->load([]);
+
+        self::assertSame(
+            ['editor' => 'tinymce', 'options' => [], 'files' => false],
+            $builder->getParameter('byfareska_crud.rich_text'),
+        );
+        // A form type and a guesser of the bundle's: no files of their own, no packages but symfony/form.
+        foreach ([CrudRichTextType::class, RichTextTypeGuesser::class] as $id) {
+            self::assertTrue($builder->hasDefinition($id), $id);
+            self::assertFalse($builder->getDefinition($id)->hasTag('container.excluded'), $id);
+        }
+        self::assertFalse(
+            $builder->hasDefinition(RichTextFiles::class)
+                && !$builder->getDefinition(RichTextFiles::class)->hasTag('container.excluded'),
+        );
+    }
+
+    public function testRichTextUploadsWithFilesOnly(): void
+    {
+        $this->expectException(LogicException::class);
+
+        $this->load(['rich_text' => ['files' => true]]);
+    }
+
+    public function testRichTextOfFiles(): void
+    {
+        $builder = $this->load([
+            'files' => ['storages' => ['public' => ['service' => 'app.storage']]],
+            'rich_text' => ['options' => ['license_key' => 'gpl'], 'files' => true],
+        ]);
+
+        self::assertTrue($builder->hasDefinition(RichTextFiles::class));
+        self::assertEquals(
+            ['editor' => 'tinymce', 'options' => ['license_key' => 'gpl'], 'files' => true],
+            $builder->getParameter('byfareska_crud.rich_text'),
+        );
+    }
+
     public function testAStorageIsNotNamedAsAScheme(): void
     {
         $this->expectException(InvalidConfigurationException::class);
@@ -127,13 +187,14 @@ final class FilesConfigurationTest extends TestCase
 
     /**
      * @param array<string, mixed> $config of byfareska_crud
+     * @param array<string, class-string> $bundles of the kernel
      */
-    private function load(array $config): ContainerBuilder
+    private function load(array $config, array $bundles = []): ContainerBuilder
     {
         $builder = new ContainerBuilder();
         $builder->setParameter('kernel.environment', 'test');
         $builder->setParameter('kernel.debug', false);
-        $builder->setParameter('kernel.bundles', []);
+        $builder->setParameter('kernel.bundles', $bundles);
         $builder->setParameter('kernel.secret', 'test');
         $builder->setParameter('kernel.project_dir', sys_get_temp_dir());
         $extension = new CrudBundle()->getContainerExtension();

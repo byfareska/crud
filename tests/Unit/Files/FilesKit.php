@@ -16,9 +16,12 @@ use Byfareska\Crud\Files\Flysystem\FlysystemFileStorage;
 use Byfareska\Crud\Files\Form\CrudFileType;
 use Byfareska\Crud\Files\Form\FileTypeGuesser;
 use Byfareska\Crud\Files\NoFileLibrary;
+use Byfareska\Crud\Files\RichTextFiles;
 use Byfareska\Crud\Files\StorageFileLibrary;
 use Byfareska\Crud\Files\StorageFileUrls;
 use Byfareska\Crud\Files\SubmittedFiles;
+use Byfareska\Crud\Form\CrudRichTextType;
+use Byfareska\Crud\Form\RichTextTypeGuesser;
 use Byfareska\Crud\Page\CurrentCrud;
 use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Panel\Scopes;
@@ -65,6 +68,8 @@ final readonly class FilesKit
 
     public FileRecordMappers $mappers;
 
+    public RichTextFiles $richText;
+
     /**
      * @param list<string> $roles of the one acting
      */
@@ -96,7 +101,9 @@ final readonly class FilesKit
         $routes->add(FileRoutes::download('admin'), new Route('/admin/_files/download'));
         $router = new UrlGenerator($routes, new RequestContext());
         $requests = new RequestStack();
-        $requests->push(new Request(attributes: [Scope::ATTRIBUTE => 'admin']));
+        $request = Request::create('http://localhost/admin/products/new');
+        $request->attributes->set(Scope::ATTRIBUTE, 'admin');
+        $requests->push($request);
         $scopes = new Scopes(
             ['admin' => [
                 'label' => null,
@@ -135,9 +142,20 @@ final readonly class FilesKit
         );
         $this->submitted = new SubmittedFiles();
         $this->mappers = new FileRecordMappers();
+        $this->richText = new RichTextFiles(
+            $this->urls,
+            $this->storages,
+            $this->browser,
+            $this->libraries,
+            $this->submitted,
+            $requests,
+        );
     }
 
-    public function forms(): FormFactoryInterface
+    /**
+     * @param array{editor?: string, options?: array<string, mixed>, files?: bool} $richText byfareska_crud.rich_text
+     */
+    public function forms(array $richText = []): FormFactoryInterface
     {
         return Forms::createFormFactoryBuilder()
             // As in the application: the message of a refused file is the field's own.
@@ -151,7 +169,12 @@ final readonly class FilesKit
                 $this->submitted,
                 new IdentityTranslator(),
             ))
+            ->addType(new CrudRichTextType(
+                $richText + ['editor' => 'tinymce', 'options' => [], 'files' => false],
+                $this->richText,
+            ))
             ->addTypeGuesser(new FileTypeGuesser())
+            ->addTypeGuesser(new RichTextTypeGuesser())
             ->getFormFactory();
     }
 

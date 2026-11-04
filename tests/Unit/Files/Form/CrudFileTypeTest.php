@@ -11,6 +11,7 @@ use Byfareska\Crud\Tests\Unit\Fixtures\Files\Supplier;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * A field of files takes the files the server gave the browser - uploaded, picked in the library - and those the
@@ -139,7 +140,10 @@ final class CrudFileTypeTest extends TestCase
         self::assertSame('image/jpeg,image/png,image/gif,image/webp,image/avif', $view->vars['accept']);
         self::assertSame('[{"ref":"public://ab/a.png","meta":{"alt":"A"}}]', $view->vars['value']);
         self::assertIsString($view->vars['upload_url']);
-        self::assertTrue($this->files->uriSigner->check($view->vars['upload_url']));
+        self::assertTrue(
+            $this->files->uriSigner->checkRequest(Request::create($view->vars['upload_url'], 'POST')),
+            'What the controller checks: the whole address of the request.',
+        );
         self::assertIsString($view->vars['library_token']);
         self::assertSame([['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'], true], [
             $this->files->browser->libraryOf($view->vars['library_token'])[0]->accept ?? null,

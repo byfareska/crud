@@ -13,6 +13,7 @@ use Byfareska\Crud\Files\FileItem;
 use Byfareska\Crud\Files\FileReference;
 use Byfareska\Crud\Files\FileUsages;
 use Byfareska\Crud\Files\Form\CrudFileType;
+use Byfareska\Crud\Files\RichTextFiles;
 use Byfareska\Crud\Resource\CrudOperation;
 use Byfareska\Crud\Resource\CrudRegistry;
 use Byfareska\Crud\Resource\IdMapper;
@@ -87,7 +88,7 @@ final readonly class ReindexFilesCommand
     }
 
     /**
-     * The files of the fields of files of a form, by the path of the field.
+     * The files of the fields of files and of rich text of a form, by the path of the field.
      *
      * @param FormInterface<mixed> $form
      * @return array<string, list<FileReference>>
@@ -97,7 +98,11 @@ final readonly class ReindexFilesCommand
         $files = [];
         foreach ($form->all() as $field) {
             $binding = $field->getConfig()->getAttribute(CrudFileType::BINDING);
-            if ($binding instanceof FileBinding) {
+            $richText = $field->getConfig()->getAttribute(RichTextFiles::ATTRIBUTE);
+            if ($richText instanceof RichTextFiles) {
+                $html = $field->getData();
+                $files[CrudFileType::pathOf($field)] = $richText->references(is_string($html) ? $html : '');
+            } elseif ($binding instanceof FileBinding) {
                 $files[CrudFileType::pathOf($field)] = array_map(
                     static fn (FileItem $item): FileReference => $item->reference,
                     $binding->read($field->getData()),

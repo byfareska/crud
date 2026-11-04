@@ -8,6 +8,7 @@ use Byfareska\Crud\Files\Component\FileLibrary;
 use Byfareska\Crud\Files\FileRemover;
 use Byfareska\Crud\Files\NoFileUsages;
 use Byfareska\Crud\Files\UploadProfile;
+use Byfareska\Crud\Tests\Unit\Fixtures\Files\Article;
 use Byfareska\Crud\Tests\Unit\Fixtures\Files\Supplier;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -70,6 +71,41 @@ final class FileTemplatesTest extends TestCase
         self::assertStringContainsString('accept="image/jpeg,image/png,image/gif,image/webp,image/avif"', $html);
         // The file, and the one of the <template>.
         self::assertSame(2, substr_count($html, 'data-file-field-target="item"'));
+    }
+
+    #[DataProvider('themes')]
+    public function testTheFieldOfRichText(string $theme): void
+    {
+        $article = new Article();
+        $article->body = '<p>A <b>cat</b></p>';
+        $form = $this->files->forms(['options' => ['license_key' => 'gpl']])
+            ->createBuilder(FormType::class, $article, ['data_class' => Article::class])
+            ->add('body')
+            ->add('lead')
+            ->getForm()
+            ->createView();
+
+        $twig = $this->twig($theme)->createTemplate('{{ form_widget(form.body) }}|{{ form_widget(form.lead) }}');
+        [$body, $lead] = explode('|', $twig->render(['form' => $form]));
+
+        self::assertStringContainsString('data-controller="rich-text"', $body);
+        self::assertStringContainsString('data-live-ignore', $body);
+        self::assertStringContainsString('id="form_body_editor"', $body);
+        self::assertStringContainsString('data-rich-text-editor-value="tinymce"', $body);
+        self::assertStringContainsString(
+            'data-rich-text-options-value="' . htmlspecialchars('{"license_key":"gpl","toolbar":"bold italic"}') . '"',
+            $body,
+        );
+        self::assertStringContainsString('data-rich-text-upload-url-value="http://localhost/admin/_files?', $body);
+        self::assertStringContainsString('data-rich-text-image-token-value="/?', $body);
+        self::assertMatchesRegularExpression(
+            '#<textarea[^>]*name="form\[body\]"[^>]*data-rich-text-target="input"[^>]*>' . preg_quote(
+                htmlspecialchars('<p>A <b>cat</b></p>'),
+                '#',
+            ) . '</textarea>#',
+            $body,
+        );
+        self::assertStringNotContainsString('upload-url', $lead);
     }
 
     #[DataProvider('themes')]

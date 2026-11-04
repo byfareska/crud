@@ -180,3 +180,18 @@
         {%- endif -%}
     </li>
 {%- endblock crud_file_item -%}
+
+{# A field of rich text: its textarea, which the editor registered under "editor" draws over in the browser (the
+   rich-text controller); a render of the live form leaves it alone, the editor writes the HTML back into it. #}
+{%- block crud_rich_text_widget -%}
+    {%- set attr = attr|merge({'data-rich-text-target': 'input'}) -%}
+    <div id="{{ id }}_editor" data-live-ignore
+         data-controller="rich-text"
+         data-rich-text-editor-value="{{ editor }}"
+         data-rich-text-options-value="{{ editor_options|json_encode }}"
+         {%- if upload_url %} data-rich-text-upload-url-value="{{ upload_url }}"{% endif %}
+         {%- if library_token %} data-rich-text-token-value="{{ library_token }}"{% endif %}
+         {%- if image_token %} data-rich-text-image-token-value="{{ image_token }}"{% endif %}>
+        {{- block('textarea_widget') -}}
+    </div>
+{%- endblock crud_rich_text_widget -%}
