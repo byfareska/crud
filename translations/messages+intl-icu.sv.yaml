@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Radera ändå'
         previous: 'Föregående sida'
         next: 'Nästa sida'
+    size:
+        label: 'Storlek'
+        original: 'Original'
+        thumbnail: 'Miniatyr'
+        preview: 'Förhandsvisning'

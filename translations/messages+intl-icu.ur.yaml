@@ -308,3 +308,8 @@ file:
         remove_anyway: 'پھر بھی حذف کریں'
         previous: 'پچھلا صفحہ'
         next: 'اگلا صفحہ'
+    size:
+        label: 'سائز'
+        original: 'اصل'
+        thumbnail: 'تھمب نیل'
+        preview: 'پیش نظارہ'

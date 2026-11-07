@@ -24,7 +24,8 @@ final readonly class FilesExtension
     }
 
     /**
-     * @param string|null $variant reserved for the sizes of an image (thumbnails)
+     * @param string|null $variant a size of the image (byfareska_crud.files.images.variants: "thumbnail",
+     *     "preview"...); the image itself without that size
      */
     #[AsTwigFunction('crud_file_url')]
     public function url(string|Stringable|null $reference, ?string $variant = null): ?string

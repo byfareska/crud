@@ -308,3 +308,8 @@ file:
         remove_anyway: 'それでも削除'
         previous: '前のページ'
         next: '次のページ'
+    size:
+        label: 'サイズ'
+        original: '元の画像'
+        thumbnail: 'サムネイル'
+        preview: 'プレビュー'

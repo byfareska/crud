@@ -3,8 +3,8 @@
     of the application, before values.html.twig). Their value is their reference: an image as its thumbnail, another
     file by its name; a link only in the details - a cell of the list opens the preview.
 #}
-{% block type_image %}{% set url = crud_file_url(value) %}{% if url %}<img src="{{ url }}" alt="" loading="lazy" class="inline-block size-10 rounded object-cover">{% else %}{{ crud_icon('image') }}{% endif %}{% endblock %}
-{% block type_image_detail %}{% set url = crud_file_url(value) %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener"><img src="{{ url }}" alt="" loading="lazy" class="max-h-48 rounded-box object-contain"></a>{% else %}{{ crud_icon('image') }}{% endif %}{% endblock %}
-{% block type_image_entry %}{% set url = crud_file_url(value) %}{% if url %}<img src="{{ url }}" alt="" loading="lazy" class="me-1 inline-block size-10 rounded object-cover">{% endif %}{% endblock %}
+{% block type_image %}{% set url = crud_file_url(value, 'thumbnail') %}{% if url %}<img src="{{ url }}" alt="" loading="lazy" class="inline-block size-10 rounded object-cover">{% else %}{{ crud_icon('image') }}{% endif %}{% endblock %}
+{% block type_image_detail %}{% set url = crud_file_url(value) %}{% if url %}<a href="{{ url }}" target="_blank" rel="noopener"><img src="{{ crud_file_url(value, 'preview') ?? url }}" alt="" loading="lazy" class="max-h-48 rounded-box object-contain"></a>{% else %}{{ crud_icon('image') }}{% endif %}{% endblock %}
+{% block type_image_entry %}{% set url = crud_file_url(value, 'thumbnail') %}{% if url %}<img src="{{ url }}" alt="" loading="lazy" class="me-1 inline-block size-10 rounded object-cover">{% endif %}{% endblock %}
 {% block type_file %}<span class="inline-flex max-w-full items-center gap-1">{{ crud_icon('file-earmark') }}<span class="truncate">{{ value|split('/')|last }}</span></span>{% endblock %}
 {% block type_file_detail %}{% set url = crud_file_url(value) %}<span class="me-2 inline-flex max-w-full items-center gap-1">{{ crud_icon('file-earmark') }}{% if url %}<a class="link link-primary link-hover truncate" href="{{ url }}" target="_blank" rel="noopener">{{ crud_file(value).name }}</a>{% else %}<span class="truncate">{{ crud_file(value).name }}</span>{% endif %}</span>{% endblock %}

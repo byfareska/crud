@@ -54,6 +54,7 @@
         "deptrac/deptrac": "^4.7",
         "doctrine/doctrine-bundle": "^3.0",
         "doctrine/orm": "^3.5",
+        "intervention/image": "^4.4",
         "league/flysystem": "^3.29",
         "league/flysystem-memory": "^3.29",
         "phpstan/phpstan": "^2.3",
@@ -75,6 +76,7 @@
         "symfony/mime": "Uploading files (byfareska_crud.files): what a file is, read from its bytes",
         "league/flysystem": "Storages of uploaded files on a disk, FTP, SFTP, S3... (byfareska_crud.files)",
         "league/flysystem-bundle": "The Flysystem storages as services, to name in byfareska_crud.files.storages",
+        "intervention/image": "(4 or later, with ext-imagick - keeps the colour profile of a photo - or ext-gd) The sizes of uploaded images: thumbnails of the lists, sizes of rich text (byfareska_crud.files.images)",
         "symfony/reprise": "The assets of the panel built by Vite (byfareska_crud.assets: reprise, the default); or Webpack Encore, AssetMapper's importmap"
     },
     "autoload": {

@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Tetap hapus'
         previous: 'Halaman sebelumnya'
         next: 'Halaman berikutnya'
+    size:
+        label: 'Ukuran'
+        original: 'Asli'
+        thumbnail: 'Gambar mini'
+        preview: 'Pratinjau'

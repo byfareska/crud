@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Files;
 
+use Byfareska\Crud\Files\Image\ImageVariants;
+use Byfareska\Crud\Files\Image\VariantStrategy;
 use Byfareska\Crud\Panel\Scope;
 use DateTimeImmutable;
 use Psr\Container\ContainerInterface;
@@ -16,6 +18,10 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * The addresses of files by the "url" of their storage (UrlMode): public, temporary (the storage's), signed (the
  * panel's download address) or none. A storage with "urls" has the addresses of that service instead. A file of
  * another site is its own address.
+ *
+ * A size of an image (byfareska_crud.files.images) is the address of its file in the storage when the storage makes
+ * its sizes on upload (VariantStrategy::Eager), the panel's address that makes it when it is first asked for (Lazy),
+ * the signed download of it for a storage of signed addresses; an image without that size is its own address.
  */
 final readonly class StorageFileUrls implements FileUrls
 {
@@ -23,6 +29,7 @@ final readonly class StorageFileUrls implements FileUrls
      * @param ContainerInterface $own the FileUrls of the storages that name one ("urls"), by name
      * @param string|null $scope the panel whose download address a signed file gets outside of a panel; null = only
      *     on the pages of a panel
+     * @param ImageVariants|null $variants the sizes of images; null = none (byfareska_crud.files.images disabled)
      */
     public function __construct(
         private FileStorages $storages,
@@ -31,6 +38,7 @@ final readonly class StorageFileUrls implements FileUrls
         private UriSigner $signer,
         private RequestStack $requestStack,
         private ?string $scope = null,
+        private ?ImageVariants $variants = null,
     ) {
     }
 
@@ -47,6 +55,9 @@ final readonly class StorageFileUrls implements FileUrls
         }
 
         $settings = $this->storages->settings($reference->storage);
+        if ($variant !== null && $this->variants?->applies($reference, $variant) === true) {
+            return $this->variantUrl($this->variants, $reference, $variant, $settings);
+        }
 
         return match ($settings->url) {
             UrlMode::Public => $settings->publicUrl !== null
@@ -78,8 +89,12 @@ final readonly class StorageFileUrls implements FileUrls
             $base = $this->baseOf($name, $settings);
             if ($base !== null && $base !== '' && str_starts_with($url, $base)) {
                 $path = rawurldecode(substr($url, strlen($base)));
+                $reference = FileReference::tryParse($name . '://' . strtok($path, '?#'));
 
-                return FileReference::tryParse($name . '://' . strtok($path, '?#'));
+                // The address of a size is of the image.
+                return $reference instanceof FileReference && $this->variants instanceof ImageVariants
+                    ? $this->variants->originalOf($reference)
+                    : $reference;
             }
         }
 
@@ -90,6 +105,55 @@ final readonly class StorageFileUrls implements FileUrls
     public static function encodePath(string $path): string
     {
         return implode('/', array_map(rawurlencode(...), explode('/', $path)));
+    }
+
+    /**
+     * The address of a size of an image: of its file, of the address of the panel that makes it, or of its download.
+     */
+    private function variantUrl(
+        ImageVariants $variants,
+        FileReference $reference,
+        string $variant,
+        StorageSettings $settings,
+    ): ?string {
+        return match (true) {
+            $settings->url === UrlMode::None => null,
+            $settings->url === UrlMode::Signed => $this->signed($reference, $settings->ttl, $variant),
+            $settings->variants === VariantStrategy::Lazy => $this->lazy($reference, $variant)
+                // Outside of a panel there is no address that makes it: the image itself.
+                ?? $this->url($reference),
+            default => $this->url($variants->referenceOf($reference, $variant)),
+        };
+    }
+
+    /**
+     * The panel's address that makes a size and sends the browser to its file: signed without an end, so it stays the
+     * same and the browser keeps what it fetched.
+     */
+    private function lazy(FileReference $reference, string $variant): ?string
+    {
+        $scope = $this->currentScope();
+        if ($scope === null) {
+            return null;
+        }
+        try {
+            $url = $this->router->generate(
+                FileRoutes::variant($scope),
+                ['ref' => (string) $reference, 'variant' => $variant],
+                UrlGeneratorInterface::ABSOLUTE_URL,
+            );
+        } catch (RouteNotFoundException) {
+            return null;
+        }
+
+        return $this->signer->sign($url);
+    }
+
+    private function currentScope(): ?string
+    {
+        $scope = $this->requestStack->getMainRequest()?->attributes->get(Scope::ATTRIBUTE);
+
+        return is_string($scope) && $scope !== '' ? $scope : $this->scope;
     }
 
     /**
@@ -106,17 +170,16 @@ final readonly class StorageFileUrls implements FileUrls
         return $probe !== null && str_ends_with($probe, 'x') ? substr($probe, 0, -1) : null;
     }
 
-    private function signed(FileReference $reference, int $ttl): ?string
+    private function signed(FileReference $reference, int $ttl, ?string $variant = null): ?string
     {
-        $scope = $this->requestStack->getMainRequest()?->attributes->get(Scope::ATTRIBUTE);
-        $scope = is_string($scope) && $scope !== '' ? $scope : $this->scope;
+        $scope = $this->currentScope();
         if ($scope === null) {
             return null;
         }
         try {
             $url = $this->router->generate(
                 FileRoutes::download($scope),
-                ['ref' => (string) $reference],
+                ['ref' => (string) $reference] + ($variant !== null ? ['variant' => $variant] : []),
                 UrlGeneratorInterface::ABSOLUTE_URL,
             );
         } catch (RouteNotFoundException) {

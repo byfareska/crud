@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Toch verwijderen'
         previous: 'Vorige pagina'
         next: 'Volgende pagina'
+    size:
+        label: 'Formaat'
+        original: 'Origineel'
+        thumbnail: 'Miniatuur'
+        preview: 'Voorbeeld'

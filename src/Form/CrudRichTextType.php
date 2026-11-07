@@ -28,8 +28,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  *     ]);
  *
  * Uploading images and files into the text is off until "files" says (or byfareska_crud.rich_text.files): true, or
- * where to - storage, accept, max_size, browse - of a storage with public addresses, which the HTML keeps. The files of
- * a text are told to the index of usages once the record is saved, whatever "files" says.
+ * where to - storage, accept, max_size, browse - of a storage with public addresses, which the HTML keeps; "sizes" and
+ * "size": the sizes of images chosen in the editor and the one an image is put in with (byfareska_crud.files.images).
+ * The files of a text are told to the index of usages once the record is saved, whatever "files" says.
  *
  * The HTML is the browser's: what is shown elsewhere is sanitized - "sanitize_html" of symfony/html-sanitizer, or the
  * template that prints it.
@@ -75,8 +76,14 @@ final class CrudRichTextType extends AbstractType
         $view->vars['upload_url'] = null;
         $view->vars['library_token'] = null;
         $view->vars['image_token'] = null;
+        $view->vars['sizes'] = null;
         if ($options['files'] !== false && $this->files instanceof RichTextFiles) {
-            $view->vars = $this->files->view($this->files->profile($options['files'])) + $view->vars;
+            $html = $form->getViewData();
+            $view->vars = $this->files->view(
+                $this->files->profile($options['files']),
+                $options['files'],
+                is_string($html) ? $html : '',
+            ) + $view->vars;
         }
     }
 
@@ -107,6 +114,7 @@ final class CrudRichTextType extends AbstractType
             $files = $files === true ? [] : $files;
             // Checked here, where the form is built: a storage without public addresses is a mistake of the code.
             $this->files->profile($files);
+            $this->files->sizesOf($files);
 
             return $files;
         });

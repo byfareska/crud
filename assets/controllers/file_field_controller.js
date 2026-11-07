@@ -162,7 +162,8 @@ export default class extends Controller {
         const name = item.querySelector('[data-role="name"]');
         const shown = Boolean(file.image && file.url);
         if (image) {
-            image.src = shown ? file.url : '';
+            // The size "preview" of the image when the panel makes sizes (byfareska_crud.files.images).
+            image.src = shown ? (file.preview ?? file.url) : '';
             image.hidden = !shown;
         }
         if (icon) {

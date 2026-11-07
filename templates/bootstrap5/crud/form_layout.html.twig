@@ -46,7 +46,7 @@
     <li class="{{ gallery ? 'col' : '' }}" data-file-field-target="item" data-ref="{{ file.ref|default('') }}" data-sig="{{ file.sig|default('') }}"{% if multiple and not disabled %} draggable="true"{% endif %}>
         <div class="position-relative {{ gallery ? 'd-flex flex-column gap-1' : 'd-flex align-items-center gap-3 rounded bg-body-tertiary p-2' }}">
             <a data-role="link" href="{{ file.url|default('#') }}" target="_blank" rel="noopener" class="d-flex align-items-center justify-content-center overflow-hidden rounded bg-body-secondary {{ gallery ? 'ratio ratio-1x1' : 'flex-shrink-0' }}"{% if not gallery %} style="width: 2.5rem; height: 2.5rem"{% endif %}>
-                <img data-role="image" src="{{ shown ? file.url : '' }}" alt="" loading="lazy" class="w-100 h-100 object-fit-cover"{% if not shown %} hidden{% endif %}>
+                <img data-role="image" src="{{ shown ? file.preview|default(file.url) : '' }}" alt="" loading="lazy" class="w-100 h-100 object-fit-cover"{% if not shown %} hidden{% endif %}>
                 <span data-role="icon" class="d-flex align-items-center justify-content-center fs-4 text-body-secondary"{% if shown %} hidden{% endif %}>{{ crud_icon('file-earmark') }}</span>
             </a>
             <span data-role="name" class="text-truncate small flex-grow-1" title="{{ file.name|default('') }}">{{ file.name|default('') }}</span>
@@ -72,7 +72,8 @@
          data-rich-text-options-value="{{ editor_options|json_encode }}"
          {%- if upload_url %} data-rich-text-upload-url-value="{{ upload_url }}"{% endif %}
          {%- if library_token %} data-rich-text-token-value="{{ library_token }}"{% endif %}
-         {%- if image_token %} data-rich-text-image-token-value="{{ image_token }}"{% endif %}>
+         {%- if image_token %} data-rich-text-image-token-value="{{ image_token }}"{% endif %}
+         {%- if sizes %} data-rich-text-sizes-value="{{ sizes|json_encode }}"{% endif %}>
         {{- block('textarea_widget') -}}
     </div>
 {%- endblock crud_rich_text_widget -%}

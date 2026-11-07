@@ -1515,7 +1515,8 @@ Each storage says:
   - `none`.
 - `offload`: a signed file sent by the web server, not PHP: `{ header: X-Accel-Redirect, prefix: /_protected/ }` of
   nginx, or `X-Sendfile`.
-- `role`, `upload` (false: only picked), `library`, `urls` (a `FileUrls` of your own: a CDN with its own signatures).
+- `role`, `upload` (false: only picked), `library`, `urls` (a `FileUrls` of your own: a CDN with its own signatures),
+  `variants` (when its images get their sizes: Sizes of images).
 
 A signed address is a pass to the file while it works: whoever has it opens it, as long as they may use the storage
 (`role`).
@@ -1549,13 +1550,94 @@ bin/console byfareska:crud:files:reindex                  # the index again from
 The index knows what is saved through the panel. Run `reindex` after records were changed by code of yours (an import,
 an API), or tell `FileUsages` yourself.
 
+### Sizes of images
+
+Thumbnails of the lists and sizes of images for rich text, off until `files.images` is enabled. They are made by
+intervention/image 4 with Imagick or GD:
+
+```sh
+composer require intervention/image
+```
+
+```yaml
+byfareska_crud:
+    files:
+        images:
+            resizer: auto                   # imagick, gd, or the id of an ImageResizer of your own (libvips, an API)
+            variants:
+                large: { width: 1600, format: webp, label: app.size.large }
+                medium: { width: 800 }
+                # thumbnail (96 x 96, cover) and preview (480 x 480) are the bundle's: a size of that name changes them
+        storages:
+            public: { service: app.public_storage, public_url: /uploads }                   # variants: eager
+            private: { service: app.private_storage, url: signed, variants: lazy }
+```
+
+`auto` (the default) takes Imagick when the PHP that resizes has it, else GD - decided there, not when the container
+is built. Prefer Imagick: it keeps the colour profile of a photo (ICC: Display P3 of a phone, Adobe RGB), turns CMYK
+into RGB, resamples more sharply and reads HEIC. GD drops the profile, so such a photo comes out paler; it is there on
+almost every PHP, Imagick is installed with `pecl install imagick` and ImageMagick (whose memory is outside of PHP's
+`memory_limit`: limit it in its `policy.xml`).
+
+A size is a box (`width`, `height` or both) and how the image fits it: `inside` (the default: within the box, its
+proportions kept) or `cover` (fills the box, what goes beyond is cut off). An image is never made bigger. `format`
+(`jpg`, `png`, `gif`, `webp`, `avif`) writes the size in another format - without it, the format of the image, or
+JPEG for one no browser shows (HEIC, TIFF, BMP), `quality` (1-100) is that of a lossy format
+(default `files.images.quality`: 82). A size is turned the way the camera held the photo and keeps none of its
+metadata: no place it was taken at. An animated GIF is its first frame.
+
+A size is a file of the storage of its image: `public://ab/cd/x7k2.jpg` has `public://_variants/thumbnail/ab/cd/x7k2.jpg`
+and `public://_variants/large/ab/cd/x7k2.jpg.webp` (`files.images.directory`). When it is made is the `variants` of
+the storage:
+
+- `eager` (the default): every size when the image is uploaded. Its address is that of its file, so it works with any
+  storage and web server, on the pages of the site too. Images uploaded before need `variants:generate`.
+- `lazy`: a size when it is first asked for. Its address is one of the panel, which makes it and sends the browser on
+  to its file (the browser keeps that for a week). Nothing is made that nobody looks at, but every such image goes
+  through PHP once per browser - and only for those the panel is for: outside of a panel the address of a size is the
+  image itself. A storage of `url: signed` makes them so whatever it says: its download makes the size it is asked for.
+- `none`: no sizes. The default of a storage with `urls`, `url: none` or `upload: false`.
+
+The lists show `thumbnail`, the details, the field of files and the window of the library `preview`; in Twig,
+`crud_file_url(ref, 'large')`. An image without that size - SVG, a file of another site, a storage without sizes, an
+image of more than `files.images.max_pixels` (40 million: decoding takes about 4 bytes of memory a pixel), one the
+resizer cannot read - is the image itself. A size that cannot be made is logged.
+
+```sh
+bin/console byfareska:crud:files:variants:generate                    # the sizes of the images there are (--storage, --variant)
+bin/console byfareska:crud:files:variants:generate --variant=large --overwrite   # again, after the box of "large" changed
+bin/console byfareska:crud:files:variants:clear                       # counts the files of sizes (-v lists them)
+bin/console byfareska:crud:files:variants:clear --unconfigured --force # deletes those of sizes no longer configured
+```
+
+The sizes of an image are deleted with it (the window of the library, `files:prune`). The address of a size stays the
+same when it is made again: `--overwrite` changes it in place, where `clear` and a lazy storage would make it again
+when asked for.
+
+**Rich text.** A field of rich text offers the sizes of the images of a storage that makes them on upload: a chosen
+image has a menu "Size" in the editor, with the image itself and the sizes. The field says which sizes and the one an
+image is put in with:
+
+```php
+$builder->add('description', CrudRichTextType::class, [
+    'files' => ['accept' => ['images'], 'sizes' => ['large', 'medium'], 'size' => 'large'],
+]);
+```
+
+Without `sizes` it offers every size but `thumbnail` and `preview`; without `size` an image is put in as it is. A
+size is called by its `label`, else by the translation of `file.size.<name>`, else by its name. The HTML keeps the
+address of the size: the index of usages reads it back as the image, so `files:prune` keeps the image.
+
+`ImageResizer` is the interface of another resizer; `Byfareska\Crud\Files\Testing\ImageResizerContractTestCase`
+tests one.
+
 ## Tests
 
 ```sh
 composer install && vendor/bin/phpunit
 ```
 
-The same and the linters through `make` (on the PHP of the host, with intl and pdo_sqlite, as CI does; `RUN=...`
+The same and the linters through `make` (on the PHP of the host, with intl, pdo_sqlite, gd and imagick, as CI does; `RUN=...`
 runs them in a container):
 
 ```sh

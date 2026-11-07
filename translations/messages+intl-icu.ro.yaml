@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Ștergeți oricum'
         previous: 'Pagina anterioară'
         next: 'Pagina următoare'
+    size:
+        label: 'Dimensiune'
+        original: 'Original'
+        thumbnail: 'Miniatură'
+        preview: 'Previzualizare'

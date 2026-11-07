@@ -308,3 +308,8 @@ file:
         remove_anyway: 'به هر حال حذف شود'
         previous: 'صفحهٔ قبل'
         next: 'صفحهٔ بعد'
+    size:
+        label: 'اندازه'
+        original: 'اصلی'
+        thumbnail: 'تصویر کوچک'
+        preview: 'پیش‌نمایش'

@@ -13,7 +13,8 @@ use Symfony\Component\Mime\MimeTypes;
  * The library of a storage without a table: its files as the storage lists them (byfareska_crud.files.library:
  * storage). Nothing to set up, but it knows only what the storage does - no name a file was uploaded under (found by
  * its path: ShardedPathGenerator's keepName puts the name there), no size of an image - and listing a storage on FTP
- * asks the server for every directory: the list is kept in the cache for a while ($ttl seconds).
+ * asks the server for every directory: the list is kept in the cache for a while ($ttl seconds). The sizes of images
+ * are not its files ($exclude).
  */
 final readonly class StorageFileLibrary implements FileLibrary
 {
@@ -22,6 +23,7 @@ final readonly class StorageFileLibrary implements FileLibrary
         private string $name,
         private ?CacheItemPoolInterface $cache = null,
         private int $ttl = 60,
+        private ?string $exclude = null,
     ) {
     }
 
@@ -87,7 +89,12 @@ final readonly class StorageFileLibrary implements FileLibrary
             ));
         }
 
-        $entries = [...$this->storage->list()];
+        $entries = [];
+        foreach ($this->storage->list() as $entry) {
+            if ($this->exclude === null || !str_starts_with($entry->path, $this->exclude . '/')) {
+                $entries[] = $entry;
+            }
+        }
         usort(
             $entries,
             static fn (StorageEntry $a, StorageEntry $b): int => ($b->lastModified?->getTimestamp() ?? 0)

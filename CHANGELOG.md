@@ -27,6 +27,19 @@
 - A file taken into a field (uploaded or picked) gets its name without the extension, made plain by Symfony's slugger,
   as its alternative text until one is typed (`alt` of the JSON of a file).
 - `uploadFile()` and `pickFiles()` of `@byfareska/crud`: an upload to the address of a field, the window of the library.
+- Sizes of images, off until `byfareska_crud.files.images` is enabled (README: Sizes of images): named sizes
+  (`thumbnail` and `preview` of the bundle, more of the application; `inside` or `cover`, a format, a quality) made by
+  intervention/image 4 (`resizer: auto` - Imagick when PHP has it, keeping the colour profile, else GD) or an
+  `ImageResizer` of your own (`Files\Testing\ImageResizerContractTestCase`); an image no browser shows (HEIC, TIFF)
+  has its sizes in JPEG;
+  kept in the storage of the image under `_variants/<size>/<path>`, made on upload or when first asked for
+  (`storages.<name>.variants: eager | lazy | none`), deleted with the image;
+  `byfareska:crud:files:variants:generate` and `byfareska:crud:files:variants:clear`. The lists show thumbnails, the
+  details, the field and the window of the library `preview` - the image itself without sizes. `crud_file_url(ref,
+  size)` in Twig. A field of rich text offers the sizes of an image in the editor (`files: {sizes, size}`), and the
+  address of a size is read back as the image for the index of usages.
+- The JSON of a file has `preview` and `sizes`; the editor of rich text gets `addressOf(file)` and `sizes`
+  (`lib/rich_text.js`).
 
 ## v0.1.0
 

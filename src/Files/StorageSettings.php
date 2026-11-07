@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Files;
 
+use Byfareska\Crud\Files\Image\VariantStrategy;
+
 /**
  * What byfareska_crud.files.storages.<name> says of a storage, besides the service of its bytes.
  */
@@ -16,6 +18,7 @@ final readonly class StorageSettings
      * @param string|null $role who may upload to it and pick its files; null = whoever the panel is for
      * @param bool $upload whether files may be uploaded to it; false = only picked (an old directory, a DAM)
      * @param FileOffload|null $offload the web server sends its signed files in place of PHP; null = PHP does
+     * @param VariantStrategy $variants when its images get their sizes (byfareska_crud.files.images)
      */
     public function __construct(
         public string $name,
@@ -25,6 +28,7 @@ final readonly class StorageSettings
         public ?string $role = null,
         public bool $upload = true,
         public ?FileOffload $offload = null,
+        public VariantStrategy $variants = VariantStrategy::None,
     ) {
     }
 
@@ -36,6 +40,7 @@ final readonly class StorageSettings
      *     role?: string|null,
      *     upload?: bool,
      *     offload?: array{header: string, prefix: string}|null,
+     *     variants?: string,
      * } $config
      */
     public static function fromConfig(string $name, array $config): self
@@ -50,6 +55,7 @@ final readonly class StorageSettings
             isset($config['offload'])
                 ? new FileOffload(OffloadHeader::from($config['offload']['header']), $config['offload']['prefix'])
                 : null,
+            VariantStrategy::from($config['variants'] ?? VariantStrategy::None->value),
         );
     }
 }

@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Vẫn xóa'
         previous: 'Trang trước'
         next: 'Trang sau'
+    size:
+        label: 'Kích thước'
+        original: 'Gốc'
+        thumbnail: 'Hình thu nhỏ'
+        preview: 'Xem trước'

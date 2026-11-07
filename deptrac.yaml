@@ -1,4 +1,5 @@
-# The optional dependencies of the bundle (Doctrine, Symfony Security, Symfony UX Autocomplete, Flysystem) are used only by
+# The optional dependencies of the bundle (Doctrine, Symfony Security, Symfony UX Autocomplete, Flysystem,
+# intervention/image) are used only by
 # their integrations, which CrudBundle registers when the package is there. The rest of the bundle must work without
 # them.
 deptrac:
@@ -30,6 +31,12 @@ deptrac:
                 -
                     type: classNameRegex
                     value: '#^League\\Flysystem\\#'
+        -
+            name: InterventionImage
+            collectors:
+                -
+                    type: classNameRegex
+                    value: '#^Intervention\\Image\\#'
         -
             name: DoctrineIntegration
             collectors:
@@ -64,6 +71,12 @@ deptrac:
                     type: directory
                     value: src/Files/Flysystem/.*
         -
+            name: InterventionIntegration
+            collectors:
+                -
+                    type: directory
+                    value: src/Files/Intervention/.*
+        -
             # Registers the integrations when their packages are there.
             name: Wiring
             collectors:
@@ -94,6 +107,9 @@ deptrac:
                             value: FlysystemIntegration
                         -
                             type: layer
+                            value: InterventionIntegration
+                        -
+                            type: layer
                             value: Wiring
 
     ruleset:
@@ -114,13 +130,18 @@ deptrac:
         FlysystemIntegration:
             - Bundle
             - Flysystem
+        InterventionIntegration:
+            - Bundle
+            - InterventionImage
         Wiring:
             - Bundle
             - DoctrineIntegration
             - SecurityIntegration
             - AutocompleteIntegration
             - FlysystemIntegration
+            - InterventionIntegration
             - Doctrine
             - SymfonySecurity
             - UxAutocomplete
             - Flysystem
+            - InterventionImage

@@ -23,6 +23,8 @@ final readonly class FileStorages
      *     ttl?: int,
      *     role?: string|null,
      *     upload?: bool,
+     *     offload?: array{header: string, prefix: string}|null,
+     *     variants?: string,
      * }> $settings
      * @param ContainerInterface $storages the FileStorage of each, by name
      * @param string|null $default where a field that names none uploads; null = the first

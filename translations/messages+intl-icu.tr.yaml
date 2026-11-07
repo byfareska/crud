@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Yine de sil'
         previous: 'Önceki sayfa'
         next: 'Sonraki sayfa'
+    size:
+        label: 'Boyut'
+        original: 'Orijinal'
+        thumbnail: 'Küçük resim'
+        preview: 'Önizleme'
