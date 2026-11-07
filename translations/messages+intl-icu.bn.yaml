@@ -308,3 +308,8 @@ file:
         remove_anyway: 'তবুও মুছুন'
         previous: 'আগের পৃষ্ঠা'
         next: 'পরের পৃষ্ঠা'
+    size:
+        label: 'আকার'
+        original: 'মূল'
+        thumbnail: 'থাম্বনেইল'
+        preview: 'প্রিভিউ'

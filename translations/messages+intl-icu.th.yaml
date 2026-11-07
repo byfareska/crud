@@ -308,3 +308,8 @@ file:
         remove_anyway: 'ลบอยู่ดี'
         previous: 'หน้าก่อนหน้า'
         next: 'หน้าถัดไป'
+    size:
+        label: 'ขนาด'
+        original: 'ต้นฉบับ'
+        thumbnail: 'ภาพขนาดย่อ'
+        preview: 'ตัวอย่าง'

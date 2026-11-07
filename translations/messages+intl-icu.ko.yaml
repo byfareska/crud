@@ -308,3 +308,8 @@ file:
         remove_anyway: '그래도 삭제'
         previous: '이전 페이지'
         next: '다음 페이지'
+    size:
+        label: '크기'
+        original: '원본'
+        thumbnail: '썸네일'
+        preview: '미리보기'

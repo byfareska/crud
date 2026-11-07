@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Все одно видалити'
         previous: 'Попередня сторінка'
         next: 'Наступна сторінка'
+    size:
+        label: 'Розмір'
+        original: 'Оригінал'
+        thumbnail: 'Мініатюра'
+        preview: 'Попередній перегляд'

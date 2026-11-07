@@ -27,7 +27,8 @@ use Symfony\Component\Routing\RouteCollection;
  * The CRUD pages of the #[AsCrud] resources of the scope and, when the scope has one, its dashboard at "/" (with the
  * endpoints its grid saves through, under "/_dashboard"), and the endpoint of the live components drawn on them
  * ("/_crud/{component}/{action}"), so live requests are in the firewall of the panel too; with byfareska_crud.files,
- * the upload and the download of files ("/_files", "/_files/download"). Every route gets the default
+ * the upload and the download of files and the sizes of images made when first asked for ("/_files",
+ * "/_files/download", "/_files/variant"). Every route gets the default
  * "_scope", which the menu, the palette and the layout go by, and which access_control can go by: `attributes: {
  * _scope: admin }` - besides the role of the scope, which the bundle checks itself on every way to its resources.
  */
@@ -94,6 +95,11 @@ final class CrudRouteLoader extends Loader
             $routes->add(FileRoutes::download($scope->name), new Route(
                 '/_files/download',
                 ['_controller' => FilesController::class . '::download'],
+                methods: ['GET'],
+            ));
+            $routes->add(FileRoutes::variant($scope->name), new Route(
+                '/_files/variant',
+                ['_controller' => FilesController::class . '::variant'],
                 methods: ['GET'],
             ));
         }

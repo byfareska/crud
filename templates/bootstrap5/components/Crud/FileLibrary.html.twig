@@ -48,7 +48,7 @@
                         <button type="button" class="btn border border-2 w-100 p-1 text-start text-body" aria-pressed="false" data-action="file-library#toggle" title="{{ file.name }}">
                             <span class="ratio ratio-1x1 d-block overflow-hidden rounded bg-body-secondary">
                                 {% if file.image and file.url %}
-                                    <img src="{{ file.url }}" alt="" loading="lazy" class="w-100 h-100 object-fit-cover">
+                                    <img src="{{ file.preview|default(file.url) }}" alt="" loading="lazy" class="w-100 h-100 object-fit-cover">
                                 {% else %}
                                     <span class="d-flex align-items-center justify-content-center fs-2 text-body-secondary">{{ crud_icon('file-earmark') }}</span>
                                 {% endif %}

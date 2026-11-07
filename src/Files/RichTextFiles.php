@@ -5,15 +5,22 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Files;
 
 use Byfareska\Crud\Files\Form\CrudFileType;
+use Byfareska\Crud\Files\Image\ImageVariant;
+use Byfareska\Crud\Files\Image\ImageVariants;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * The files of fields of rich text (CrudRichTextType), with byfareska_crud.files enabled: the HTML keeps the addresses
  * of its images and links, not references - so only storages with lasting public addresses are uploaded to, and the
  * files a text uses are read back from its addresses (FileUrls::referenceOf()) for the index of usages.
+ *
+ * With the sizes of images (byfareska_crud.files.images), an image of the text is shown in a size chosen in the editor
+ * ("sizes" of the field: the names offered, default every size but the bundle's own; "size": the one an image is put
+ * in with, default the image itself) - of a storage that makes them on upload, whose addresses last.
  */
 final readonly class RichTextFiles
 {
@@ -30,6 +37,8 @@ final readonly class RichTextFiles
         private FileLibraries $libraries,
         private SubmittedFiles $submittedFiles,
         private RequestStack $requestStack,
+        private ?ImageVariants $variants = null,
+        private ?TranslatorInterface $translator = null,
     ) {
     }
 
@@ -111,12 +120,134 @@ final readonly class RichTextFiles
     }
 
     /**
-     * What the browser of a field is given: where it uploads, and the tokens of the window of the library - of every
-     * file the field takes, and of its images only (what an image of the editor is picked from); null = none.
+     * The sizes a field offers ("sizes" of its "files"), and the one an image is put in with ("size"; null = the image
+     * itself).
      *
+     * @param array<string, mixed> $files
+     * @return array{list<string>, string|null}
+     *
+     * @throws InvalidOptionsException a size there is not
+     */
+    public function sizesOf(array $files): array
+    {
+        $variants = $this->variants;
+        $given = $files['sizes'] ?? null;
+        $initial = $files['size'] ?? null;
+        if ($given !== null && (!is_array($given) || !array_is_list($given))) {
+            throw new InvalidOptionsException('The "sizes" of the files of a field of rich text is a list of names.');
+        }
+        $names = $given === null ? null : array_values(array_filter($given, is_string(...)));
+        if ($given !== null && count($names ?? []) !== count($given)) {
+            throw new InvalidOptionsException('The "sizes" of the files of a field of rich text is a list of names.');
+        }
+        if ($initial !== null && !is_string($initial)) {
+            throw new InvalidOptionsException('The "size" of the files of a field of rich text is the name of one.');
+        }
+        if (!$variants instanceof ImageVariants) {
+            if ($names !== null && $names !== [] || $initial !== null) {
+                throw new InvalidOptionsException(
+                    'A field of rich text offers sizes of images with byfareska_crud.files.images enabled only.',
+                );
+            }
+
+            return [[], null];
+        }
+        $names ??= array_values(array_filter(
+            array_keys($variants->all()),
+            static fn (string $name): bool => !in_array($name, [ImageVariant::THUMBNAIL, ImageVariant::PREVIEW], true),
+        ));
+        foreach ([...$names, ...($initial !== null ? [$initial] : [])] as $name) {
+            if (!$variants->has($name)) {
+                throw new InvalidOptionsException(sprintf(
+                    'A field of rich text names no size of images "%s" (byfareska_crud.files.images.variants has %s).',
+                    $name,
+                    implode(', ', array_keys($variants->all())),
+                ));
+            }
+        }
+        if ($initial !== null && !in_array($initial, $names, true)) {
+            $names[] = $initial;
+        }
+
+        return [$names, $initial];
+    }
+
+    /**
+     * What the browser of a field is given: where it uploads, and the tokens of the window of the library - of every
+     * file the field takes, and of its images only (what an image of the editor is picked from); null = none. And the
+     * sizes it offers, with those of the images of its HTML.
+     *
+     * @param array<string, mixed> $files the "files" of the field
+     * @return array{upload_url: string|null, library_token: string|null, image_token: string|null,
+     *     sizes: array{label: string, original: string, initial: string|null, choices: list<array{name: string,
+     *     label: string}>, images: list<array{url: string|null, width: int|null, height: int|null,
+     *     sizes: array<string, array{url: string|null, width: int|null, height: int|null}>}>}|null}
+     */
+    public function view(UploadProfile $profile, array $files = [], string $html = ''): array
+    {
+        return $this->tokens($profile) + ['sizes' => $this->sizesView($files, $html)];
+    }
+
+    /**
+     * @param array<string, mixed> $files
+     * @return array{label: string, original: string, initial: string|null, choices: list<array{name: string,
+     *     label: string}>, images: list<array{url: string|null, width: int|null, height: int|null,
+     *     sizes: array<string, array{url: string|null, width: int|null, height: int|null}>}>}|null
+     */
+    private function sizesView(array $files, string $html): ?array
+    {
+        [$names, $initial] = $this->sizesOf($files);
+        $variants = $this->variants;
+        if ($names === [] || !$variants instanceof ImageVariants) {
+            return null;
+        }
+        $images = [];
+        foreach ($this->references($html) as $reference) {
+            $file = $this->libraries->describe($reference);
+            $sizes = array_intersect_key($this->browser->sizes($file), array_flip($names));
+            if ($sizes !== []) {
+                $images[] = [
+                    'url' => $this->urls->url($reference),
+                    'width' => $file->width,
+                    'height' => $file->height,
+                    'sizes' => $sizes,
+                ];
+            }
+        }
+
+        return [
+            'label' => $this->trans('file.size.label'),
+            'original' => $this->trans('file.size.original'),
+            'initial' => $initial,
+            'choices' => array_map(fn (string $name): array => [
+                'name' => $name,
+                'label' => $this->labelOf($variants->get($name)),
+            ], $names),
+            'images' => $images,
+        ];
+    }
+
+    /** What a size is called: its label, the translation of "file.size.<name>", else its name. */
+    private function labelOf(ImageVariant $variant): string
+    {
+        if ($variant->label !== null) {
+            return $this->trans($variant->label);
+        }
+        $key = 'file.size.' . $variant->name;
+        $label = $this->trans($key);
+
+        return $label !== $key ? $label : ucfirst(str_replace(['_', '-'], ' ', $variant->name));
+    }
+
+    private function trans(string $key): string
+    {
+        return $this->translator?->trans($key) ?? $key;
+    }
+
+    /**
      * @return array{upload_url: string|null, library_token: string|null, image_token: string|null}
      */
-    public function view(UploadProfile $profile): array
+    private function tokens(UploadProfile $profile): array
     {
         $browse = array_values(array_filter(
             $profile->storages(),

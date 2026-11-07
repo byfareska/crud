@@ -21,7 +21,8 @@
  * "fr-FR". Without the pack it is English (and says so in the console); "language" in the options chooses another.
  *
  * With files (the field's "files"), an image pasted, dropped or uploaded in the dialog goes to the field's storage, and
- * the dialogs of an image and of a link pick from the window of the library.
+ * the dialogs of an image and of a link pick from the window of the library. When the field offers sizes of images, a
+ * chosen image has a toolbar with a menu of its sizes.
  */
 export const DEFAULTS = {
     menubar: false,
@@ -66,6 +67,9 @@ export function tinymceEditor(tinymce = globalThis.tinymce, defaults = {}) {
                             changed(editor.getContent());
                         }
                     });
+                    if (files?.sizes) {
+                        offerSizes(editor, files.sizes, changed);
+                    }
                     defaults.setup?.(editor);
                 },
             };
@@ -76,7 +80,7 @@ export function tinymceEditor(tinymce = globalThis.tinymce, defaults = {}) {
                         name: blobInfo.filename(),
                         onProgress: (share) => progress(Math.round(share * 100)),
                     })
-                    .then((file) => file.url)
+                    .then((file) => files.addressOf?.(file) ?? file.url)
                     .catch((error) => Promise.reject({ message: error.message, remove: true }));
             }
             if (files?.pick) {
@@ -84,7 +88,11 @@ export function tinymceEditor(tinymce = globalThis.tinymce, defaults = {}) {
                 config.file_picker_callback = (callback, value, meta) => {
                     files.pick({ images: meta.filetype === 'image' }).then(([file]) => {
                         if (file?.url) {
-                            callback(file.url, meta.filetype === 'image' ? { alt: file.alt ?? '' } : { text: file.name });
+                            const image = meta.filetype === 'image';
+                            callback(
+                                image ? files.addressOf?.(file) ?? file.url : file.url,
+                                image ? { alt: file.alt ?? '' } : { text: file.name },
+                            );
                         }
                     });
                 };
@@ -98,6 +106,44 @@ export function tinymceEditor(tinymce = globalThis.tinymce, defaults = {}) {
             };
         },
     };
+}
+
+/*
+ * A toolbar over a chosen image with the menu of its sizes (files.sizes of lib/rich_text.js): a size puts its address
+ * and pixels on the image.
+ */
+function offerSizes(editor, sizes, changed) {
+    const imageOf = (node) => (node?.nodeName === 'IMG' ? node : null);
+    editor.ui.registry.addMenuButton('crudimagesize', {
+        text: sizes.label,
+        fetch: (callback) => {
+            const image = imageOf(editor.selection.getNode());
+            const choices = (image && sizes.of(image.getAttribute('src'))) || [];
+            callback(choices.map((choice) => ({
+                type: 'togglemenuitem',
+                text: choice.label,
+                active: choice.current,
+                onAction: () => {
+                    editor.undoManager.transact(() => {
+                        editor.dom.setAttribs(image, {
+                            src: choice.url,
+                            'data-mce-src': choice.url,
+                            width: choice.width ?? null,
+                            height: choice.height ?? null,
+                        });
+                    });
+                    editor.nodeChanged();
+                    changed(editor.getContent());
+                },
+            })));
+        },
+    });
+    editor.ui.registry.addContextToolbar('crudimagesize', {
+        predicate: (node) => Boolean(imageOf(node) && sizes.of(node.getAttribute('src'))),
+        items: 'crudimagesize',
+        position: 'node',
+        scope: 'node',
+    });
 }
 
 // The colours of the panel: data-color-scheme of the theme controller, or a theme of Bootstrap or daisyUI.

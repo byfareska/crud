@@ -308,3 +308,8 @@ file:
         remove_anyway: 'फिर भी हटाएँ'
         previous: 'पिछला पृष्ठ'
         next: 'अगला पृष्ठ'
+    size:
+        label: 'आकार'
+        original: 'मूल'
+        thumbnail: 'थंबनेल'
+        preview: 'पूर्वावलोकन'

@@ -12,6 +12,8 @@ use Byfareska\Crud\Files\FileReference;
 use Byfareska\Crud\Files\FileReferenceSigner;
 use Byfareska\Crud\Files\FileRoutes;
 use Byfareska\Crud\Files\FileStorages;
+use Byfareska\Crud\Files\Image\ImageVariant;
+use Byfareska\Crud\Files\Image\ImageVariants;
 use Byfareska\Crud\Files\Flysystem\FlysystemFileStorage;
 use Byfareska\Crud\Files\Form\CrudFileType;
 use Byfareska\Crud\Files\Form\FileTypeGuesser;
@@ -26,6 +28,7 @@ use Byfareska\Crud\Page\CurrentCrud;
 use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Panel\Scopes;
 use Byfareska\Crud\Security\Actor;
+use Byfareska\Crud\Tests\Unit\Files\Image\FakeImageResizer;
 use League\Flysystem\Filesystem;
 use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
 use Symfony\Component\DependencyInjection\ServiceLocator;
@@ -44,7 +47,8 @@ use Symfony\Component\Validator\Validation;
 
 /**
  * The files of a panel "admin" for tests: the storage "public" in memory with a library listing it, "private" (signed
- * addresses, for ROLE_ADMIN), "archive" (no library) - and what the fields of files are made of.
+ * addresses, for ROLE_ADMIN), "archive" (no library) - and what the fields of files are made of. With $variants (eager,
+ * lazy), "public" makes the sizes of images: the bundle's and "large" (1600 wide, WebP), by FakeImageResizer.
  */
 final readonly class FilesKit
 {
@@ -70,16 +74,20 @@ final readonly class FilesKit
 
     public RichTextFiles $richText;
 
+    public ?ImageVariants $variants;
+
+    public FakeImageResizer $resizer;
+
     /**
      * @param list<string> $roles of the one acting
      */
-    public function __construct(array $roles = [], ?FileLibrary $library = null)
+    public function __construct(array $roles = [], ?FileLibrary $library = null, string $variants = 'none')
     {
         $this->filesystem = new Filesystem(new InMemoryFilesystemAdapter());
         $storage = new FlysystemFileStorage($this->filesystem);
         $this->storages = new FileStorages(
             [
-                'public' => ['public_url' => '/uploads'],
+                'public' => ['public_url' => '/uploads', 'variants' => $variants],
                 'private' => ['url' => 'signed', 'role' => 'ROLE_ADMIN'],
                 'archive' => ['upload' => false],
             ],
@@ -88,7 +96,15 @@ final readonly class FilesKit
                 static fn (): FlysystemFileStorage => $storage,
             )),
         );
-        $this->library = new StorageFileLibrary($storage, 'public');
+        $this->resizer = new FakeImageResizer();
+        $images = $variants !== 'none';
+        $this->variants = $images
+            ? new ImageVariants($this->storages, $this->resizer, [
+                ...array_map(ImageVariant::fromConfig(...), array_keys(ImageVariant::DEFAULTS), ImageVariant::DEFAULTS),
+                new ImageVariant('large', 1600, format: 'webp', label: 'Large'),
+            ])
+            : null;
+        $this->library = new StorageFileLibrary($storage, 'public', exclude: $images ? '_variants' : null);
         $own = $library ?? $this->library;
         $this->libraries = new FileLibraries(new ServiceLocator([
             'public' => static fn (): FileLibrary => $own,
@@ -99,6 +115,7 @@ final readonly class FilesKit
         $routes = new RouteCollection();
         $routes->add(FileRoutes::upload('admin'), new Route('/admin/_files', methods: ['POST']));
         $routes->add(FileRoutes::download('admin'), new Route('/admin/_files/download'));
+        $routes->add(FileRoutes::variant('admin'), new Route('/admin/_files/variant'));
         $router = new UrlGenerator($routes, new RequestContext());
         $requests = new RequestStack();
         $request = Request::create('http://localhost/admin/products/new');
@@ -131,6 +148,7 @@ final readonly class FilesKit
             $router,
             $this->uriSigner,
             $requests,
+            variants: $this->variants,
         );
         $this->browser = new BrowserFiles(
             $this->urls,
@@ -139,6 +157,7 @@ final readonly class FilesKit
             $router,
             $this->storages,
             $scopes,
+            variants: $this->variants,
         );
         $this->submitted = new SubmittedFiles();
         $this->mappers = new FileRecordMappers();
@@ -149,6 +168,8 @@ final readonly class FilesKit
             $this->libraries,
             $this->submitted,
             $requests,
+            $this->variants,
+            new IdentityTranslator(),
         );
     }
 

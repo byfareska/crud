@@ -310,3 +310,8 @@ file:
         remove_anyway: 'Usuń mimo to'
         previous: 'Poprzednia strona'
         next: 'Następna strona'
+    size:
+        label: 'Rozmiar'
+        original: 'Oryginał'
+        thumbnail: 'Miniatura'
+        preview: 'Podgląd'

@@ -115,7 +115,7 @@
     <li class="group relative {{ gallery ? 'flex flex-col gap-1' : 'flex items-center gap-3 rounded-lg bg-gray-50 p-2 dark:bg-white/5' }}"
         data-file-field-target="item" data-ref="{{ file.ref|default('') }}" data-sig="{{ file.sig|default('') }}"{% if multiple and not disabled %} draggable="true"{% endif %}>
         <a data-role="link" href="{{ file.url|default('#') }}" target="_blank" rel="noopener" class="{{ gallery ? 'block aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-white/10' : 'flex size-10 shrink-0 items-center justify-center overflow-hidden rounded bg-gray-100 dark:bg-white/10' }}">
-            <img data-role="image" src="{{ shown ? file.url : '' }}" alt="" loading="lazy" class="size-full object-cover"{% if not shown %} hidden{% endif %}>
+            <img data-role="image" src="{{ shown ? file.preview|default(file.url) : '' }}" alt="" loading="lazy" class="size-full object-cover"{% if not shown %} hidden{% endif %}>
             <span data-role="icon" class="flex size-full items-center justify-center text-2xl text-gray-400"{% if shown %} hidden{% endif %}>{{ crud_icon('file-earmark') }}</span>
         </a>
         <span data-role="name" class="min-w-0 flex-1 truncate text-sm" title="{{ file.name|default('') }}">{{ file.name|default('') }}</span>
@@ -140,7 +140,8 @@
          data-rich-text-options-value="{{ editor_options|json_encode }}"
          {%- if upload_url %} data-rich-text-upload-url-value="{{ upload_url }}"{% endif %}
          {%- if library_token %} data-rich-text-token-value="{{ library_token }}"{% endif %}
-         {%- if image_token %} data-rich-text-image-token-value="{{ image_token }}"{% endif %}>
+         {%- if image_token %} data-rich-text-image-token-value="{{ image_token }}"{% endif %}
+         {%- if sizes %} data-rich-text-sizes-value="{{ sizes|json_encode }}"{% endif %}>
         {{- block('textarea_widget') -}}
     </div>
 {%- endblock crud_rich_text_widget -%}

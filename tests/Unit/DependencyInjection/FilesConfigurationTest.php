@@ -15,6 +15,14 @@ use Byfareska\Crud\Files\Form\FileTypeGuesser;
 use Byfareska\Crud\Files\FileStorage;
 use Byfareska\Crud\Files\FileStorages;
 use Byfareska\Crud\Files\FileUploader;
+use Byfareska\Crud\Files\Command\ClearImageVariantsCommand;
+use Byfareska\Crud\Files\Command\GenerateImageVariantsCommand;
+use Byfareska\Crud\Files\Image\ImageResizer;
+use Byfareska\Crud\Files\Image\ImageVariants;
+use Byfareska\Crud\Files\Image\ImageVariantsListener;
+use Byfareska\Crud\Files\Image\VariantFit;
+use Byfareska\Crud\Files\Image\VariantStrategy;
+use Byfareska\Crud\Files\Intervention\InterventionImageResizer;
 use Byfareska\Crud\Files\NoFileLibrary;
 use Byfareska\Crud\Files\PathGenerator;
 use Byfareska\Crud\Files\RichTextFiles;
@@ -183,6 +191,100 @@ final class FilesConfigurationTest extends TestCase
         $this->expectException(InvalidConfigurationException::class);
 
         $this->load(['files' => ['enabled' => true]]);
+    }
+
+    public function testTheSizesOfImages(): void
+    {
+        $builder = $this->load(['files' => [
+            'storages' => [
+                'public' => ['service' => 'app.public_storage', 'public_url' => '/uploads'],
+                'lazy' => ['service' => 'app.public_storage', 'variants' => 'lazy'],
+                'cdn' => ['service' => 'app.public_storage', 'urls' => 'app.cdn_urls'],
+                'legacy' => ['service' => 'app.public_storage', 'upload' => false],
+            ],
+            'images' => [
+                'variants' => [
+                    'thumbnail' => ['width' => 120, 'height' => 120, 'fit' => 'cover'],
+                    'large' => ['width' => 1600, 'format' => 'webp'],
+                ],
+            ],
+        ]]);
+        $builder->setDefinition('app.public_storage', new Definition(Filesystem::class, [
+            new Definition(InMemoryFilesystemAdapter::class),
+        ]));
+        $images = [ImageVariantsListener::class, ClearImageVariantsCommand::class, GenerateImageVariantsCommand::class];
+        foreach ($images as $id) {
+            self::assertTrue($builder->hasDefinition($id), $id);
+        }
+        // Imagick when the PHP that resizes has it, else GD: decided there.
+        self::assertSame(['auto'], $builder->getDefinition(InterventionImageResizer::class)->getArguments());
+        $builder->removeDefinition(FilesController::class);
+        foreach ([ImageVariants::class, FileStorages::class] as $id) {
+            $builder->findDefinition($id)->setPublic(true);
+        }
+        $builder->getAlias(ImageResizer::class)->setPublic(true);
+        $builder->compile();
+
+        self::assertInstanceOf(InterventionImageResizer::class, $builder->get(ImageResizer::class));
+        $variants = $builder->get(ImageVariants::class);
+        self::assertInstanceOf(ImageVariants::class, $variants);
+        self::assertSame(['thumbnail', 'large', 'preview'], array_keys($variants->all()));
+        self::assertSame(120, $variants->get('thumbnail')->width, 'The bundle\'s own, changed.');
+        self::assertSame(VariantFit::Cover, $variants->get('thumbnail')->fit);
+        self::assertSame('webp', $variants->get('large')->format);
+        self::assertSame(VariantStrategy::Eager, $variants->strategy('public'));
+        self::assertSame(VariantStrategy::Lazy, $variants->strategy('lazy'));
+        // Addresses of another service, or files never uploaded through the panel: none unless it says.
+        self::assertSame(VariantStrategy::None, $variants->strategy('cdn'));
+        self::assertSame(VariantStrategy::None, $variants->strategy('legacy'));
+    }
+
+    public function testNoSizesOfImagesUntilEnabled(): void
+    {
+        $builder = $this->load(['files' => ['storages' => ['public' => ['service' => 'app.public_storage']]]]);
+
+        self::assertFalse($builder->hasDefinition(ImageVariants::class));
+        self::assertFalse($builder->hasAlias(ImageResizer::class));
+    }
+
+    public function testAStorageMakesSizesWithThemEnabledOnly(): void
+    {
+        $this->expectException(LogicException::class);
+
+        $this->load(['files' => ['storages' => [
+            'public' => ['service' => 'app.public_storage', 'variants' => 'eager'],
+        ]]]);
+    }
+
+    public function testAMistakenSize(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('needs a width and a height');
+
+        $this->load(['files' => [
+            'storages' => ['public' => ['service' => 'app.public_storage']],
+            'images' => ['variants' => ['square' => ['width' => 100, 'fit' => 'cover']]],
+        ]]);
+    }
+
+    public function testAStrategyThereIsNot(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->load(['files' => [
+            'storages' => ['public' => ['service' => 'app.public_storage', 'variants' => 'sometimes']],
+            'images' => true,
+        ]]);
+    }
+
+    public function testAFormatThereIsNot(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+
+        $this->load(['files' => [
+            'storages' => ['public' => ['service' => 'app.public_storage']],
+            'images' => ['variants' => ['large' => ['width' => 100, 'format' => 'tiff']]],
+        ]]);
     }
 
     /**

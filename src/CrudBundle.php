@@ -69,7 +69,16 @@ use Byfareska\Crud\Driver\Dto\ConstructorDtoFactory;
 use Byfareska\Crud\Driver\Dto\DtoFactory;
 use Byfareska\Crud\Controller\FilesController;
 use Byfareska\Crud\Files\BrowserFiles;
+use Byfareska\Crud\Files\Command\ClearImageVariantsCommand;
+use Byfareska\Crud\Files\Command\GenerateImageVariantsCommand;
 use Byfareska\Crud\Files\Command\PruneFilesCommand;
+use Byfareska\Crud\Files\Image\ImageResizer;
+use Byfareska\Crud\Files\Image\ImageVariant;
+use Byfareska\Crud\Files\Image\ImageVariants;
+use Byfareska\Crud\Files\Image\ImageVariantsListener;
+use Byfareska\Crud\Files\Image\VariantFit;
+use Byfareska\Crud\Files\Image\VariantStrategy;
+use Byfareska\Crud\Files\Intervention\InterventionImageResizer;
 use Byfareska\Crud\Files\ConstructorFileRecordFactory;
 use Byfareska\Crud\Files\Doctrine\DoctrineFileLibrary;
 use Byfareska\Crud\Files\Doctrine\DoctrineFileRecordMapper;
@@ -84,6 +93,7 @@ use Byfareska\Crud\Files\FileUsageListener;
 use Byfareska\Crud\Files\FileUsages;
 use Byfareska\Crud\Files\NoFileUsages;
 use Byfareska\Crud\Files\SubmittedFiles;
+use Byfareska\Crud\Event\FileUploaded;
 use Byfareska\Crud\Event\RecordDeleted;
 use Byfareska\Crud\Event\RecordSaved;
 use Byfareska\Crud\Files\FileDownload;
@@ -109,7 +119,9 @@ use Byfareska\Crud\Files\StorageFileLibrary;
 use Byfareska\Crud\Files\StorageFileUrls;
 use Byfareska\Crud\Files\OffloadHeader;
 use Byfareska\Crud\Files\UrlMode;
+use Intervention\Image\ImageManager;
 use League\Flysystem\FilesystemOperator;
+use InvalidArgumentException;
 use LogicException;
 use Symfony\Component\Mime\MimeTypes;
 use Byfareska\Crud\Page\CrudPages;
@@ -155,6 +167,7 @@ use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\UX\Autocomplete\OptionsAwareAutocompleterInterface;
 use Byfareska\Crud\Routing\PanelLiveUrls;
@@ -383,6 +396,23 @@ final class CrudBundle extends AbstractBundle
                                         )
                                         ->defaultNull()
                                     ->end()
+                                    ->scalarNode('variants')
+                                        ->info(
+                                            'When its images get the sizes of files.images: eager (on upload), lazy '
+                                            . '(when first asked for, through the panel), none; default eager with '
+                                            . 'files.images, none for a storage with "urls", "url: none" or '
+                                            . '"upload: false".',
+                                        )
+                                        ->defaultNull()
+                                        ->validate()
+                                            ->ifTrue(static fn (mixed $strategy): bool => !in_array(
+                                                $strategy,
+                                                [null, ...array_column(VariantStrategy::cases(), 'value')],
+                                                true,
+                                            ))
+                                            ->thenInvalid('%s is no strategy of sizes: eager, lazy or none.')
+                                        ->end()
+                                    ->end()
                                     ->arrayNode('offload')
                                         ->info(
                                             'For "url: signed" on the disk of the server: PHP checks the address, the '
@@ -484,6 +514,86 @@ final class CrudBundle extends AbstractBundle
                                 . 'time to save the form it was uploaded in.',
                             )
                             ->defaultValue('PT24H')
+                        ->end()
+                        ->arrayNode('images')
+                            ->info(
+                                'The sizes of images (thumbnails): made by intervention/image (GD or Imagick) or an '
+                                . 'ImageResizer, kept in the storage of the image under "directory". Off until '
+                                . 'enabled.',
+                            )
+                            ->canBeEnabled()
+                            ->children()
+                                ->scalarNode('resizer')
+                                    ->info(
+                                        'intervention/image with auto (Imagick when PHP has it, else GD), imagick or '
+                                        . 'gd - Imagick keeps the colour profile of a photo, GD drops it - or the id '
+                                        . 'of an ImageResizer.',
+                                    )
+                                    ->defaultValue('auto')
+                                    ->cannotBeEmpty()
+                                ->end()
+                                ->scalarNode('directory')
+                                    ->info(
+                                        'The directory of a storage the sizes are under: "_variants/thumbnail/ab/cd/'
+                                        . '....jpg".',
+                                    )
+                                    ->defaultValue('_variants')
+                                    ->cannotBeEmpty()
+                                ->end()
+                                ->integerNode('max_pixels')
+                                    ->info(
+                                        'An image of more pixels (width x height) gets no sizes - decoding it takes '
+                                        . 'about 4 bytes a pixel of memory: it is shown itself.',
+                                    )
+                                    ->min(1)
+                                    ->defaultValue(40_000_000)
+                                ->end()
+                                ->integerNode('quality')
+                                    ->info('Of a lossy format (JPEG, WebP, AVIF), for a size that does not say.')
+                                    ->min(1)
+                                    ->max(100)
+                                    ->defaultValue(82)
+                                ->end()
+                                ->arrayNode('variants')
+                                    ->info(
+                                        'The sizes by name, besides the bundle\'s "thumbnail" (96 x 96, cover: the '
+                                        . 'lists) and "preview" (480 x 480: the details, the library), which a size '
+                                        . 'of the same name changes.',
+                                    )
+                                    ->useAttributeAsKey('name')
+                                    ->arrayPrototype()
+                                        ->children()
+                                            ->integerNode('width')->min(1)->defaultNull()->end()
+                                            ->integerNode('height')->min(1)->defaultNull()->end()
+                                            ->enumNode('fit')
+                                                ->info(
+                                                    'inside (within the box, its proportions kept) or cover (fills '
+                                                    . 'the box, what goes beyond cut off). Never made bigger.',
+                                                )
+                                                ->values(array_column(VariantFit::cases(), 'value'))
+                                                ->defaultValue(VariantFit::Inside->value)
+                                            ->end()
+                                            ->scalarNode('format')
+                                                ->info('jpg, png, gif, webp or avif; default the format of the image.')
+                                                ->defaultNull()
+                                                ->validate()
+                                                    ->ifTrue(static fn (mixed $format): bool => $format !== null
+                                                        && !in_array($format, ImageVariant::FORMATS, true))
+                                                    ->thenInvalid('%s is no format: jpg, png, gif, webp, avif.')
+                                                ->end()
+                                            ->end()
+                                            ->integerNode('quality')->min(1)->max(100)->defaultNull()->end()
+                                            ->scalarNode('label')
+                                                ->info(
+                                                    'What it is called where it is chosen (rich text): a translation '
+                                                    . 'key or a text; default file.size.<name>, else the name.',
+                                                )
+                                                ->defaultNull()
+                                            ->end()
+                                        ->end()
+                                    ->end()
+                                ->end()
+                            ->end()
                         ->end()
                         ->scalarNode('max_size')
                             ->info('The biggest file a field takes: bytes, or "512K", "10M", "1G".')
@@ -815,7 +925,7 @@ final class CrudBundle extends AbstractBundle
      *         enabled: bool,
      *         default_storage: string|null,
      *         storages: array<string, array{service: string, url: string, public_url: string|null, ttl: int,
-     *             role: string|null, upload: bool, library: string|null, urls: string|null}>,
+     *             role: string|null, upload: bool, library: string|null, urls: string|null, variants: string|null}>,
      *         path: array{generator: string|null, levels: int, width: int, length: int, keep_name: bool},
      *         library: string|null,
      *         entity: string,
@@ -823,6 +933,9 @@ final class CrudBundle extends AbstractBundle
      *         record_factory: string|null,
      *         usages: string|null,
      *         prune_after: string,
+     *         images: array{enabled: bool, resizer: string, directory: string, max_pixels: int, quality: int,
+     *             variants: array<string, array{width: int|null, height: int|null, fit: string, format: string|null,
+     *             quality: int|null, label: string|null}>},
      *         max_size: int|string,
      *     },
      *     rich_text: array{editor: string, options: array<string, mixed>, files: bool},
@@ -1030,7 +1143,7 @@ final class CrudBundle extends AbstractBundle
      * @param array{
      *     default_storage: string|null,
      *     storages: array<string, array{service: string, url: string, public_url: string|null, ttl: int,
-     *         role: string|null, upload: bool, library: string|null, urls: string|null}>,
+     *         role: string|null, upload: bool, library: string|null, urls: string|null, variants: string|null}>,
      *     path: array{generator: string|null, levels: int, width: int, length: int, keep_name: bool},
      *     library: string|null,
      *     entity: string,
@@ -1038,6 +1151,9 @@ final class CrudBundle extends AbstractBundle
      *     record_factory: string|null,
      *     usages: string|null,
      *     prune_after: string,
+     *     images: array{enabled: bool, resizer: string, directory: string, max_pixels: int, quality: int,
+     *         variants: array<string, array{width: int|null, height: int|null, fit: string, format: string|null,
+     *         quality: int|null, label: string|null}>},
      *     max_size: int|string,
      * } $config
      */
@@ -1052,6 +1168,7 @@ final class CrudBundle extends AbstractBundle
         $services = $container->services();
         $services->defaults()->autowire()->autoconfigure();
 
+        $images = $config['images'];
         $storages = [];
         $doctrineLibrary = false;
         $libraries = [];
@@ -1083,7 +1200,9 @@ final class CrudBundle extends AbstractBundle
                         ->args([$config['entity_fields'] ?? []]),
                 ]),
                 'storage' => $services->set($libraryId, StorageFileLibrary::class)
-                    ->args([service($id), $name, service('cache.app')->nullOnInvalid()]),
+                    ->args([service($id), $name, service('cache.app')->nullOnInvalid()])
+                    // The sizes of images are no files of the library.
+                    ->arg('$exclude', $images['enabled'] ? $images['directory'] : null),
                 'none' => $services->set($libraryId, NoFileLibrary::class),
                 default => $services->alias($libraryId, $library),
             };
@@ -1096,7 +1215,7 @@ final class CrudBundle extends AbstractBundle
             $settings[$name] = array_intersect_key(
                 $storage,
                 array_flip(['url', 'public_url', 'ttl', 'role', 'upload', 'offload']),
-            );
+            ) + ['variants' => $this->variantStrategy($name, $storage, $images['enabled'])];
         }
 
         $services->set(FileStorages::class)
@@ -1161,6 +1280,10 @@ final class CrudBundle extends AbstractBundle
         $services->set(PruneFilesCommand::class);
         $services->set(ReindexFilesCommand::class);
 
+        if ($images['enabled']) {
+            $this->loadImages($images, $services);
+        }
+
         // The field, the window of the library, the values of lists.
         $services->set(CrudFileType::class);
         $services->set(FileTypeGuesser::class);
@@ -1168,6 +1291,88 @@ final class CrudBundle extends AbstractBundle
         $services->set(FilesExtension::class);
         $services->set(FileLibrary::class);
         $services->set(RichTextFiles::class);
+    }
+
+    /**
+     * The sizes of images (byfareska_crud.files.images): what makes them, the sizes, making them on upload, the
+     * commands.
+     *
+     * @param array{resizer: string, directory: string, max_pixels: int, quality: int,
+     *     variants: array<string, array{width: int|null, height: int|null, fit: string, format: string|null,
+     *     quality: int|null, label: string|null}>} $config
+     */
+    private function loadImages(array $config, ServicesConfigurator $services): void
+    {
+        if (in_array($config['resizer'], ['auto', 'imagick', 'gd'], true)) {
+            if (!class_exists(ImageManager::class)) {
+                throw new LogicException(sprintf(
+                    'byfareska_crud.files.images makes the sizes of images with intervention/image (resizer: %s): '
+                    . 'composer require intervention/image - or name an ImageResizer of your own.',
+                    $config['resizer'],
+                ));
+            }
+            $services->set(InterventionImageResizer::class)->args([$config['resizer']]);
+            $services->alias(ImageResizer::class, InterventionImageResizer::class);
+        } else {
+            $services->alias(ImageResizer::class, $config['resizer']);
+        }
+
+        $variants = [];
+        foreach ($config['variants'] + ImageVariant::DEFAULTS as $name => $variant) {
+            try {
+                // A mistake of the configuration fails the build of the container, not the first image.
+                ImageVariant::fromConfig((string) $name, $variant);
+            } catch (InvalidArgumentException $invalid) {
+                throw new LogicException(
+                    'byfareska_crud.files.images.variants: ' . $invalid->getMessage(),
+                    0,
+                    $invalid,
+                );
+            }
+            $variants[] = inline_service(ImageVariant::class)
+                ->factory([ImageVariant::class, 'fromConfig'])
+                ->args([(string) $name, $variant]);
+        }
+        $services->set(ImageVariants::class)->args([
+            service(FileStorages::class),
+            service(ImageResizer::class),
+            $variants,
+            $config['directory'],
+            $config['max_pixels'],
+            $config['quality'],
+            service('logger')->nullOnInvalid(),
+        ]);
+        $services->set(ImageVariantsListener::class)
+            ->tag('kernel.event_listener', ['event' => FileUploaded::class, 'method' => 'uploaded']);
+        $services->set(ClearImageVariantsCommand::class);
+        $services->set(GenerateImageVariantsCommand::class);
+    }
+
+    /**
+     * When the images of a storage get their sizes: as it says, else on upload - unless its files have addresses of
+     * another service, none at all, or are never uploaded through the panel.
+     *
+     * @param array{url: string, upload: bool, urls: string|null, variants?: string|null} $storage
+     */
+    private function variantStrategy(string $name, array $storage, bool $images): string
+    {
+        $strategy = $storage['variants'] ?? null;
+        if (!$images) {
+            if ($strategy !== null && $strategy !== VariantStrategy::None->value) {
+                throw new LogicException(sprintf(
+                    'The storage "%s" makes sizes of images ("variants: %s") with byfareska_crud.files.images enabled '
+                    . 'only.',
+                    $name,
+                    $strategy,
+                ));
+            }
+
+            return VariantStrategy::None->value;
+        }
+
+        $none = $storage['urls'] !== null || $storage['url'] === UrlMode::None->value || !$storage['upload'];
+
+        return $strategy ?? ($none ? VariantStrategy::None->value : VariantStrategy::Eager->value);
     }
 
     /**

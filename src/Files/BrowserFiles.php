@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Files;
 
+use Byfareska\Crud\Files\Image\ImageVariant;
+use Byfareska\Crud\Files\Image\ImageVariants;
+use Byfareska\Crud\Files\Image\VariantStrategy;
 use Byfareska\Crud\Panel\Scopes;
 use DateTimeImmutable;
 use Symfony\Component\HttpFoundation\UriSigner;
@@ -34,23 +37,31 @@ final readonly class BrowserFiles
         private FileStorages $storages,
         private Scopes $scopes,
         ?SluggerInterface $slugger = null,
+        private ?ImageVariants $variants = null,
     ) {
         $this->slugger = $slugger ?? new AsciiSlugger();
     }
 
     /**
      * "alt": the alternative text a field gives a file it takes in (when it asks for one and none is typed) - the name
-     * it was uploaded under, made plain.
+     * it was uploaded under, made plain. "preview": the address of its size "preview" (the image itself without
+     * one); "sizes": the sizes of an image of a storage that makes them on upload, which a field of rich text offers.
      *
-     * @return array{ref: string, sig: string, url: string|null, name: string, alt: string, mime: string|null,
-     *     size: int|null, width: int|null, height: int|null, image: bool}
+     * @return array{ref: string, sig: string, url: string|null, preview: string|null, name: string, alt: string,
+     *     mime: string|null, size: int|null, width: int|null, height: int|null, image: bool,
+     *     sizes: array<string, array{url: string|null, width: int|null, height: int|null}>}
      */
     public function json(StoredFile $file): array
     {
+        $url = $this->urls->url($file->reference);
+
         return [
             'ref' => (string) $file->reference,
             'sig' => $this->signer->sign($file->reference),
-            'url' => $this->urls->url($file->reference),
+            'url' => $url,
+            'preview' => $this->variants instanceof ImageVariants
+                ? $this->urls->url($file->reference, ImageVariant::PREVIEW)
+                : $url,
             'name' => $file->name,
             'alt' => $this->alt($file),
             'mime' => $file->mimeType,
@@ -58,7 +69,37 @@ final readonly class BrowserFiles
             'width' => $file->width,
             'height' => $file->height,
             'image' => $file->isImage(),
+            'sizes' => $this->sizes($file),
         ];
+    }
+
+    /**
+     * The sizes of an image of a storage that makes them on upload: their addresses last, so a rich text may keep them.
+     *
+     * @return array<string, array{url: string|null, width: int|null, height: int|null}>
+     */
+    public function sizes(StoredFile $file): array
+    {
+        $variants = $this->variants;
+        if (
+            !$variants instanceof ImageVariants
+            || $variants->strategy($file->reference->storage) !== VariantStrategy::Eager
+        ) {
+            return [];
+        }
+        $sizes = [];
+        foreach (array_keys($variants->all()) as $name) {
+            if ($variants->applies($file->reference, $name)) {
+                [$width, $height] = $variants->dimensionsOf($file, $name);
+                $sizes[$name] = [
+                    'url' => $this->urls->url($file->reference, $name),
+                    'width' => $width,
+                    'height' => $height,
+                ];
+            }
+        }
+
+        return $sizes;
     }
 
     /**

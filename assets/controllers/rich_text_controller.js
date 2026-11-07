@@ -9,7 +9,14 @@ import { richTextEditor } from '../lib/rich_text.js';
  */
 export default class extends Controller {
     static targets = ['input'];
-    static values = { editor: String, options: Object, uploadUrl: String, token: String, imageToken: String };
+    static values = {
+        editor: String,
+        options: Object,
+        uploadUrl: String,
+        token: String,
+        imageToken: String,
+        sizes: Object,
+    };
 
     async connect() {
         this.connected = true;
@@ -57,6 +64,8 @@ export default class extends Controller {
             return token ? pickFiles({ token }) : Promise.resolve([]);
         };
 
+        const sizes = this.sizes();
+
         return {
             upload: (blob, { name = null, onProgress = null } = {}) => {
                 if (!this.uploadUrlValue) {
@@ -67,6 +76,66 @@ export default class extends Controller {
                 return uploadFile(file, this.uploadUrlValue, { onProgress });
             },
             pick: this.tokenValue || this.imageTokenValue ? pick : null,
+            addressOf: (file) => sizes?.take(file) ?? file.url,
+            sizes: sizes ? { label: sizes.label, of: sizes.of } : null,
         };
+    }
+
+    /*
+     * The sizes of images the field offers (data-rich-text-sizes-value: RichTextFiles::view()): those of the images of
+     * its HTML, and of each file uploaded or picked since - known by any of their addresses.
+     */
+    sizes() {
+        const sizes = this.hasSizesValue && !Array.isArray(this.sizesValue) ? this.sizesValue : null;
+        if (!sizes?.choices?.length) {
+            return null;
+        }
+        const known = new Map();
+        const remember = (image) => {
+            for (const address of [image.url, ...Object.values(image.sizes ?? {}).map((size) => size.url)]) {
+                if (address) {
+                    known.set(absolute(address), image);
+                }
+            }
+        };
+        (sizes.images ?? []).forEach(remember);
+
+        return {
+            label: sizes.label,
+            // A file put into the text: remembered, and its address in the size it is put in with.
+            take(file) {
+                const image = { url: file.url, width: file.width, height: file.height, sizes: file.sizes ?? {} };
+                remember(image);
+
+                return (sizes.initial ? image.sizes[sizes.initial]?.url : null) ?? file.url;
+            },
+            // The sizes of the image at an address, the image itself first; null when it has none to choose.
+            of(address) {
+                const image = address ? known.get(absolute(address)) : undefined;
+                if (!image) {
+                    return null;
+                }
+                const current = absolute(address);
+                const choices = [
+                    { name: null, label: sizes.original, url: image.url, width: image.width, height: image.height },
+                    ...sizes.choices
+                        .filter((choice) => image.sizes?.[choice.name]?.url)
+                        .map((choice) => ({ name: choice.name, label: choice.label, ...image.sizes[choice.name] })),
+                ];
+
+                return choices.length < 2
+                    ? null
+                    : choices.map((choice) => ({ ...choice, current: absolute(choice.url) === current }));
+            },
+        };
+    }
+}
+
+// An address as the browser resolves it: "/uploads/a.jpg" and "https://host/uploads/a.jpg" are the same file.
+function absolute(address) {
+    try {
+        return new URL(address, document.baseURI).href;
+    } catch {
+        return address;
     }
 }

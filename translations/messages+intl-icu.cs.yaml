@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Přesto smazat'
         previous: 'Předchozí stránka'
         next: 'Další stránka'
+    size:
+        label: 'Velikost'
+        original: 'Originál'
+        thumbnail: 'Miniatura'
+        preview: 'Náhled'

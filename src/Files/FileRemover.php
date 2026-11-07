@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Files;
 
 use Byfareska\Crud\Event\FileRemoving;
+use Byfareska\Crud\Files\Image\ImageVariants;
 use InvalidArgumentException;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
- * Deletes a file: forgotten by its library, its bytes deleted from its storage. Not one records still use (by the
+ * Deletes a file: forgotten by its library, its bytes deleted from its storage - and the sizes of an image with them.
+ * Not one records still use (by the
  * index of FileUsages) unless that is confirmed, nor one a listener of FileRemoving keeps, nor a file of another
  * site.
  */
@@ -20,6 +22,7 @@ final readonly class FileRemover
         private FileLibraries $libraries,
         private FileUsages $usages,
         private ?EventDispatcherInterface $events = null,
+        private ?ImageVariants $variants = null,
     ) {
     }
 
@@ -48,6 +51,7 @@ final readonly class FileRemover
 
         $this->libraries->of($reference->storage)->remove($reference);
         $this->storages->storage($reference->storage)->delete($reference->path);
+        $this->variants?->remove($reference);
 
         return true;
     }

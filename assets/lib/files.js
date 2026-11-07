@@ -3,8 +3,9 @@
  *
  * - uploadFile(file, url, { onProgress, signal }) uploads a File (or a Blob) to the signed address of a field
  *   (data-file-field-upload-url-value) and resolves with what the server kept of it:
- *   { ref, sig, url, name, alt, mime, size, width, height, image } (alt: the name made plain, for an
- *   alternative text) - or rejects with an Error whose message says why;
+ *   { ref, sig, url, preview, name, alt, mime, size, width, height, image, sizes } (alt: the name made plain, for an
+ *   alternative text; preview: the address of its size "preview", or url; sizes: { <name>: { url, width, height } }
+ *   of an image of a storage that makes them on upload) - or rejects with an Error whose message says why;
  * - pickFiles({ token }) opens the window of the library of the page with the token of a field
  *   (data-file-field-token-value) and resolves with the files chosen, [] when it is closed without.
  */

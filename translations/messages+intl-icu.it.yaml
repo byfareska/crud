@@ -308,3 +308,8 @@ file:
         remove_anyway: 'Elimina comunque'
         previous: 'Pagina precedente'
         next: 'Pagina successiva'
+    size:
+        label: 'Dimensione'
+        original: 'Originale'
+        thumbnail: 'Miniatura'
+        preview: 'Anteprima'

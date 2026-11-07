@@ -309,3 +309,8 @@ file:
         remove_anyway: 'Delete it anyway'
         previous: 'Previous page'
         next: 'Next page'
+    size:
+        label: 'Size'
+        original: 'Original'
+        thumbnail: 'Thumbnail'
+        preview: 'Preview'

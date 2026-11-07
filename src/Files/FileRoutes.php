@@ -20,4 +20,10 @@ final class FileRoutes
     {
         return 'crud_files_' . $scope . '_download';
     }
+
+    /** GET: a size of an image made when first asked for (VariantStrategy::Lazy), by a signed address. */
+    public static function variant(string $scope): string
+    {
+        return 'crud_files_' . $scope . '_variant';
+    }
 }
