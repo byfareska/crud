@@ -2,65 +2,94 @@
 
 ## Unreleased
 
-- **The minimal setup works**: the bundle, one route import and `#[AsCrud]` on an entity make a working panel - no
-  configuration, no form type, no `__toString()`, no build of the application's own.
-- `byfareska_crud.assets` is `auto` by default (was `reprise`): the prebuilt assets of the panel while the application
-  names no `entries`, else the tool that is installed (Symfony Reprise, AssetMapper, Webpack Encore). A tool named but
-  not installed is told by its package, not by "Unknown function" of Twig.
-- `byfareska_crud.assets: builtin`: the prebuilt stylesheet (the daisyui and tailwind themes, every daisyUI colour
-  theme, Bootstrap Icons, gridstack, the calendar) and script (Stimulus, the controllers of the bundle, the live
-  controller of Symfony UX Live Component 3.7, the chart controller of UX Chart.js) of `public/panel`, installed by
-  `assets:install` as `bundles/crud/panel`. Built by `build/panel` (`npm ci && npm run build`).
-- A panel that only resources name has a dashboard at "/" too, as a configured one has. One with `dashboard: false`
-  leads "/" to its first list (`crud_home_<panel>`; 404 for a panel without a list); the brand of the menu no longer
-  fails without a home.
-- The `doctrine` dashboard storage without its table: everybody sees the default layout (a warning is logged) and a
-  save answers 503 saying to migrate, instead of a 500 of the database.
-- Guessed Doctrine forms make an entity whose constructor takes arguments: the fields named as its parameters give
-  them (`empty_data`). A required parameter no field gives is told when the form is made.
-- Guessed Doctrine forms leave out what cannot be written (no setter, not public - a `createdAt` set in the
-  constructor), but for the parameters of the constructor of a new entity.
-- What names a related entity (`DoctrineRecordLabels`): a `RelationChoiceLabel`, else the title of the resource of
-  its entity, else `__toString()`, else its id - in the choices of forms and filters, the autocomplete, the lists and
-  the details. A relation is a `TypedValue('relation', RecordRef)`: its text the name, its JSON the id. A relation
-  to the same entity (a parent) does not offer the record being edited.
-- Texts nobody translated are made of the names (`CrudDefaultTexts`, a catalogue before the files of the bundles and
-  the application): `crud.product.title` "Products", `.new` "New product", `.field.createdAt.name` "Created at",
-  a menu section `app.nav.catalog` "Catalog"; layout groups, actions and bulk actions too. Help, toasts and the
-  keywords of the palette are not made. `ResourceFieldNames` services add fields a driver knows.
-- With `symfony/ux-autocomplete` the relations of guessed forms are fields to search in too, not only the relation
-  filters - nothing to configure (`RelationFormField`: `AutocompleteRelationFormField`, else
-  `ChoiceRelationFormField`). `RelationAutocompleter` answers them for who may add or edit records, in the scopes of
-  the related resource, never offering the record being edited. The built-in assets have the autocomplete controller
-  and Tom Select in the look of the daisyui theme.
-- The relation searches (`symfony/ux-autocomplete`) go through an address of each panel,
-  `<prefix>/_crud/autocomplete/{alias}` (`crud_autocomplete_<panel>`), so the panel's firewall and `access_control`
-  cover them. `RelationAutocompleter` refuses the global `/autocomplete/{alias}` and the address of another panel.
-  Before, a panel protected by `access_control` alone (no `role`) told the names and ids of its related entities to
-  anybody who had a signed address of one of its fields.
-- `byfareska_crud.icon_template`: the Twig template every icon is drawn with (`name`, `class`, `attributes`) - Font
-  Awesome, an SVG sprite, Symfony UX Icons, images of AssetMapper, names mapped - without a theme of your own. The
-  toasts draw their icons with `crud_icon()` too (`<template data-toast-target="icon" data-variant="…">`, cloned by the
-  toast controller), no longer the classes of Bootstrap Icons. A toast template of your own without these templates
-  works as before.
+## v0.2.0
+
+A panel works with the bundle, one route import and `#[AsCrud]` on Doctrine entities alone: no configuration, no
+build of the application's own, no form types, no `__toString()`.
+
+### Upgrading
+
+- `byfareska_crud.assets` is `auto` by default, no longer `reprise`. Without `entries` the panel uses its prebuilt
+  assets, or the application's AssetMapper when it has one with StimulusBundle. With `entries` it uses the tool that is
+  installed, in this order: Symfony Reprise, Webpack Encore, AssetMapper. To keep Reprise whatever is installed, set
+  `byfareska_crud.assets: reprise`.
+- A Doctrine relation is normalized to `TypedValue('relation', RecordRef)` instead of the id as a string. As text it is
+  the name of the record; in JSON (live props, addresses, the API) it is still the id. Code that read the normalized
+  value of a relation as its id should use `RecordRef::$id`.
+- Relation searches of `symfony/ux-autocomplete` are answered only at the address of the panel,
+  `<prefix>/_crud/autocomplete/{alias}` (route `crud_autocomplete_<panel>`). The global `/autocomplete/{alias}` and
+  the address of another panel are refused (401 / 403).
+- A `RelationChoiceLabel` of the application now names the entity everywhere it is shown as a relation (lists,
+  details, choices of forms and filters), not only in the autocomplete.
+- `@byfareska/crud` no longer has `gridstack` and `vanilla-calendar-pro` as peer dependencies: the bundle ships its own
+  copies in `assets/vendor`, together with the stylesheets of Bootstrap Icons, gridstack, the calendar and Tom Select.
+  The application can drop these packages.
+- The toasts draw their icons with `crud_icon()` instead of `bi-*` classes. A toast template of your own keeps working.
+- `Scope::homeRoute()` returns `string` (it is never null any more).
+
+### Added
+
+- `byfareska_crud.assets: builtin`: the prebuilt `public/panel/panel.css` and `panel.js`, installed by
+  `assets:install` as `/bundles/crud/panel/` and versioned by a hash of the file. They hold the daisyui and tailwind
+  themes (every daisyUI colour theme), Bootstrap Icons, gridstack, the calendar, Tom Select, Stimulus, the controllers
+  of the bundle, the live controller of UX Live Component 3.7 and the chart controller of UX Chart.js. The sources are
+  in `build/panel` (`npm ci && npm run build`). The `bootstrap5` theme has no prebuilt Bootstrap stylesheet.
+- AssetMapper with nothing to configure: in `auto` mode the panel's script (`assets/panel.importmap.js`) runs through
+  the application's importmap, with its Symfony UX controllers and their versions. The entry and the `@byfareska/crud`
+  mapping are added in memory (`PanelImportMapConfigReader`) and never written to `importmap.php`, and
+  `asset-map:compile` includes them.
 - One import per theme for an application's own build: `@byfareska/crud/styles/panel.daisyui.css`,
-  `panel.tailwind.css`, `panel.bootstrap5.css` (the `@source` of the theme's templates, Bootstrap Icons, gridstack,
-  the calendar, Tom Select in the theme's look) and `@byfareska/crud/panel.js` / `panel.bootstrap5.js` (the
-  controllers in a Stimulus application of their own; Bootstrap's components handed over). The built-in assets are
-  built from these files.
-- Nothing to configure for the assets in any application. `auto` without entries now runs the panel's script
-  through the application's AssetMapper when it has one with StimulusBundle: `assets/panel.importmap.js`, an
-  entrypoint the bundle adds to the importmap in memory (`PanelImportMapConfigReader`, never written to
-  `importmap.php`). It uses the Symfony UX controllers and versions the application has, with the prebuilt
-  stylesheet; without AssetMapper, everything prebuilt as before. `@byfareska/crud` is mapped the same way, so
-  `registerControllers()` needs no `importmap.php` line. With entries the tool is Reprise, then Encore, then
-  AssetMapper.
-- The third-party code the panel's assets import - gridstack, vanilla-calendar-pro, the stylesheets of Bootstrap Icons,
-  gridstack, vanilla-calendar-pro and Tom Select - is the bundle's own copy in `assets/vendor` (with licences, made
-  by `build/panel`), imported by relative paths: no package to install for them (no longer peer dependencies), and
-  every tool resolves them, the standalone Tailwind CLI and AssetMapper too.
-- No deprecations of Doctrine ORM 3.7: `LockMode::NONE` for `find()`, the `SortDirection` enum for `ORDER BY` when the
-  ORM takes it (`DoctrineOrder`).
+  `panel.tailwind.css`, `panel.bootstrap5.css` (the `@source` of the theme's templates and the stylesheets of the
+  third-party libraries) and `@byfareska/crud/panel.js` / `panel.bootstrap5.js` (the controllers in a Stimulus
+  application of their own; for Bootstrap also Modal, Offcanvas and Dropdown).
+- `byfareska_crud.icon_template`: the Twig template every icon is drawn with (`name`, `class`, `attributes`), for Font
+  Awesome, an SVG sprite, Symfony UX Icons or images, without a theme of your own.
+- Default texts made from the names (`CrudDefaultTexts`) for keys nobody translated: `crud.product.title` "Products",
+  `.new` "New product", `.field.createdAt.name` "Created at", a menu section `app.nav.catalog` "Catalog", layout
+  groups, actions and bulk actions. They load before the translation files of the bundles and the application, so
+  those always win. `ResourceFieldNames` services add the fields a driver knows (`DoctrineFieldNames` for Doctrine).
+- `DoctrineRecordLabels`: what names a related entity, in this order: a `RelationChoiceLabel`, the title of the
+  resource of the entity, `__toString()`, its id. Used by forms, filters, the autocomplete, lists and details.
+- With `symfony/ux-autocomplete` installed, the relations of guessed forms are searched as you type too, not only the
+  relation filters. `RelationAutocompleter` answers them for who may add or edit records, within the scopes of the
+  related resource. Aliasing `RelationFormField` to `ChoiceRelationFormField` brings back the plain select.
+- Documentation in `docs/` (assets, configuration, resources, Doctrine, DTO, panels, dashboards, files, texts, command
+  palette, extending, troubleshooting); the README is an overview that links to it.
+
+### Changed
+
+- A panel named only by resources has a dashboard at "/", as a configured one has. A panel with `dashboard: false`
+  redirects "/" to its first list (route `crud_home_<panel>`; 404 when it has no list).
+- Guessed Doctrine forms create an entity whose constructor takes arguments: fields named like the parameters supply
+  them (`empty_data`). A required parameter that no field supplies is reported when the form is built.
+- Guessed Doctrine forms leave out fields that cannot be written (no setter, not public, like a `createdAt` set in the
+  constructor), except the constructor parameters of a new entity.
+- A relation to the same entity (a parent category) does not offer the record being edited, in a select or in the
+  autocomplete.
+- No deprecations of Doctrine ORM 3.7: `LockMode::NONE` for `find()`, and the `SortDirection` enum for `ORDER BY`
+  when the ORM accepts it (`DoctrineOrder`).
+
+### Fixed
+
+- Every page answered 500 ("Unknown function") when Symfony Reprise, the old default, was not installed. An asset tool
+  that is configured but not installed now fails with a message naming its package.
+- The menu failed on `path(null)` in the daisyui and tailwind themes when a panel had no home.
+- The `doctrine` dashboard storage without its table: the dashboard shows the default layout and logs a warning, and
+  saving answers 503 asking to run the migration, instead of a 500 from the database.
+- Relations to entities without `__toString()` failed in forms and filters, and lists showed their ids.
+- Untranslated texts were shown as their keys.
+
+### Security
+
+- The relation searches of `symfony/ux-autocomplete` went through the global `/autocomplete/{alias}`, which the
+  panel's firewall and `access_control` do not cover. A panel protected by `access_control` alone (without `role`)
+  revealed the names and ids of related entities to anybody who had the signed address of one of its fields. They now
+  go through the panel's own address (see Upgrading).
+
+## v0.1.0
+
+Initial release.
+
 - Requires `symfony/form` and `symfony/twig-bridge` 8.1 or later: the form theme of the daisyui theme extends
   `daisyui_5_layout.html.twig`, which Symfony has since 8.1.
 - "Save" of the add and edit forms stays on the record: it leads to the edit form (of a new record too, once it is
@@ -99,7 +128,3 @@
   address of a size is read back as the image for the index of usages.
 - The JSON of a file has `preview` and `sizes`; the editor of rich text gets `addressOf(file)` and `sizes`
   (`lib/rich_text.js`).
-
-## v0.1.0
-
-Initial release.
