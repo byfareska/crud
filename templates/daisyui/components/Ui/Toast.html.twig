@@ -9,19 +9,24 @@
     'data-controller': 'toast',
     'data-action': 'toast:show@window->toast#show',
     'data-toast-variants-value': {
-        success: {icon: 'bi-check-circle text-success'},
-        danger: {toast: 'border-s-4 border-s-error', icon: 'bi-x-circle text-error'},
-        warning: {toast: 'border-s-4 border-s-warning', icon: 'bi-exclamation-triangle text-warning'},
-        info: {icon: 'bi-info-circle text-info'},
+        success: {icon: 'text-success'},
+        danger: {toast: 'border-s-4 border-s-error', icon: 'text-error'},
+        warning: {toast: 'border-s-4 border-s-warning', icon: 'text-warning'},
+        info: {icon: 'text-info'},
     }|json_encode,
 }) }}>
     <template data-toast-target="template">
         <div class="alert pointer-events-auto items-start gap-3 border-base-300 bg-base-100 p-4 text-start shadow-lg" aria-atomic="true">
-            <i class="bi" data-toast-part="icon" aria-hidden="true"></i>
+            <span class="inline-flex" data-toast-part="icon" aria-hidden="true"></span>
             <div>
                 <div class="text-sm font-semibold" data-toast-part="title"></div>
                 <div class="text-sm text-base-content/60" data-toast-part="description" hidden></div>
             </div>
         </div>
     </template>
+    {# The icon of each variant, drawn by crud_icon() (byfareska_crud.icon_template): any set of icons. #}
+    <template data-toast-target="icon" data-variant="success">{{ crud_icon('check-circle') }}</template>
+    <template data-toast-target="icon" data-variant="danger">{{ crud_icon('x-circle') }}</template>
+    <template data-toast-target="icon" data-variant="warning">{{ crud_icon('exclamation-triangle') }}</template>
+    <template data-toast-target="icon" data-variant="info">{{ crud_icon('info-circle') }}</template>
 </div>

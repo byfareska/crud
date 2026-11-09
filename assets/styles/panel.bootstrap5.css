@@ -1,0 +1,13 @@
+/*
+ * Everything the "bootstrap5" theme of the panel needs besides Bootstrap (its dist stylesheet or your own Sass build of it), in one file to import after it - see
+ * docs/assets.md. The third-party stylesheets are the bundle's own copies (assets/vendor), imported by relative paths:
+ * no package to install, and any tool resolves them (Vite, Encore, AssetMapper, the standalone Tailwind CLI).
+ *
+ * No example of an import in this comment: AssetMapper reads the imports of a stylesheet, comments included.
+ */
+@import '../vendor/bootstrap-icons/bootstrap-icons.min.css';
+@import '../vendor/gridstack/gridstack.min.css';
+@import '../vendor/vanilla-calendar-pro/core.css';
+@import '../vendor/vanilla-calendar-pro/months.css';
+@import './calendar.css';
+@import '../vendor/tom-select/tom-select.bootstrap5.css';

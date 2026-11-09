@@ -6,6 +6,7 @@ namespace Byfareska\Crud\Routing;
 
 use Byfareska\Crud\Controller\DashboardController;
 use Byfareska\Crud\Controller\FilesController;
+use Byfareska\Crud\Autocomplete\RelationAutocompleter;
 use Byfareska\Crud\Files\FileRoutes;
 use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Panel\Scopes;
@@ -13,6 +14,7 @@ use InvalidArgumentException;
 use Symfony\Component\Config\Loader\Loader;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Bundle\FrameworkBundle\Controller\RedirectController;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
@@ -37,6 +39,9 @@ final class CrudRouteLoader extends Loader
 {
     public const string TYPE = 'byfareska_crud';
 
+    /** The default of the autocomplete route of a scope: RelationAutocompleter answers only through it. */
+    public const string AUTOCOMPLETE = '_crud_autocomplete';
+
     /** The default of the live route of a scope: its requests are of the page they come from, not of their own. */
     public const string LIVE = '_crud_live';
 
@@ -45,6 +50,8 @@ final class CrudRouteLoader extends Loader
         private readonly Scopes $scopes,
         #[Autowire(param: 'byfareska_crud.files.enabled')]
         private readonly bool $files = false,
+        #[Autowire(param: 'byfareska_crud.autocomplete')]
+        private readonly bool $autocomplete = false,
     ) {
         parent::__construct();
     }
@@ -73,6 +80,13 @@ final class CrudRouteLoader extends Loader
 
         if ($scope->dashboard) {
             $routes->addCollection($this->dashboard($scope->name, ''));
+        } elseif ($scope->home === null && ($first = $this->firstList($resources)) !== null) {
+            // No dashboard: "/" of the panel is its first list, so the brand and the panel switch lead somewhere.
+            $routes->add(Scope::firstListRoute($scope->name), new Route('/', [
+                '_controller' => RedirectController::class . '::redirectAction',
+                'route' => $first,
+                'permanent' => false,
+            ], methods: ['GET']));
         }
         // More dashboards of the panel, each under a path of its own.
         foreach ($scope->boards as $board => $settings) {
@@ -103,6 +117,16 @@ final class CrudRouteLoader extends Loader
                 methods: ['GET'],
             ));
         }
+        // The searches of the relations of its forms and filters, under its prefix: in the firewall of the panel and
+        // its access_control, not at the global /autocomplete of symfony/ux-autocomplete.
+        if ($this->autocomplete) {
+            $routes->add($scope->autocompleteRoute(), new Route(
+                '/_crud/autocomplete/{alias}',
+                ['_controller' => 'ux.autocomplete.autocomplete_controller', self::AUTOCOMPLETE => true],
+                ['alias' => preg_quote(RelationAutocompleter::ALIAS, '#')],
+                methods: ['GET'],
+            ));
+        }
         // The live components of its pages, under its prefix: in the firewall of the panel (PanelLiveUrls).
         $routes->add($scope->liveRoute(), new Route(
             '/_crud/{_live_component}/{_live_action}',
@@ -111,6 +135,22 @@ final class CrudRouteLoader extends Loader
         $routes->addDefaults([Scope::ATTRIBUTE => $scope->name]);
 
         return $routes;
+    }
+
+    /** The first list of the panel whose address needs no parameter of the application. */
+    private function firstList(RouteCollection $resources): ?string
+    {
+        foreach ($resources->all() as $name => $route) {
+            // The paging of a list ({_pages}/{page}) has defaults; any other parameter is the application's.
+            if (
+                str_ends_with($name, '_list')
+                && array_diff($route->compile()->getPathVariables(), ['_pages', 'page']) === []
+            ) {
+                return $name;
+            }
+        }
+
+        return null;
     }
 
     public function supports(mixed $resource, ?string $type = null): bool

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Autocomplete;
 
+use Byfareska\Crud\Driver\Doctrine\DoctrineOrder;
+use Doctrine\ORM\QueryBuilder;
+use Byfareska\Crud\Driver\Doctrine\DefaultDoctrineIdCodec;
+use Byfareska\Crud\Driver\Doctrine\DoctrineIdCodec;
+use Byfareska\Crud\Driver\Doctrine\DoctrineRecordLabels;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Driver\Doctrine\DoctrineEntityNormalizer;
 use Byfareska\Crud\Driver\Doctrine\DoctrineRelations;
@@ -22,6 +27,10 @@ use InvalidArgumentException;
 use LogicException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Byfareska\Crud\Panel\Scope;
+use Byfareska\Crud\Routing\CrudRouteLoader;
 use Symfony\UX\Autocomplete\AutocompleteResults;
 use Symfony\UX\Autocomplete\Controller\AutocompleteController;
 use Symfony\UX\Autocomplete\OptionsAwareAutocompleterInterface;
@@ -48,6 +57,12 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
     /** The key of "extra_options" of a filter giving how many entities a page of the field has: 1 to 100. */
     public const string PER_PAGE = 'per_page';
 
+    /** Asked by a relation of a guessed form (AutocompleteRelationFormField), not by a filter of a list. */
+    public const string FORM = 'form';
+
+    /** The record being edited by that form: never offered as its own relation (a category its own parent). */
+    public const string RECORD = 'record';
+
     private const int DEFAULT_PER_PAGE = 10;
 
     private const array TEXT_TYPES = ['string', 'text', 'ascii_string'];
@@ -64,6 +79,9 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         private readonly DoctrineRelations $relations,
         private readonly DoctrineSearches $searches,
         private readonly ?RelationChoiceLabels $labels = null,
+        private readonly ?DoctrineRecordLabels $recordLabels = null,
+        private readonly DoctrineIdCodec $ids = new DefaultDoctrineIdCodec(),
+        private readonly ?RequestStack $requests = null,
     ) {
     }
 
@@ -83,15 +101,53 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
     {
         $crud = $this->crud();
 
-        return $crud instanceof AsCrud && $this->access->isGranted($crud, CrudOperation::List);
+        return $crud instanceof AsCrud && $this->throughPanel($crud) && $this->granted($crud);
+    }
+
+    /**
+     * Asked through the autocomplete route of the panel of the resource (CrudRouteLoader), under its prefix - in its
+     * firewall and access_control - not through the global /autocomplete of symfony/ux-autocomplete, which nothing of
+     * the panel guards: a panel kept to the signed in by access_control alone would otherwise tell its entities to
+     * anybody with an address of one of its fields.
+     */
+    private function throughPanel(AsCrud $crud): bool
+    {
+        $request = $this->requests?->getCurrentRequest();
+
+        return $request !== null
+            && $request->attributes->get(CrudRouteLoader::AUTOCOMPLETE) === true
+            && $request->attributes->get(Scope::ATTRIBUTE) === $crud->scope;
+    }
+
+    /** A filter: who may see the list; a form: who may add or edit its records. */
+    private function granted(AsCrud $crud): bool
+    {
+        if (!$this->isForm()) {
+            return $this->access->isGranted($crud, CrudOperation::List);
+        }
+
+        return $this->access->isGranted($crud, CrudOperation::Create)
+            || $this->access->isGranted($crud, CrudOperation::Update);
+    }
+
+    private function isForm(): bool
+    {
+        return $this->option(self::FORM) !== null;
     }
 
     public function fetchResults(string $query, int $page): AutocompleteResults
     {
-        $crud = $this->crud() ?? throw new NotFoundHttpException('No relation filter of a list is asked for.');
+        $crud = $this->crud() ?? throw new NotFoundHttpException('No relation of a list or a form is asked for.');
+        if (!$this->throughPanel($crud)) {
+            throw new AccessDeniedHttpException('The relations of a panel are searched through the address of the panel.');
+        }
         // Also without symfony/security-bundle, which is what asks isGranted().
-        $this->access->assertGranted($crud, CrudOperation::List);
-        $target = $this->target($crud) ?? throw new NotFoundHttpException('No relation filter of a list is asked for.');
+        if (!$this->isForm()) {
+            $this->access->assertGranted($crud, CrudOperation::List);
+        } elseif (!$this->granted($crud)) {
+            $this->access->assertGranted($crud, CrudOperation::Update);
+        }
+        $target = $this->target($crud) ?? throw new NotFoundHttpException('No relation of a list or a form is asked for.');
         // Within the scopes of the related entity's resource (the one the source names for the filter), else within
         // those of every resource.
         $relation = $this->option(RelationFilterField::FILTER) ?? $this->option(self::FIELD);
@@ -99,6 +155,7 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         $metadata = $entities->metadata;
         $builder = $entities->query;
         $searched = $this->searched($crud, $metadata);
+        $this->leaveOutRecord($crud, $entities->query, $metadata);
         $related = $this->relations->resourceOf($crud, $target, $relation);
         // Found as its own list finds it: with the search of the list (DoctrineSearch).
         $text = trim($query);
@@ -107,7 +164,7 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
             $this->searches->of($source instanceof DoctrineSource ? $source : null)->apply($entities, $searched, $text);
         }
         foreach ([...array_slice($searched, 0, 1), ...$metadata->getIdentifierFieldNames()] as $ordered) {
-            $builder->addOrderBy('e.' . $ordered, 'ASC');
+            $builder->addOrderBy('e.' . $ordered, DoctrineOrder::of(false));
         }
         // One more than a page: whether there is a next one, without counting them all.
         $page = max(1, $page);
@@ -120,7 +177,7 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         foreach (array_slice($found, 0, $perPage) as $entity) {
             $id = $this->entities->idOf($metadata, $entity, $this->values);
             // "Surname, Name (VAT number)": a RelationChoiceLabel of the entity, else its text (__toString()).
-            $text = $this->labels?->of($entity) ?? $this->values->normalize($entity);
+            $text = $this->labels?->of($entity) ?? $this->recordLabels?->of($entity) ?? (string) $this->values->normalize($entity);
             $results[] = ['value' => $id, 'text' => is_scalar($text) ? (string) $text : (string) $id];
         }
 
@@ -160,6 +217,16 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         $source = $crud->source;
         if ($field === null || !$source instanceof DoctrineSource) {
             return null;
+        }
+        if ($this->isForm()) {
+            // A relation of the entity itself, owned by it - what a guessed form has; none that looks secret.
+            $metadata = $this->metadata($source->entity);
+
+            return $metadata->hasAssociation($field)
+                && !$metadata->isAssociationInverseSide($field)
+                && !AsCrud::looksSecret($field)
+                    ? $metadata->getAssociationTargetClass($field)
+                    : null;
         }
 
         // The filter that asks, by its name; without one (a field of the application's own), the first one of the
@@ -218,6 +285,29 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
     }
 
     /** How many entities a page has: "per_page" of the filter's extra_options, 1 to 100. */
+    /**
+     * A relation to the same entity in the edit form: the record being edited is not offered (a category its own
+     * parent).
+     *
+     * @param ClassMetadata<object> $target
+     */
+    private function leaveOutRecord(AsCrud $crud, QueryBuilder $builder, ClassMetadata $target): void
+    {
+        $record = $this->option(self::RECORD);
+        $source = $crud->source;
+        if (!$this->isForm() || $record === null || !$source instanceof DoctrineSource) {
+            return;
+        }
+        if ($this->metadata($source->entity)->getName() !== $target->getName()) {
+            return;
+        }
+        foreach ($this->ids->decode($target, $record) ?? [] as $name => $value) {
+            $parameter = 'crud_record_' . $name;
+            $builder->andWhere(sprintf('e.%s != :%s', $name, $parameter))
+                ->setParameter($parameter, $value, $target->hasField($name) ? $target->getTypeOfField($name) : null);
+        }
+    }
+
     private function perPage(): int
     {
         $given = $this->options[self::PER_PAGE] ?? null;

@@ -12,12 +12,14 @@
         "@hotwired/stimulus": "^3.2.0",
         "@symfony/ux-live-component": "*",
         "bootstrap": "^5.3.8",
-        "gridstack": "^14.0.0",
-        "tinymce": ">=7",
-        "vanilla-calendar-pro": "^3.4.0"
+        "tinymce": ">=7"
     },
     "peerDependenciesMeta": {
-        "bootstrap": { "optional": true },
-        "tinymce": { "optional": true }
+        "bootstrap": {
+            "optional": true
+        },
+        "tinymce": {
+            "optional": true
+        }
     }
 }

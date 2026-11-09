@@ -9,7 +9,7 @@ const SCROLL_KEY = 'dashboard-scroll';
 let gridstackModule = null;
 
 function loadGridStack() {
-    gridstackModule ??= import('gridstack');
+    gridstackModule ??= import('../vendor/gridstack.js');
 
     return gridstackModule;
 }

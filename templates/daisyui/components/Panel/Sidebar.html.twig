@@ -5,9 +5,16 @@
 #}
 {% set nav %}
     {% block sidebar_brand %}
-    <a class="mb-4 flex items-center gap-2 px-2 text-lg font-semibold" href="{{ path(panel_scope().homeRoute) }}">
+    {% set home = panel_scope().homeRoute %}
+    {% if home %}
+    <a class="mb-4 flex items-center gap-2 px-2 text-lg font-semibold" href="{{ path(home) }}">
         <span class="inline-flex size-7 items-center justify-center rounded-field bg-primary text-sm text-primary-content">{{ panel_brand()|first|upper }}</span> {{ panel_brand() }}
     </a>
+    {% else %}
+    <span class="mb-4 flex items-center gap-2 px-2 text-lg font-semibold">
+        <span class="inline-flex size-7 items-center justify-center rounded-field bg-primary text-sm text-primary-content">{{ panel_brand()|first|upper }}</span> {{ panel_brand() }}
+    </span>
+    {% endif %}
     {% endblock %}
     {% block sidebar_sections %}
     {% for title, links in this.sections %}

@@ -8,12 +8,16 @@ use Byfareska\Crud\Dashboard\DashboardLayouts;
 use Byfareska\Crud\Dashboard\WidgetPlacement;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * The layouts in a table of the database (DashboardLayoutRecord). The one for everybody (owner null) is the row of the
@@ -30,15 +34,27 @@ final readonly class DoctrineDashboardLayouts implements DashboardLayouts
     /** The owner of the layout for everybody, in the table. */
     public const string EVERYBODY = '*';
 
+    private const string NO_TABLE = 'The table of the dashboard layouts (crud_dashboard_layout) is not there: run '
+        . 'bin/console doctrine:migrations:diff and doctrine:migrations:migrate, or set '
+        . 'byfareska_crud.dashboard.storage: cache.';
+
     public function __construct(
         private ManagerRegistry $doctrine,
+        private LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
     public function find(?string $owner, string $board): ?array
     {
-        $placements = $this->placementsOf($owner ?? self::EVERYBODY, $board)
-            ?? ($owner === null ? $this->placementsOf(null, $board) : null);
+        try {
+            $placements = $this->placementsOf($owner ?? self::EVERYBODY, $board)
+                ?? ($owner === null ? $this->placementsOf(null, $board) : null);
+        } catch (TableNotFoundException $exception) {
+            // Not migrated yet: everybody sees the layout of the widgets, a save says what to do.
+            $this->logger->warning(self::NO_TABLE, ['exception' => $exception]);
+
+            return null;
+        }
 
         return $placements === null ? null : WidgetPlacement::listFromArray($placements);
     }
@@ -66,16 +82,31 @@ final readonly class DoctrineDashboardLayouts implements DashboardLayouts
                 $this->forgetLegacy($connection, $table, $columns, $board);
             }
         };
-        $connection->transactional($store);
+        try {
+            $connection->transactional($store);
+        } catch (TableNotFoundException $exception) {
+            throw $this->noTable($exception);
+        }
     }
 
     public function delete(?string $owner, string $board): void
     {
         [$connection, $table, $columns] = $this->table();
-        $connection->delete($table, [$columns['owner'] => $owner ?? self::EVERYBODY, $columns['board'] => $board]);
-        if ($owner === null) {
-            $this->forgetLegacy($connection, $table, $columns, $board);
+        try {
+            $connection->delete($table, [$columns['owner'] => $owner ?? self::EVERYBODY, $columns['board'] => $board]);
+            if ($owner === null) {
+                $this->forgetLegacy($connection, $table, $columns, $board);
+            }
+        } catch (TableNotFoundException $exception) {
+            throw $this->noTable($exception);
         }
+    }
+
+    private function noTable(TableNotFoundException $exception): HttpException
+    {
+        $this->logger->error(self::NO_TABLE, ['exception' => $exception]);
+
+        return new HttpException(503, self::NO_TABLE, $exception);
     }
 
     /**

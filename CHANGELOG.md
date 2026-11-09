@@ -2,6 +2,64 @@
 
 ## Unreleased
 
+- **The minimal setup works**: the bundle, one route import and `#[AsCrud]` on an entity make a working panel - no
+  configuration, no form type, no `__toString()`, no build of the application's own.
+- `byfareska_crud.assets` is `auto` by default (was `reprise`): the prebuilt assets of the panel while the application
+  names no `entries`, else the tool that is installed (Symfony Reprise, AssetMapper, Webpack Encore). A tool named but
+  not installed is told by its package, not by "Unknown function" of Twig.
+- `byfareska_crud.assets: builtin`: the prebuilt stylesheet (the daisyui and tailwind themes, every daisyUI colour
+  theme, Bootstrap Icons, gridstack, the calendar) and script (Stimulus, the controllers of the bundle, the live
+  controller of Symfony UX Live Component 3.7, the chart controller of UX Chart.js) of `public/panel`, installed by
+  `assets:install` as `bundles/crud/panel`. Built by `build/panel` (`npm ci && npm run build`).
+- A panel that only resources name has a dashboard at "/" too, as a configured one has. One with `dashboard: false`
+  leads "/" to its first list (`crud_home_<panel>`); the brand of the menu no longer fails without a home.
+- The `doctrine` dashboard storage without its table: everybody sees the default layout (a warning is logged) and a
+  save answers 503 saying to migrate, instead of a 500 of the database.
+- Guessed Doctrine forms make an entity whose constructor takes arguments: the fields named as its parameters give
+  them (`empty_data`). A required parameter no field gives is told when the form is made.
+- Guessed Doctrine forms leave out what cannot be written (no setter, not public - a `createdAt` set in the
+  constructor), but for the parameters of the constructor of a new entity.
+- What names a related entity (`DoctrineRecordLabels`): a `RelationChoiceLabel`, else the title of the resource of
+  its entity, else `__toString()`, else its id - in the choices of forms and filters, the autocomplete, the lists and
+  the details. A relation is a `TypedValue('relation', RecordRef)`: its text the name, its JSON the id. A relation
+  to the same entity (a parent) does not offer the record being edited.
+- Texts nobody translated are made of the names (`CrudDefaultTexts`, a catalogue before the files of the bundles and
+  the application): `crud.product.title` "Products", `.new` "New product", `.field.createdAt.name` "Created at",
+  a menu section `app.nav.catalog` "Catalog"; layout groups, actions and bulk actions too. Help, toasts and the
+  keywords of the palette are not made. `ResourceFieldNames` services add fields a driver knows.
+- With `symfony/ux-autocomplete` the relations of guessed forms are fields to search in too, not only the relation
+  filters - nothing to configure (`RelationFormField`: `AutocompleteRelationFormField`, else
+  `ChoiceRelationFormField`). `RelationAutocompleter` answers them for who may add or edit records, in the scopes of
+  the related resource, never offering the record being edited. The built-in assets have the autocomplete controller
+  and Tom Select in the look of the daisyui theme.
+- The relation searches (`symfony/ux-autocomplete`) go through an address of each panel,
+  `<prefix>/_crud/autocomplete/{alias}` (`crud_autocomplete_<panel>`), so the panel's firewall and `access_control`
+  cover them. `RelationAutocompleter` refuses the global `/autocomplete/{alias}` and the address of another panel.
+  Before, a panel protected by `access_control` alone (no `role`) told the names and ids of its related entities to
+  anybody who had a signed address of one of its fields.
+- `byfareska_crud.icon_template`: the Twig template every icon is drawn with (`name`, `class`, `attributes`) - Font
+  Awesome, an SVG sprite, Symfony UX Icons, images of AssetMapper, names mapped - without a theme of your own. The
+  toasts draw their icons with `crud_icon()` too (`<template data-toast-target="icon" data-variant="…">`, cloned by the
+  toast controller), no longer the classes of Bootstrap Icons. A toast template of your own without these templates
+  works as before.
+- One import per theme for an application's own build: `@byfareska/crud/styles/panel.daisyui.css`,
+  `panel.tailwind.css`, `panel.bootstrap5.css` (the `@source` of the theme's templates, Bootstrap Icons, gridstack,
+  the calendar, Tom Select in the theme's look) and `@byfareska/crud/panel.js` / `panel.bootstrap5.js` (the
+  controllers in a Stimulus application of their own; Bootstrap's components handed over). The built-in assets are
+  built from these files.
+- Nothing to configure for the assets in any application. `auto` without entries now runs the panel's script
+  through the application's AssetMapper when it has one with StimulusBundle: `assets/panel.importmap.js`, an
+  entrypoint the bundle adds to the importmap in memory (`PanelImportMapConfigReader`, never written to
+  `importmap.php`). It uses the Symfony UX controllers and versions the application has, with the prebuilt
+  stylesheet; without AssetMapper, everything prebuilt as before. `@byfareska/crud` is mapped the same way, so
+  `registerControllers()` needs no `importmap.php` line. With entries the tool is Reprise, then Encore, then
+  AssetMapper.
+- The third-party code the panel's assets import - gridstack, vanilla-calendar-pro, the stylesheets of Bootstrap Icons,
+  gridstack, vanilla-calendar-pro and Tom Select - is the bundle's own copy in `assets/vendor` (with licences, made
+  by `build/panel`), imported by relative paths: no package to install for them (no longer peer dependencies), and
+  every tool resolves them, the standalone Tailwind CLI and AssetMapper too.
+- No deprecations of Doctrine ORM 3.7: `LockMode::NONE` for `find()`, the `SortDirection` enum for `ORDER BY` when the
+  ORM takes it (`DoctrineOrder`).
 - Requires `symfony/form` and `symfony/twig-bridge` 8.1 or later: the form theme of the daisyui theme extends
   `daisyui_5_layout.html.twig`, which Symfony has since 8.1.
 - "Save" of the add and edit forms stays on the record: it leads to the edit form (of a new record too, once it is

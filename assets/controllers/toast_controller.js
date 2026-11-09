@@ -15,11 +15,15 @@ const VARIANTS = ['success', 'danger', 'warning', 'info'];
  * still shown (at most data-toast-max-value of them, 5; the oldest goes first). Without one (the markup of old), the
  * element is the one toast and a new message takes the place of the last one.
  *
+ * The icon of a variant is a <template data-toast-target="icon" data-variant="…"> inside (drawn on the server by
+ * crud_icon(), so any set of icons - byfareska_crud.icon_template): its content goes into the part "icon". Without
+ * them (a template of old with <i class="bi">) the "icon" classes of the variant are all there is to it.
+ *
  * The toasts are data-turbo-permanent: a Turbo visit moves them into the new <body>, which disconnects and connects the
  * controller again - so the time each is to hide at is kept on its element and the countdown goes on after the move.
  */
 export default class extends Controller {
-    static targets = ['title', 'description', 'template'];
+    static targets = ['title', 'description', 'template', 'icon'];
     static values = {
         duration: { type: Number, default: 3200 },
         max: { type: Number, default: 5 },
@@ -67,6 +71,10 @@ export default class extends Controller {
         part('title').textContent = detail.title ?? '';
         part('description').textContent = detail.description ?? '';
         part('description').hidden = !detail.description;
+        const icon = this.iconTargets.find((target) => target.dataset.variant === variant);
+        if (icon && part('icon')) {
+            part('icon').replaceChildren(icon.content.cloneNode(true));
+        }
         for (const element of [toast, ...toast.querySelectorAll('[data-toast-part]')]) {
             const name = element === toast ? 'toast' : element.dataset.toastPart;
             const classes = this.variantsValue[variant]?.[name];

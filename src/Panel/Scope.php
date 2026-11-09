@@ -117,9 +117,27 @@ final readonly class Scope
         return self::boardRoute($this->name, $action);
     }
 
-    /** Where the panel switch leads to; null = nowhere to go. */
+    /**
+     * Where the panel switch and the brand lead to: "home", else its dashboard, else "/" of the panel, which leads to
+     * its first list (CrudRouteLoader).
+     */
     public function homeRoute(): ?string
     {
-        return $this->home ?? ($this->dashboard ? $this->dashboardRoute() : null);
+        return $this->home ?? ($this->dashboard ? $this->dashboardRoute() : self::firstListRoute($this->name));
+    }
+
+    /**
+     * The autocomplete endpoint of the panel (symfony/ux-autocomplete), under its prefix: its firewall and
+     * access_control cover the searches of the relations of its forms and filters as they cover its pages.
+     */
+    public function autocompleteRoute(): string
+    {
+        return 'crud_autocomplete_' . $this->name;
+    }
+
+    /** The route of "/" of a panel without a dashboard: a redirect to its first list. */
+    public static function firstListRoute(string $scope): string
+    {
+        return 'crud_home_' . $scope;
     }
 }

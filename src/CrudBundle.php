@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud;
 
+use Byfareska\Crud\Twig\PanelExtension;
 use Byfareska\Crud\Action\BulkActionHandler;
 use Byfareska\Crud\Action\RecordActionHandler;
 use Byfareska\Crud\Attribute\AsCrud;
@@ -32,6 +33,8 @@ use Byfareska\Crud\Dashboard\RoleDashboardPolicy;
 use Byfareska\Crud\Dashboard\Storage\CacheDashboardLayouts;
 use Byfareska\Crud\Dashboard\Storage\DoctrineDashboardLayouts;
 use Byfareska\Crud\DependencyInjection\CollectCrudDeclarationsPass;
+use Byfareska\Crud\DependencyInjection\CrudDefaultTextsPass;
+use Byfareska\Crud\DependencyInjection\ImportMapPanelPass;
 use Byfareska\Crud\DependencyInjection\CollectWidgetsPass;
 use Byfareska\Crud\DependencyInjection\ComponentCollisionPass;
 use Byfareska\Crud\DependencyInjection\PanelLiveUrlsPass;
@@ -41,6 +44,11 @@ use Byfareska\Crud\Driver\Doctrine\DefaultDoctrineExceptionMapper;
 use Byfareska\Crud\Driver\Doctrine\DoctrineDriver;
 use Byfareska\Crud\Driver\Doctrine\DoctrineEntityFactory;
 use Byfareska\Crud\Driver\Doctrine\DoctrineEntityNormalizer;
+use Byfareska\Crud\Driver\Doctrine\DoctrineRecordLabels;
+use Byfareska\Crud\Driver\Doctrine\DoctrineFieldNames;
+use Byfareska\Crud\Driver\Doctrine\ChoiceRelationFormField;
+use Byfareska\Crud\Driver\Doctrine\RelationFormField;
+use Byfareska\Crud\Autocomplete\AutocompleteRelationFormField;
 use Byfareska\Crud\Driver\Doctrine\DoctrineExceptionMapper;
 use Byfareska\Crud\Driver\Doctrine\DoctrineFilterGuesser;
 use Byfareska\Crud\Driver\Doctrine\DoctrineFilterHandler;
@@ -233,12 +241,14 @@ final class CrudBundle extends AbstractBundle
                 ->end()
                 ->enumNode('assets')
                     ->info(
-                        'What builds the assets the panel loads (@CrudTheme/panel/_assets.html.twig): "reprise" (Vite '
-                        . 'through Symfony Reprise, recommended), "encore" (Webpack Encore), "importmap" (AssetMapper) '
-                        . 'or "none" (the layout loads them itself).',
+                        'What builds the assets the panel loads (@CrudTheme/panel/_assets.html.twig): "auto" (the '
+                        . 'prebuilt ones of the bundle while "entries" is not set, else the tool that is installed), '
+                        . '"builtin" (the prebuilt stylesheet and script of the bundle, bundles/crud/panel), '
+                        . '"reprise" (Vite through Symfony Reprise), "encore" (Webpack Encore), "importmap" '
+                        . '(AssetMapper) or "none" (the layout loads them itself).',
                     )
-                    ->values(['reprise', 'encore', 'importmap', 'none'])
-                    ->defaultValue('reprise')
+                    ->values(['auto', 'builtin', 'reprise', 'encore', 'importmap', 'none'])
+                    ->defaultValue('auto')
                 ->end()
                 ->arrayNode('entries')
                     ->info(
@@ -255,6 +265,15 @@ final class CrudBundle extends AbstractBundle
                         . 'for a scope that names none.',
                     )
                     ->defaultValue('@CrudTheme/panel/layout.html.twig')
+                ->end()
+                ->scalarNode('icon_template')
+                    ->info(
+                        'The Twig template every icon of the panel is drawn with (crud_icon()), given "name", "class" '
+                        . 'and "attributes": another set of icons (Font Awesome, an SVG sprite, ux-icons, images of '
+                        . 'AssetMapper), names mapped to it. Default: the icon template of the theme, Bootstrap Icons.',
+                    )
+                    ->defaultValue(PanelExtension::DEFAULT_ICON_TEMPLATE)
+                    ->cannotBeEmpty()
                 ->end()
                 ->arrayNode('paths')
                     ->info(
@@ -849,6 +868,10 @@ final class CrudBundle extends AbstractBundle
 
         // The classes of #[AsCrud] & co., including entities in directories excluded from the services.
         $container->addCompilerPass(new CollectCrudDeclarationsPass());
+        // After the declarations are collected: the texts made of the names of the resources, first of the translator.
+        $container->addCompilerPass(new CrudDefaultTextsPass());
+        // With AssetMapper and StimulusBundle, the panel's script an entrypoint of the application's importmap.
+        $container->addCompilerPass(new ImportMapPanelPass());
         // The components of #[AsDashboardWidget] and #[AsTopbarWidget], by the names of their #[AsTwigComponent].
         $container->addCompilerPass(new CollectWidgetsPass());
         // A component of the application named as one of the bundle's would never be drawn: said at once.
@@ -946,6 +969,7 @@ final class CrudBundle extends AbstractBundle
         $parameters = $container->parameters();
         $parameters->set('byfareska_crud.name', $config['name']);
         $parameters->set('byfareska_crud.layout', $config['layout']);
+        $parameters->set('byfareska_crud.icon_template', $config['icon_template']);
         $parameters->set('byfareska_crud.preview', $config['preview']);
         $parameters->set('byfareska_crud.per_page', array_values($config['per_page']));
         $parameters->set('byfareska_crud.default_per_page', $config['default_per_page']);
@@ -994,6 +1018,8 @@ final class CrudBundle extends AbstractBundle
             ->exclude([
                 $src . '/CrudBundle.php',
                 $src . '/DependencyInjection/',
+                // The importmap reader of AssetMapper, put in place of its own by ImportMapPanelPass.
+                $src . '/AssetMapper/',
                 // Registered by loadFiles() when byfareska_crud.files is enabled.
                 $src . '/Files/',
                 $src . '/Controller/FilesController.php',
@@ -1047,6 +1073,11 @@ final class CrudBundle extends AbstractBundle
         // Only this bundle's extension is known here: whether DoctrineBundle is there is told by the kernel.
         $bundles = $builder->hasParameter('kernel.bundles') ? $builder->getParameter('kernel.bundles') : [];
         $hasDoctrineBundle = is_array($bundles) && isset($bundles['DoctrineBundle']);
+        // AssetMapper with StimulusBundle: "auto" loads the panel's script through the application's importmap.
+        $parameters->set(
+            'byfareska_crud.stimulus_importmap',
+            is_array($bundles) && isset($bundles['StimulusBundle']) && $this->isAssetMapperAvailable($builder),
+        );
         // The one signed in, in the menu: Symfony Security's user, or nobody without it.
         if (is_array($bundles) && isset($bundles['SecurityBundle'])) {
             $services->alias(PanelAccount::class, SecurityPanelAccount::class);
@@ -1071,6 +1102,9 @@ final class CrudBundle extends AbstractBundle
             $services->remove(DoctrineDashboardLayouts::class);
             $services->remove(DoctrineDriver::class);
             $services->remove(DoctrineEntityNormalizer::class);
+            $services->remove(DoctrineRecordLabels::class);
+            $services->remove(DoctrineFieldNames::class);
+            $services->remove(ChoiceRelationFormField::class);
             $services->remove(FieldFilterHandler::class);
             $services->remove(FieldSortHandler::class);
             $services->remove(DoctrineScopes::class);
@@ -1098,14 +1132,19 @@ final class CrudBundle extends AbstractBundle
             && is_array($bundles)
             && isset($bundles['AutocompleteBundle'])
             && interface_exists(OptionsAwareAutocompleterInterface::class);
+        $parameters->set('byfareska_crud.autocomplete', $hasAutocomplete);
         if ($hasAutocomplete) {
             $services->set(RelationAutocompleter::class)
                 ->tag('ux.autocompleter', ['alias' => RelationAutocompleter::ALIAS]);
             $services->set(RelationChoiceLabels::class);
             $services->set(AutocompleteRelationFilterField::class);
             $services->alias(RelationFilterField::class, AutocompleteRelationFilterField::class);
+            // The relations of the guessed forms too: searched as one types, only the chosen entity loaded.
+            $services->set(AutocompleteRelationFormField::class);
+            $services->alias(RelationFormField::class, AutocompleteRelationFormField::class);
         } else {
             $services->alias(RelationFilterField::class, ChoiceRelationFilterField::class);
+            $services->alias(RelationFormField::class, ChoiceRelationFormField::class);
         }
 
         $hasDbal = $hasDoctrineBundle && class_exists(Connection::class);
@@ -1397,6 +1436,13 @@ final class CrudBundle extends AbstractBundle
 
     public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
     {
+        // Whether the application names entries of its own (read before the configuration is merged with its
+        // defaults): "auto" then loads them by the tool that is installed, else the prebuilt assets of the panel.
+        $builder->setParameter('byfareska_crud.entries_configured', array_any(
+            $builder->getExtensionConfig($this->extensionAlias),
+            static fn (array $raw): bool => array_key_exists('entries', $raw),
+        ));
+
         // The table of the dashboard layouts, when they are kept by Doctrine.
         $storage = null;
         foreach ($builder->getExtensionConfig($this->extensionAlias) as $config) {

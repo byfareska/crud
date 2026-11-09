@@ -17,7 +17,7 @@ interface DoctrineSortHandler
      * Adds the order to those before it (addOrderBy()); an expression of its own is selected as HIDDEN first:
      *
      *     $query->query->addSelect('(SELECT COUNT(o.id) FROM App\Entity\Order o WHERE o.product = e) AS HIDDEN orders')
-     *         ->addOrderBy('orders', $descending ? 'DESC' : 'ASC');
+     *         ->addOrderBy('orders', DoctrineOrder::of($descending));
      */
     public function apply(DoctrineSort $sort, DoctrineListQuery $query, bool $descending): void;
 }

@@ -24,7 +24,10 @@ final readonly class AutocompleteRelationFilterField implements RelationFilterFi
             'class' => $entity,
             'choice_lazy' => true,
             'autocomplete' => true,
-            'autocomplete_url' => $this->urls->generate('ux_autocomplete', ['alias' => RelationAutocompleter::ALIAS]),
+            'autocomplete_url' => $this->urls->generate(
+                'crud_autocomplete_' . $crud->scope,
+                ['alias' => RelationAutocompleter::ALIAS],
+            ),
             // Signed by the package: the address cannot ask for another resource.
             'extra_options' => [RelationAutocompleter::RESOURCE => $crud->name, RelationAutocompleter::FIELD => $field],
         ];
