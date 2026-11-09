@@ -1,0 +1,17 @@
+/*
+ * Everything the "tailwind" theme of the panel needs besides Tailwind CSS, in one file to import after it - see
+ * docs/assets.md. The third-party stylesheets are the bundle's own copies (assets/vendor), imported by relative paths:
+ * no package to install, and any tool resolves them (Vite, Encore, AssetMapper, the standalone Tailwind CLI).
+ *
+ * No example of an import in this comment: AssetMapper reads the imports of a stylesheet, comments included.
+ */
+@source '../../templates/tailwind';
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+@import '../vendor/bootstrap-icons/bootstrap-icons.min.css';
+@import '../vendor/gridstack/gridstack.min.css';
+@import '../vendor/vanilla-calendar-pro/core.css';
+@import '../vendor/vanilla-calendar-pro/months.css';
+@import './calendar.css';
+@import '../vendor/tom-select/tom-select.default.css';
+@import './tom-select.tailwind.css';

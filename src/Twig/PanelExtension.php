@@ -27,6 +27,9 @@ final class PanelExtension extends AbstractExtension implements GlobalsInterface
     /** The languages written from the right to the left, by their code. */
     private const array RIGHT_TO_LEFT = ['ar', 'arc', 'ckb', 'dv', 'fa', 'he', 'ku', 'ps', 'sd', 'ug', 'ur', 'yi'];
 
+    /** The icon template of the theme in use: Bootstrap Icons by name. */
+    public const string DEFAULT_ICON_TEMPLATE = '@CrudTheme/crud/icon.html.twig';
+
     public function __construct(
         #[Autowire(param: 'byfareska_crud.name')]
         private readonly string $name,
@@ -36,6 +39,8 @@ final class PanelExtension extends AbstractExtension implements GlobalsInterface
         private readonly PanelAccount $account = new NoPanelAccount(),
         #[Autowire(param: 'byfareska_crud.files.enabled')]
         private readonly bool $files = false,
+        #[Autowire(param: 'byfareska_crud.icon_template')]
+        private readonly string $iconTemplate = self::DEFAULT_ICON_TEMPLATE,
     ) {
     }
 
@@ -115,7 +120,7 @@ final class PanelExtension extends AbstractExtension implements GlobalsInterface
     {
         // Inline, as the tag it stands for: no white space of the template around it.
         return trim($twig->render(
-            '@CrudTheme/crud/icon.html.twig',
+            $this->iconTemplate,
             ['name' => $name, 'class' => $class, 'attributes' => $attributes],
         ));
     }

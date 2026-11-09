@@ -62,8 +62,16 @@ deptrac:
             name: AutocompleteIntegration
             collectors:
                 -
-                    type: directory
-                    value: src/Autocomplete/.*
+                    # RelationChoiceLabel names entities everywhere (DoctrineRecordLabels), with or without the package.
+                    type: bool
+                    must:
+                        -
+                            type: directory
+                            value: src/Autocomplete/.*
+                    must_not:
+                        -
+                            type: classNameRegex
+                            value: '#^Byfareska\\Crud\\Autocomplete\\RelationChoiceLabel$#'
         -
             name: FlysystemIntegration
             collectors:

@@ -1,0 +1,12 @@
+/*
+ * The prebuilt stylesheet of the panel (byfareska_crud.assets: builtin): the stylesheet of the daisyui theme as an
+ * application builds it (assets/styles/panel.daisyui.css) with every colour theme of daisyUI, plus the classes of the
+ * tailwind theme and its dark mode, and the styles of Symfony UX Live Component. The bootstrap5 theme has no
+ * prebuilt stylesheet: Bootstrap is the application's.
+ */
+@import 'tailwindcss';
+@import '../../assets/styles/panel.daisyui.css';
+@import '@symfony/ux-live-component/dist/live.min.css';
+@plugin 'daisyui' { themes: all; }
+@source '../../templates/tailwind';
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));

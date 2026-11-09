@@ -9,19 +9,24 @@
     'data-controller': 'toast',
     'data-action': 'toast:show@window->toast#show',
     'data-toast-variants-value': {
-        success: {icon: 'bi-check-circle text-green-600 dark:text-green-400'},
-        danger: {toast: 'border-s-4 border-red-500', icon: 'bi-x-circle text-red-600 dark:text-red-400'},
-        warning: {toast: 'border-s-4 border-amber-500', icon: 'bi-exclamation-triangle text-amber-500 dark:text-amber-400'},
-        info: {icon: 'bi-info-circle text-indigo-600 dark:text-indigo-400'},
+        success: {icon: 'text-green-600 dark:text-green-400'},
+        danger: {toast: 'border-s-4 border-red-500', icon: 'text-red-600 dark:text-red-400'},
+        warning: {toast: 'border-s-4 border-amber-500', icon: 'text-amber-500 dark:text-amber-400'},
+        info: {icon: 'text-indigo-600 dark:text-indigo-400'},
     }|json_encode,
 }) }}>
     <template data-toast-target="template">
         <div class="pointer-events-auto flex gap-3 rounded-xl bg-white p-4 shadow-lg ring-1 ring-black/5 dark:bg-gray-800 dark:ring-white/10" aria-atomic="true">
-            <i class="bi" data-toast-part="icon" aria-hidden="true"></i>
+            <span class="inline-flex" data-toast-part="icon" aria-hidden="true"></span>
             <div>
                 <div class="text-sm font-semibold" data-toast-part="title"></div>
                 <div class="text-sm text-gray-500 dark:text-gray-400" data-toast-part="description" hidden></div>
             </div>
         </div>
     </template>
+    {# The icon of each variant, drawn by crud_icon() (byfareska_crud.icon_template): any set of icons. #}
+    <template data-toast-target="icon" data-variant="success">{{ crud_icon('check-circle') }}</template>
+    <template data-toast-target="icon" data-variant="danger">{{ crud_icon('x-circle') }}</template>
+    <template data-toast-target="icon" data-variant="warning">{{ crud_icon('exclamation-triangle') }}</template>
+    <template data-toast-target="icon" data-variant="info">{{ crud_icon('info-circle') }}</template>
 </div>

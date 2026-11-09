@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Files\Doctrine;
 
+use Byfareska\Crud\Driver\Doctrine\DoctrineOrder;
 use Byfareska\Crud\Driver\Doctrine\LikePattern;
 use Byfareska\Crud\Files\FileLibrary;
 use Byfareska\Crud\Files\FilePage;
@@ -76,7 +77,7 @@ final readonly class DoctrineFileLibrary implements FileLibrary
         }
         $this->filterKinds($builder, $query->accept);
         if ($this->fields->created !== null) {
-            $builder->orderBy('f.' . $this->fields->created, 'DESC');
+            $builder->orderBy('f.' . $this->fields->created, DoctrineOrder::of(true));
         }
         $builder->setFirstResult($query->offset())->setMaxResults($query->perPage + 1);
 

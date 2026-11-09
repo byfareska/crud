@@ -48,7 +48,7 @@ final readonly class Scopes
     }
 
     /**
-     * A scope of the configuration, or one that only CRUD resources name (a menu and a layout, no dashboard) - as the
+     * A scope of the configuration, or one that only CRUD resources name (a menu, a layout and a dashboard) - as the
      * ScopeExtensions make it for the request.
      */
     public function get(string $name): Scope
@@ -130,7 +130,7 @@ final readonly class Scopes
             $config['theme'] ?? $this->theme,
             array_values(array_unique([...$this->entries, ...$config['entries'] ?? []])),
             $config['role'] ?? null,
-            $config['dashboard'] ?? false,
+            $config['dashboard'] ?? true,
             $config['home'] ?? null,
             $config['brand'] ?? null,
             $this->boardsOf($config['boards'] ?? []),
@@ -177,7 +177,6 @@ final readonly class Scopes
         return array_values(array_filter(
             $this->all(),
             fn (Scope $scope): bool => $scope->name !== $current
-                && $scope->homeRoute() !== null
                 && $this->isGranted($scope),
         ));
     }

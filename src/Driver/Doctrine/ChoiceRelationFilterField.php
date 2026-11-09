@@ -11,8 +11,15 @@ use Byfareska\Crud\Attribute\AsCrud;
  */
 final readonly class ChoiceRelationFilterField implements RelationFilterField
 {
+    public function __construct(
+        private ?DoctrineRecordLabels $labels = null,
+    ) {
+    }
+
     public function options(AsCrud $crud, string $field, string $entity): array
     {
-        return ['class' => $entity];
+        return $this->labels instanceof DoctrineRecordLabels
+            ? ['class' => $entity, 'choice_label' => $this->labels->of(...)]
+            : ['class' => $entity];
     }
 }

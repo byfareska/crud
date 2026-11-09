@@ -52,6 +52,11 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Positive;
 use Symfony\Component\Validator\Constraints\Range;
 use Throwable;
+use TypeError;
+use Closure;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionParameter;
 
 /**
  * The records of a {@see DoctrineSource}: entities, read by a query of their own and written by the entity manager.
@@ -112,6 +117,8 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         private iterable $itemExtensions = [],
         #[AutowireLocator(DoctrineCount::TAG)]
         private ?ContainerInterface $counters = null,
+        private ?DoctrineRecordLabels $labels = null,
+        private ?RelationFormField $relationFields = null,
     ) {
     }
 
@@ -429,26 +436,27 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
             return $builder;
         }
 
-        if ($entity === null && !array_key_exists('empty_data', $form->options)) {
-            throw new LogicException(sprintf(
-                'The add form of "%s" is guessed, and %s has a constructor with arguments, which the form cannot '
-                . 'give it: name a form type whose "empty_data" makes the entity (DoctrineSource "form" / '
-                . '"createForm"), or give the guessed form one: new DoctrineForm(fields: [...], options: '
-                . '[\'empty_data\' => fn (FormInterface $form) => new %2$s(...)]).',
-                $crud->name,
-                $source->entity,
-            ));
+        $fields = $form->fields !== [] ? $form->fields : $this->formFields($source, $metadata, $id === null);
+        $options = $form->options;
+        if ($entity === null && !array_key_exists('empty_data', $options)) {
+            // A constructor with arguments: the entity is made of the fields named as its parameters.
+            $options['empty_data'] = $this->constructorData($crud, $source, $fields);
         }
 
         $builder = $this->formFactory->createNamedBuilder(
             $crud->name,
             FormType::class,
             $entity,
-            ['csrf_protection' => false] + $form->options + ['data_class' => $source->entity, 'label' => false],
+            ['csrf_protection' => false] + $options + ['data_class' => $source->entity, 'label' => false],
         );
-        foreach ($form->fields !== [] ? $form->fields : $this->formFields($metadata, $id === null) as $field) {
+        foreach ($fields as $field) {
             // No type: guessed from the mapping (a relation is a choice of the other entity).
             $options = ['label' => $crud->key(sprintf('field.%s.name', $field))];
+            if ($metadata->hasAssociation($field)) {
+                // A choice of every related entity, or a field to search in with symfony/ux-autocomplete.
+                $options += ($this->relationFields ?? new ChoiceRelationFormField($this->doctrine, $this->labels))
+                    ->options($crud, $field, $metadata->getAssociationTargetClass($field), $entity, $id);
+            }
             // A text field left empty is null; a column that cannot be null takes it as "" (its constraints judge it).
             if (
                 $metadata->hasField($field)
@@ -661,7 +669,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         }
         foreach ($query->metadata->getIdentifierFieldNames() as $id) {
             if ($query->metadata->hasField($id) && !in_array('e.' . $id, $ordered, true)) {
-                $query->query->addOrderBy('e.' . $id, 'ASC');
+                $query->query->addOrderBy('e.' . $id, DoctrineOrder::of(false));
             }
         }
     }
@@ -766,6 +774,87 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
     }
 
     /**
+     * The names of the parameters of the constructor of the entity, when it has required ones; else none.
+     *
+     * @return list<string>
+     */
+    private function constructorParameters(DoctrineSource $source): array
+    {
+        $constructor = new ReflectionClass($source->entity)->getConstructor();
+        if (!$constructor instanceof ReflectionMethod || $constructor->getNumberOfRequiredParameters() === 0) {
+            return [];
+        }
+
+        return array_map(
+            static fn (ReflectionParameter $parameter): string => $parameter->name,
+            $constructor->getParameters(),
+        );
+    }
+
+    /**
+     * The "empty_data" of the add form of an entity whose constructor takes arguments: the constructor given the data
+     * of the fields named as its parameters (the defaults of those the form has not). A required one the form cannot
+     * give is a mistake of the declaration, told when the form is made; one left empty is null, and the constraints
+     * of the field (NotBlank) or of the entity say what is wrong - not a TypeError.
+     *
+     * @param list<string> $fields
+     */
+    private function constructorData(AsCrud $crud, DoctrineSource $source, array $fields): Closure
+    {
+        $class = new ReflectionClass($source->entity);
+        $constructor = $class->getConstructor();
+        if (!$constructor instanceof ReflectionMethod) {
+            return $class->newInstance(...);
+        }
+        foreach ($constructor->getParameters() as $parameter) {
+            if (!$parameter->isOptional() && !in_array($parameter->name, $fields, true)) {
+                throw new LogicException(sprintf(
+                    'The add form of "%s" is guessed, and the constructor of %s takes "$%s", which no field of the '
+                    . 'form gives: add it to the fields (DoctrineForm fields: [...]), name a form type whose '
+                    . '"empty_data" makes the entity, or alias DoctrineEntityFactory.',
+                    $crud->name,
+                    $source->entity,
+                    $parameter->name,
+                ));
+            }
+        }
+
+        return static function (FormInterface $form) use ($class, $constructor): ?object {
+            $arguments = [];
+            foreach ($constructor->getParameters() as $parameter) {
+                if ($form->has($parameter->name)) {
+                    $value = $form->get($parameter->name)->getData();
+                    if ($value === null && !$parameter->allowsNull()) {
+                        // Not to be made: the form shows why (its fields' constraints, "required").
+                        return null;
+                    }
+                    $arguments[] = $value;
+                } elseif ($parameter->isDefaultValueAvailable()) {
+                    $arguments[] = $parameter->getDefaultValue();
+                } else {
+                    return null;
+                }
+            }
+
+            try {
+                return $class->newInstanceArgs($arguments);
+            } catch (TypeError) {
+                return null;
+            }
+        };
+    }
+
+    /**
+     * An instance of the entity to ask what can be written - not made by its constructor.
+     *
+     * @param ClassMetadata<object> $metadata
+     */
+    private function blank(ClassMetadata $metadata): object
+    {
+        return $metadata->getReflectionClass()->newInstanceWithoutConstructor();
+    }
+
+    /**
      * What the guessed form has: every mapped field and relation but those nobody types in - the id, the version of
      * optimistic locking, a column the database fills (generated, or not to be inserted / updated by the form's
      * operation) - and those whose name looks secret (AsCrud::looksSecret(): a password hash, a token), which no
@@ -776,8 +865,13 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
      *
      * @return list<string>
      */
-    private function formFields(ClassMetadata $metadata, bool $create): array
+    private function formFields(DoctrineSource $source, ClassMetadata $metadata, bool $create): array
     {
+        $constructor = $create ? $this->constructorParameters($source) : [];
+        // A property with no way to write it (set in the constructor, no setter) is shown, not edited - unless the
+        // constructor of a new entity takes it.
+        $writable = fn (string $field): bool => in_array($field, $constructor, true)
+            || $this->propertyAccessor->isWritable($this->blank($metadata), $field);
         $fields = [];
         foreach ($metadata->getFieldNames() as $field) {
             $mapping = $metadata->getFieldMapping($field);
@@ -787,13 +881,18 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
                 || ($mapping->generated ?? ClassMetadata::GENERATED_NEVER) !== ClassMetadata::GENERATED_NEVER
                 || ($create ? $mapping->notInsertable === true : $mapping->notUpdatable === true)
                 || AsCrud::looksSecret($field)
+                || !$writable($field)
             ) {
                 continue;
             }
             $fields[] = $field;
         }
         foreach ($metadata->getAssociationNames() as $relation) {
-            if ($metadata->isAssociationInverseSide($relation) || AsCrud::looksSecret($relation)) {
+            if (
+                $metadata->isAssociationInverseSide($relation)
+                || AsCrud::looksSecret($relation)
+                || !$writable($relation)
+            ) {
                 continue;
             }
             $fields[] = $relation;
@@ -859,7 +958,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         // Locked for the transaction it is read in, when the source says so (a delete, a change asking its guards).
         $lock = $source->lock && $this->manager($source)->getConnection()->isTransactionActive()
             ? LockMode::PESSIMISTIC_WRITE
-            : null;
+            : LockMode::NONE;
 
         if (!$this->scopes->narrow($crud)) {
             try {
@@ -881,7 +980,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
 
         try {
             $read = $builder->getQuery();
-            if ($lock instanceof LockMode) {
+            if ($lock !== LockMode::NONE) {
                 $read->setLockMode($lock);
             }
             $entity = $read->getOneOrNullResult();

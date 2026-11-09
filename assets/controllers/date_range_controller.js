@@ -5,7 +5,7 @@ import { Controller } from '@hotwired/stimulus';
 let calendarModule = null;
 
 function loadCalendar() {
-    calendarModule ??= import('vanilla-calendar-pro');
+    calendarModule ??= import('../vendor/vanilla-calendar-pro.js');
 
     return calendarModule;
 }
