@@ -12,7 +12,8 @@
   controller of Symfony UX Live Component 3.7, the chart controller of UX Chart.js) of `public/panel`, installed by
   `assets:install` as `bundles/crud/panel`. Built by `build/panel` (`npm ci && npm run build`).
 - A panel that only resources name has a dashboard at "/" too, as a configured one has. One with `dashboard: false`
-  leads "/" to its first list (`crud_home_<panel>`); the brand of the menu no longer fails without a home.
+  leads "/" to its first list (`crud_home_<panel>`; 404 for a panel without a list); the brand of the menu no longer
+  fails without a home.
 - The `doctrine` dashboard storage without its table: everybody sees the default layout (a warning is logged) and a
   save answers 503 saying to migrate, instead of a 500 of the database.
 - Guessed Doctrine forms make an entity whose constructor takes arguments: the fields named as its parameters give

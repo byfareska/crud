@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Twig;
 
+use Twig\TwigFunction;
 use LogicException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -133,10 +134,12 @@ final readonly class PanelAssets
             if (!$this->entriesConfigured) {
                 // Nothing configured: through the application's AssetMapper when it has one (its Symfony UX), else
                 // all prebuilt. Reprise and Encore build only the entries the application gives them.
-                return $this->stimulusImportmap && self::has($twig, 'importmap') ? self::IMPORTMAP_PANEL : self::BUILTIN;
+                return $this->stimulusImportmap && $this->has($twig, 'importmap')
+                    ? self::IMPORTMAP_PANEL
+                    : self::BUILTIN;
             }
             foreach (self::TOOLS as $tool => [$function]) {
-                if (self::has($twig, $function)) {
+                if ($this->has($twig, $function)) {
                     return $tool;
                 }
             }
@@ -147,7 +150,7 @@ final readonly class PanelAssets
                 . 'remove byfareska_crud.entries to use the prebuilt assets of the panel.',
             );
         }
-        if (isset(self::TOOLS[$this->tool]) && !self::has($twig, self::TOOLS[$this->tool][0])) {
+        if (isset(self::TOOLS[$this->tool]) && !$this->has($twig, self::TOOLS[$this->tool][0])) {
             throw new LogicException(sprintf(
                 'byfareska_crud.assets is "%s", but its Twig function "%s" is not there: install %s, or set '
                 . 'byfareska_crud.assets to the tool the application uses (auto, builtin, reprise, encore, '
@@ -165,7 +168,7 @@ final readonly class PanelAssets
      * Whether Twig has the function for real: not one of the stand-ins of Symfony's UndefinedCallableHandler, which
      * draws nothing for a missing Webpack Encore and throws for a missing AssetMapper ("did you forget to install").
      */
-    private static function has(Environment $twig, string $name): bool
+    private function has(Environment $twig, string $name): bool
     {
         try {
             $function = $twig->getFunction($name);
@@ -180,12 +183,13 @@ final readonly class PanelAssets
             }
         }
 
-        return $function !== null;
+        return $function instanceof TwigFunction;
     }
 
     /** "?v=" and a hash of the file built, so a browser takes a new build at once; nothing for a file not there. */
-    private static function version(string $file): string
+    private function version(string $file): string
     {
+        /** @var array<string, string> $versions */
         static $versions = [];
         $path = dirname(__DIR__, 2) . '/public/panel/' . $file;
 
@@ -195,6 +199,6 @@ final readonly class PanelAssets
     /** A prebuilt file as assets:install puts it, with the version of the build. */
     private function builtinUrl(string $path, string $file): string
     {
-        return ($this->requestStack?->getMainRequest()?->getBasePath() ?? '') . '/' . $path . self::version($file);
+        return ($this->requestStack?->getMainRequest()?->getBasePath() ?? '') . '/' . $path . $this->version($file);
     }
 }

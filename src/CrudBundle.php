@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud;
 
+use Symfony\Component\AssetMapper\AssetMapperInterface;
 use Byfareska\Crud\Twig\PanelExtension;
 use Byfareska\Crud\Action\BulkActionHandler;
 use Byfareska\Crud\Action\RecordActionHandler;
@@ -916,6 +917,7 @@ final class CrudBundle extends AbstractBundle
      * @param array{
      *     name: string,
      *     layout: string,
+     *     icon_template: string,
      *     preview: bool,
      *     paths: array{new: string, edit: string, page: string},
      *     per_page: list<int>,
@@ -1553,7 +1555,7 @@ final class CrudBundle extends AbstractBundle
      */
     private function isAssetMapperAvailable(ContainerBuilder $builder): bool
     {
-        if (!interface_exists('Symfony\Component\AssetMapper\AssetMapperInterface')) {
+        if (!interface_exists(AssetMapperInterface::class)) {
             return false;
         }
         $bundles = $builder->hasParameter('kernel.bundles_metadata')

@@ -59,20 +59,18 @@ final readonly class PanelCommandsPaletteSource implements CommandPaletteSource
 
             // The way into this panel, from every other one.
             $home = $scope->homeRoute();
-            if ($home !== null) {
-                foreach ($this->scopes->all() as $from) {
-                    if ($from->name !== $scope->name) {
-                        yield new PaletteEntry(
-                            key: 'command.panel.' . $scope->name . '.from.' . $from->name,
-                            group: NavigationPaletteSource::GROUP,
-                            name: $scope->label,
-                            icon: $scope->icon,
-                            description: 'panel.palette.item.panel_switch.description',
-                            routeName: $home,
-                            role: $scope->role,
-                            scope: $from->name,
-                        );
-                    }
+            foreach ($this->scopes->all() as $from) {
+                if ($from->name !== $scope->name) {
+                    yield new PaletteEntry(
+                        key: 'command.panel.' . $scope->name . '.from.' . $from->name,
+                        group: NavigationPaletteSource::GROUP,
+                        name: $scope->label,
+                        icon: $scope->icon,
+                        description: 'panel.palette.item.panel_switch.description',
+                        routeName: $home,
+                        role: $scope->role,
+                        scope: $from->name,
+                    );
                 }
             }
         }

@@ -17,9 +17,11 @@ use Byfareska\Crud\Driver\Doctrine\RelationFilterField;
 use Byfareska\Crud\Driver\Doctrine\FieldFilter;
 use Byfareska\Crud\Driver\Doctrine\WordsSearch;
 use Byfareska\Crud\Filter\Comparison;
+use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Resource\CrudAccess;
 use Byfareska\Crud\Resource\CrudRegistry;
 use Byfareska\Crud\Resource\CrudResourceProvider;
+use Byfareska\Crud\Routing\CrudRouteLoader;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Order;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Person;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Team;
@@ -33,6 +35,9 @@ use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\UX\Autocomplete\Controller\AutocompleteController;
 
 final class RelationAutocompleterTest extends TestCase
@@ -108,11 +113,29 @@ final class RelationAutocompleterTest extends TestCase
         self::assertStringStartsWith('Osoba: ', (string) $results->results[0]['text']);
     }
 
+    public function testOnlyTheAddressOfThePanelIsAnswered(): void
+    {
+        // The global /autocomplete of symfony/ux-autocomplete, or the address of another panel: outside the firewall
+        // and access_control of the panel of the resource.
+        foreach ([[], [CrudRouteLoader::AUTOCOMPLETE => true, Scope::ATTRIBUTE => 'admin']] as $attributes) {
+            $autocompleter = $this->autocompleter('createdBy', request: new Request(attributes: $attributes));
+
+            self::assertFalse($autocompleter->isGranted(self::createStub(Security::class)));
+            try {
+                $autocompleter->fetchResults('', 1);
+                self::fail('Searched outside the panel.');
+            } catch (AccessDeniedHttpException) {
+                // Refused.
+            }
+        }
+    }
+
     private function autocompleter(
         string $field,
         ?string $filter = null,
         ?RelationChoiceLabels $labels = null,
         ?int $perPage = null,
+        ?Request $request = null,
     ): RelationAutocompleter {
         $crud = new AsCrud('order', '/orders', 'cart', source: new DoctrineSource(Order::class, filters: [
             'author' => new FieldFilter('createdBy', Comparison::CHOICE),
@@ -143,6 +166,11 @@ final class RelationAutocompleterTest extends TestCase
             new DoctrineRelations($registry, $doctrine, new DoctrineScopes()),
             new DoctrineSearches(new WordsSearch(), new ServiceLocator([])),
             $labels,
+            requests: $this->requests($request ?? new Request(attributes: [
+                // Asked through the autocomplete route of the panel of the resource (CrudRouteLoader).
+                CrudRouteLoader::AUTOCOMPLETE => true,
+                Scope::ATTRIBUTE => $crud->scope,
+            ])),
         );
         $autocompleter->setOptions([AutocompleteController::EXTRA_OPTIONS => array_filter([
             RelationAutocompleter::RESOURCE => 'order',
@@ -152,6 +180,14 @@ final class RelationAutocompleterTest extends TestCase
         ])]);
 
         return $autocompleter;
+    }
+
+    private function requests(Request $request): RequestStack
+    {
+        $requests = new RequestStack();
+        $requests->push($request);
+
+        return $requests;
     }
 
     /**

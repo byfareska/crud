@@ -780,12 +780,15 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
      */
     private function constructorParameters(DoctrineSource $source): array
     {
-        $constructor = (new ReflectionClass($source->entity))->getConstructor();
-        if ($constructor === null || $constructor->getNumberOfRequiredParameters() === 0) {
+        $constructor = new ReflectionClass($source->entity)->getConstructor();
+        if (!$constructor instanceof ReflectionMethod || $constructor->getNumberOfRequiredParameters() === 0) {
             return [];
         }
 
-        return array_map(static fn (ReflectionParameter $parameter): string => $parameter->name, $constructor->getParameters());
+        return array_map(
+            static fn (ReflectionParameter $parameter): string => $parameter->name,
+            $constructor->getParameters(),
+        );
     }
 
     /**
@@ -801,7 +804,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         $class = new ReflectionClass($source->entity);
         $constructor = $class->getConstructor();
         if (!$constructor instanceof ReflectionMethod) {
-            return static fn (): object => $class->newInstance();
+            return $class->newInstance(...);
         }
         foreach ($constructor->getParameters() as $parameter) {
             if (!$parameter->isOptional() && !in_array($parameter->name, $fields, true)) {
@@ -977,7 +980,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
 
         try {
             $read = $builder->getQuery();
-            if ($lock instanceof LockMode) {
+            if ($lock !== LockMode::NONE) {
                 $read->setLockMode($lock);
             }
             $entity = $read->getOneOrNullResult();

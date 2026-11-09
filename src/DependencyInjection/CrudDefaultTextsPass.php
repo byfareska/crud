@@ -29,10 +29,8 @@ final class CrudDefaultTextsPass implements CompilerPassInterface
             );
         }
 
-        $locales = array_values(array_unique([
-            (string) $container->getParameterBag()->resolveValue('%kernel.default_locale%'),
-            'en',
-        ]));
+        $default = $container->getParameterBag()->resolveValue('%kernel.default_locale%');
+        $locales = array_values(array_unique([is_string($default) ? $default : 'en', 'en']));
         $translator = $container->getDefinition('translator.default');
         $calls = array_map(
             static fn (string $locale): array => [

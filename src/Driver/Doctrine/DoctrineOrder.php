@@ -7,6 +7,7 @@ namespace Byfareska\Crud\Driver\Doctrine;
 use Doctrine\ORM\QueryBuilder;
 use ReflectionMethod;
 use ReflectionNamedType;
+use ReflectionType;
 use ReflectionUnionType;
 use SortDirection;
 
@@ -38,7 +39,8 @@ final class DoctrineOrder
 
         return array_any(
             $types,
-            static fn ($one): bool => $one instanceof ReflectionNamedType && $one->getName() === SortDirection::class,
+            static fn (?ReflectionType $one): bool => $one instanceof ReflectionNamedType
+                && $one->getName() === SortDirection::class,
         );
     }
 }

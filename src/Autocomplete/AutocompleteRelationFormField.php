@@ -43,7 +43,7 @@ final readonly class AutocompleteRelationFormField implements RelationFormField
             // Signed by the package: the address cannot ask for another resource, field or record.
             'extra_options' => $extra,
         ];
-        if ($this->labels !== null) {
+        if ($this->labels instanceof DoctrineRecordLabels) {
             $options['choice_label'] = $this->labels->of(...);
         }
 

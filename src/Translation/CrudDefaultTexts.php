@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Translation;
 
+use Byfareska\Crud\Resource\Column;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Layout\LayoutGroup;
 use Byfareska\Crud\Layout\LayoutNode;
@@ -85,7 +86,7 @@ final readonly class CrudDefaultTexts implements LoaderInterface
     {
         $singular = self::humanize($crud->name);
         $messages = [
-            $crud->key('title') => self::plural($singular),
+            $crud->key('title') => $this->plural($singular),
             $crud->key('new') => 'New ' . mb_strtolower($singular),
             $crud->key('edit') => 'Edit ' . mb_strtolower($singular),
         ];
@@ -108,7 +109,7 @@ final readonly class CrudDefaultTexts implements LoaderInterface
         }
         if ($crud->section !== null && preg_match(self::KEY, $crud->section) === 1) {
             $segments = explode('.', $crud->section);
-            $messages[$crud->section] = self::humanize((string) end($segments));
+            $messages[$crud->section] = self::humanize(end($segments));
         }
 
         return $messages;
@@ -122,8 +123,8 @@ final readonly class CrudDefaultTexts implements LoaderInterface
     private function fieldsOf(AsCrud $crud): array
     {
         $fields = [
-            ...array_map(static fn ($column): string => $column->field, $crud->columns),
-            ...array_map(static fn ($column): string => $column->field, $crud->details),
+            ...array_map(static fn (Column $column): string => $column->field, $crud->columns),
+            ...array_map(static fn (Column $column): string => $column->field, $crud->details),
             ...array_filter($crud->fields, is_string(...)),
             ...array_filter(array_keys($crud->fields), is_string(...)),
         ];
@@ -165,10 +166,10 @@ final readonly class CrudDefaultTexts implements LoaderInterface
     }
 
     /** The last word in its plural: "Product" - "Products", "Order line" - "Order lines". */
-    private static function plural(string $words): string
+    private function plural(string $words): string
     {
         $parts = explode(' ', $words);
-        $last = (string) array_pop($parts);
+        $last = array_pop($parts);
         $plural = new EnglishInflector()->pluralize(mb_strtolower($last))[0] ?? $last;
         $parts[] = $parts === [] ? u($plural)->title()->toString() : $plural;
 

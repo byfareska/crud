@@ -6,7 +6,6 @@ namespace Byfareska\Crud\Routing;
 
 use Byfareska\Crud\Controller\DashboardController;
 use Byfareska\Crud\Controller\FilesController;
-use Byfareska\Crud\Autocomplete\RelationAutocompleter;
 use Byfareska\Crud\Files\FileRoutes;
 use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Panel\Scopes;
@@ -38,6 +37,9 @@ use Symfony\Component\Routing\RouteCollection;
 final class CrudRouteLoader extends Loader
 {
     public const string TYPE = 'byfareska_crud';
+
+    /** The alias of RelationAutocompleter, the searches of the relations of the forms and filters of a panel. */
+    public const string AUTOCOMPLETE_ALIAS = 'byfareska_crud_relation';
 
     /** The default of the autocomplete route of a scope: RelationAutocompleter answers only through it. */
     public const string AUTOCOMPLETE = '_crud_autocomplete';
@@ -80,11 +82,12 @@ final class CrudRouteLoader extends Loader
 
         if ($scope->dashboard) {
             $routes->addCollection($this->dashboard($scope->name, ''));
-        } elseif ($scope->home === null && ($first = $this->firstList($resources)) !== null) {
-            // No dashboard: "/" of the panel is its first list, so the brand and the panel switch lead somewhere.
+        } elseif ($scope->home === null) {
+            // No dashboard: "/" of the panel is its first list, so the brand and the panel switch lead somewhere
+            // (RedirectController: 404 for a panel without a list).
             $routes->add(Scope::firstListRoute($scope->name), new Route('/', [
                 '_controller' => RedirectController::class . '::redirectAction',
-                'route' => $first,
+                'route' => $this->firstList($resources) ?? '',
                 'permanent' => false,
             ], methods: ['GET']));
         }
@@ -123,7 +126,7 @@ final class CrudRouteLoader extends Loader
             $routes->add($scope->autocompleteRoute(), new Route(
                 '/_crud/autocomplete/{alias}',
                 ['_controller' => 'ux.autocomplete.autocomplete_controller', self::AUTOCOMPLETE => true],
-                ['alias' => preg_quote(RelationAutocompleter::ALIAS, '#')],
+                ['alias' => preg_quote(self::AUTOCOMPLETE_ALIAS, '#')],
                 methods: ['GET'],
             ));
         }
@@ -144,7 +147,10 @@ final class CrudRouteLoader extends Loader
             // The paging of a list ({_pages}/{page}) has defaults; any other parameter is the application's.
             if (
                 str_ends_with($name, '_list')
-                && array_diff($route->compile()->getPathVariables(), ['_pages', 'page']) === []
+                && array_all(
+                    $route->compile()->getPathVariables(),
+                    static fn (mixed $variable): bool => in_array($variable, ['_pages', 'page'], true),
+                )
             ) {
                 return $name;
             }

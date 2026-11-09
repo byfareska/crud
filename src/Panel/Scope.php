@@ -121,7 +121,7 @@ final readonly class Scope
      * Where the panel switch and the brand lead to: "home", else its dashboard, else "/" of the panel, which leads to
      * its first list (CrudRouteLoader).
      */
-    public function homeRoute(): ?string
+    public function homeRoute(): string
     {
         return $this->home ?? ($this->dashboard ? $this->dashboardRoute() : self::firstListRoute($this->name));
     }

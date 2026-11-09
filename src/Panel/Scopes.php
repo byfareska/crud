@@ -177,7 +177,6 @@ final readonly class Scopes
         return array_values(array_filter(
             $this->all(),
             fn (Scope $scope): bool => $scope->name !== $current
-                && $scope->homeRoute() !== null
                 && $this->isGranted($scope),
         ));
     }

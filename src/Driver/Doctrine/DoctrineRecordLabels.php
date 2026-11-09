@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Driver\Doctrine;
 
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\Persistence\ObjectManager;
 use Byfareska\Crud\Autocomplete\RelationChoiceLabel;
 use Byfareska\Crud\Resource\CrudRegistry;
+use Byfareska\Crud\Value\CrudValues;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use JsonSerializable;
@@ -34,6 +37,7 @@ final readonly class DoctrineRecordLabels
         private ManagerRegistry $doctrine,
         private CrudRegistry $registry,
         private PropertyAccessorInterface $propertyAccessor,
+        private CrudValues $values,
         #[AutowireIterator(RelationChoiceLabel::TAG)]
         private iterable $labels = [],
         private DoctrineIdCodec $ids = new DefaultDoctrineIdCodec(),
@@ -50,7 +54,7 @@ final readonly class DoctrineRecordLabels
 
         $manager = $this->doctrine->getManagerForClass($entity::class);
         $metadata = $manager instanceof EntityManagerInterface ? $manager->getClassMetadata($entity::class) : null;
-        $title = $metadata === null ? null : $this->titleOf($metadata->getName(), $entity);
+        $title = $metadata instanceof ClassMetadata ? $this->titleOf($metadata->getName(), $entity) : null;
         if ($title !== null) {
             return $title;
         }
@@ -58,7 +62,7 @@ final readonly class DoctrineRecordLabels
             return (string) $entity;
         }
 
-        return $metadata === null ? '' : (string) $this->ids->encode($metadata, $entity);
+        return $metadata instanceof ClassMetadata ? (string) $this->ids->encode($metadata, $entity, $this->values) : '';
     }
 
     /** The title of the first resource of the entity's class that has one; null = none. */
@@ -81,7 +85,11 @@ final readonly class DoctrineRecordLabels
                     $value = $value->jsonSerialize();
                 }
                 // A title of another relation (a category named by its parent) would go round: only plain values.
-                if (is_scalar($value) || ($value instanceof Stringable && $this->doctrine->getManagerForClass($value::class) === null)) {
+                $plain = is_scalar($value) || (
+                    $value instanceof Stringable
+                    && !$this->doctrine->getManagerForClass($value::class) instanceof ObjectManager
+                );
+                if ($plain) {
                     $text = trim((string) $value);
                     if ($text !== '') {
                         $parts[] = $text;

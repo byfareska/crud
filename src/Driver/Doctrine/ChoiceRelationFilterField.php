@@ -18,8 +18,8 @@ final readonly class ChoiceRelationFilterField implements RelationFilterField
 
     public function options(AsCrud $crud, string $field, string $entity): array
     {
-        return $this->labels === null
-            ? ['class' => $entity]
-            : ['class' => $entity, 'choice_label' => $this->labels->of(...)];
+        return $this->labels instanceof DoctrineRecordLabels
+            ? ['class' => $entity, 'choice_label' => $this->labels->of(...)]
+            : ['class' => $entity];
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Driver\Doctrine;
 
 use Byfareska\Crud\Value\CrudValues;
+use Byfareska\Crud\Value\RecordRef;
+use Byfareska\Crud\Value\TypedValue;
 use Doctrine\ORM\Mapping\ClassMetadata;
 
 /**
@@ -27,6 +29,10 @@ final readonly class DefaultDoctrineIdCodec implements DoctrineIdCodec
         $parts = [];
         foreach ($metadata->getIdentifierFieldNames() as $field) {
             $value = $values->normalize($ids[$field] ?? null);
+            // A relation in the id (an order line: its order) is the id of the record it points to.
+            if ($value instanceof TypedValue && $value->value instanceof RecordRef) {
+                $value = $value->value->id;
+            }
             if (!is_scalar($value) || $value === '') {
                 return null;
             }

@@ -62,6 +62,7 @@
         "rector/rector": "^2.7",
         "slevomat/coding-standard": "^8.31",
         "squizlabs/php_codesniffer": "^4.0",
+        "symfony/asset-mapper": "^8.0",
         "symfony/mime": "^8.0",
         "symfony/security-bundle": "^8.0",
         "symfony/ux-autocomplete": "^3.5",
@@ -77,7 +78,8 @@
         "league/flysystem": "Storages of uploaded files on a disk, FTP, SFTP, S3... (byfareska_crud.files)",
         "league/flysystem-bundle": "The Flysystem storages as services, to name in byfareska_crud.files.storages",
         "intervention/image": "(4 or later, with ext-imagick - keeps the colour profile of a photo - or ext-gd) The sizes of uploaded images: thumbnails of the lists, sizes of rich text (byfareska_crud.files.images)",
-        "symfony/reprise": "The assets of the panel built by Vite (byfareska_crud.assets: reprise, the default); or Webpack Encore, AssetMapper's importmap"
+        "symfony/asset-mapper": "The panel's script through the application's importmap, with its Symfony UX controllers (byfareska_crud.assets: auto, the default, with symfony/stimulus-bundle)",
+        "symfony/reprise": "The assets of the panel built by Vite with the application's own (byfareska_crud.assets: reprise); or Webpack Encore, AssetMapper's importmap"
     },
     "autoload": {
         "psr-4": {

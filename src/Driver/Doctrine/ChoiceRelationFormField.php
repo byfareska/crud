@@ -26,11 +26,14 @@ final readonly class ChoiceRelationFormField implements RelationFormField
     public function options(AsCrud $crud, string $field, string $entity, ?object $record, ?string $id): array
     {
         $options = [];
-        if ($this->labels !== null) {
+        if ($this->labels instanceof DoctrineRecordLabels) {
             $options['choice_label'] = $this->labels->of(...);
         }
         $manager = $record === null ? null : $this->doctrine->getManagerForClass($record::class);
-        if ($manager instanceof EntityManagerInterface && $manager->getClassMetadata($record::class)->getName() === $entity) {
+        if (
+            $manager instanceof EntityManagerInterface
+            && $manager->getClassMetadata($record::class)->getName() === $entity
+        ) {
             $identifier = $manager->getClassMetadata($entity)->getIdentifierValues($record);
             $options['query_builder'] = static function (EntityRepository $repository) use ($identifier): QueryBuilder {
                 $builder = $repository->createQueryBuilder('e');

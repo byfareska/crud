@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Autocomplete;
 
+use Symfony\Component\HttpFoundation\Request;
 use Byfareska\Crud\Driver\Doctrine\DoctrineOrder;
 use Doctrine\ORM\QueryBuilder;
 use Byfareska\Crud\Driver\Doctrine\DefaultDoctrineIdCodec;
@@ -31,6 +32,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Routing\CrudRouteLoader;
+use Stringable;
 use Symfony\UX\Autocomplete\AutocompleteResults;
 use Symfony\UX\Autocomplete\Controller\AutocompleteController;
 use Symfony\UX\Autocomplete\OptionsAwareAutocompleterInterface;
@@ -48,7 +50,7 @@ use Symfony\UX\Autocomplete\OptionsAwareAutocompleterInterface;
  */
 final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
 {
-    public const string ALIAS = 'byfareska_crud_relation';
+    public const string ALIAS = CrudRouteLoader::AUTOCOMPLETE_ALIAS;
 
     public const string RESOURCE = 'resource';
 
@@ -114,7 +116,7 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
     {
         $request = $this->requests?->getCurrentRequest();
 
-        return $request !== null
+        return $request instanceof Request
             && $request->attributes->get(CrudRouteLoader::AUTOCOMPLETE) === true
             && $request->attributes->get(Scope::ATTRIBUTE) === $crud->scope;
     }
@@ -139,7 +141,9 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
     {
         $crud = $this->crud() ?? throw new NotFoundHttpException('No relation of a list or a form is asked for.');
         if (!$this->throughPanel($crud)) {
-            throw new AccessDeniedHttpException('The relations of a panel are searched through the address of the panel.');
+            throw new AccessDeniedHttpException(
+                'The relations of a panel are searched through the address of the panel.',
+            );
         }
         // Also without symfony/security-bundle, which is what asks isGranted().
         if (!$this->isForm()) {
@@ -147,7 +151,8 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         } elseif (!$this->granted($crud)) {
             $this->access->assertGranted($crud, CrudOperation::Update);
         }
-        $target = $this->target($crud) ?? throw new NotFoundHttpException('No relation of a list or a form is asked for.');
+        $target = $this->target($crud)
+            ?? throw new NotFoundHttpException('No relation of a list or a form is asked for.');
         // Within the scopes of the related entity's resource (the one the source names for the filter), else within
         // those of every resource.
         $relation = $this->option(RelationFilterField::FILTER) ?? $this->option(self::FIELD);
@@ -177,8 +182,13 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         foreach (array_slice($found, 0, $perPage) as $entity) {
             $id = $this->entities->idOf($metadata, $entity, $this->values);
             // "Surname, Name (VAT number)": a RelationChoiceLabel of the entity, else its text (__toString()).
-            $text = $this->labels?->of($entity) ?? $this->recordLabels?->of($entity) ?? (string) $this->values->normalize($entity);
-            $results[] = ['value' => $id, 'text' => is_scalar($text) ? (string) $text : (string) $id];
+            $text = $this->labels?->of($entity)
+                ?? $this->recordLabels?->of($entity)
+                ?? $this->values->normalize($entity);
+            $results[] = [
+                'value' => $id,
+                'text' => is_scalar($text) || $text instanceof Stringable ? (string) $text : (string) $id,
+            ];
         }
 
         return new AutocompleteResults($results, count($found) > $perPage);
