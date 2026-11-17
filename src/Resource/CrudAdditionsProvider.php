@@ -7,7 +7,6 @@ namespace Byfareska\Crud\Resource;
 use Byfareska\Crud\Attribute\AsCrudDetailsSection;
 use Byfareska\Crud\Attribute\AsCrudFormSection;
 use Byfareska\Crud\Attribute\AsCrudPage;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Pages and sections declared by code rather than by #[AsCrudPage], #[AsCrudFormSection] and #[AsCrudDetailsSection]
@@ -33,7 +32,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * Its pages have routes, which are kept in the cache: as for a CrudResourceProvider, what it yields is the same in
  * every request.
  */
-#[AutoconfigureTag(self::TAG)]
 interface CrudAdditionsProvider
 {
     public const string TAG = 'byfareska_crud.additions_provider';

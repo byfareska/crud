@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Resource;
 
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-
 /**
  * Says whether an action of a record (RecordAction, AsCrudPage) is for that record - what a RecordGuard says of the
  * five operations, for what else can be done with it: "approve" only a draft, "refund" only a paid order, "restore"
@@ -15,7 +13,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * answers 403. What runs an action of the application's own - its controller, a live action, a use case - asks
  * again: RecordGuards::assertActionAllowed($name, $record). A button is only a way to it.
  */
-#[AutoconfigureTag(self::TAG)]
 interface RecordActionGuard
 {
     public const string TAG = 'byfareska_crud.record_action_guard';

@@ -6,7 +6,6 @@ namespace Byfareska\Crud\Action;
 
 use Byfareska\Crud\Resource\CrudFailure;
 use Byfareska\Crud\Resource\RecordView;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Does a {@see RunAction} to a record - a service, autoconfigured, named by the action. It is called in the
@@ -24,7 +23,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  *         }
  *     }
  */
-#[AutoconfigureTag(self::TAG)]
 interface RecordActionRunner
 {
     public const string TAG = 'byfareska_crud.record_action_runner';

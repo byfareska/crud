@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Resource;
 
 use Byfareska\Crud\Attribute\AsCrud;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Resources declared by code rather than by #[AsCrud] on a class: made from the configuration, one per entity of a
@@ -29,7 +28,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * the file of the class rebuilds the routes in debug; one of the configuration or the data it reads needs
  * cache:clear.
  */
-#[AutoconfigureTag(self::TAG)]
 interface CrudResourceProvider
 {
     public const string TAG = 'byfareska_crud.resource_provider';

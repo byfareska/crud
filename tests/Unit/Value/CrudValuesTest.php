@@ -7,19 +7,41 @@ namespace Byfareska\Crud\Tests\Unit\Value;
 use ArrayIterator;
 use Byfareska\Crud\Resource\CrudOperation;
 use Byfareska\Crud\Value\CrudValues;
+use Byfareska\Crud\Tests\Unit\Fixtures\ThingStatus;
 use Byfareska\Crud\Value\PlainValueNormalizer;
+use Byfareska\Crud\Value\TranslatableEnumNormalizer;
 use Byfareska\Crud\Value\TypedValue;
 use Byfareska\Crud\Value\ValueNormalizer;
 use DateTimeImmutable;
 use JsonSerializable;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Symfony\Component\Translation\Loader\ArrayLoader;
+use Symfony\Component\Translation\Translator;
 
 /**
  * Values are made ready to print by the first normalizer that supports each.
  */
 final class CrudValuesTest extends TestCase
 {
+    public function testAnEnumThatTranslatesItselfIsItsTranslationAndInJsonItsValue(): void
+    {
+        $translator = new Translator('pl');
+        $translator->addLoader('array', new ArrayLoader());
+        $translator->addResource('array', ['app.status.active' => 'aktywna'], 'pl');
+        $values = new CrudValues([new TranslatableEnumNormalizer($translator), new PlainValueNormalizer()]);
+
+        $status = $values->normalize(ThingStatus::Active);
+
+        self::assertInstanceOf(TypedValue::class, $status);
+        self::assertSame('enum', $status->kind);
+        self::assertSame('aktywna', (string) $status);
+        self::assertSame('"active"', json_encode($status));
+        self::assertSame(['active', 'aktywna'], json_decode((string) json_encode([$status, (string) $status]), true));
+        // One that does not translate itself is its value, as before.
+        self::assertSame('read', $values->normalize(CrudOperation::Read));
+    }
+
     public function testThePlainValuesOfPhp(): void
     {
         $values = new CrudValues([new PlainValueNormalizer()]);

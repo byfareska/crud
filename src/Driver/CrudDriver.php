@@ -7,7 +7,6 @@ namespace Byfareska\Crud\Driver;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Resource\CrudFailure;
 use Byfareska\Crud\UseCase\Page;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormInterface;
 
@@ -19,7 +18,6 @@ use Symfony\Component\Form\FormInterface;
  * Ids are text, as in an address. Values of records are arrays by field: what the list shows, the details print
  * and the edit form starts with.
  */
-#[AutoconfigureTag(self::TAG)]
 interface CrudDriver
 {
     public const string TAG = 'byfareska_crud.driver';

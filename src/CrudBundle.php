@@ -183,6 +183,34 @@ use Byfareska\Crud\Routing\PanelLiveUrls;
 use Symfony\Component\DependencyInjection\Reference;
 use Byfareska\Crud\Chart\ChartTimezone;
 use Byfareska\Crud\Chart\TwigChartTimezone;
+use Byfareska\Crud\Panel\ScopeExtension;
+use Byfareska\Crud\Autocomplete\RelationChoiceLabel;
+use Byfareska\Crud\Driver\CrudDriver;
+use Byfareska\Crud\Translation\ResourceFieldNames;
+use Byfareska\Crud\Driver\Doctrine\DoctrineCount;
+use Byfareska\Crud\Driver\Doctrine\DoctrineItems;
+use Byfareska\Crud\Layout\LayoutCondition;
+use Byfareska\Crud\Chart\ChartExtension;
+use Byfareska\Crud\Navigation\NavigationSource;
+use Byfareska\Crud\Navigation\NavigationExtension;
+use Byfareska\Crud\Navigation\TopbarWidgetSource;
+use Byfareska\Crud\Dashboard\WidgetChoices;
+use Byfareska\Crud\Dashboard\DashboardWidgetSource;
+use Byfareska\Crud\Dashboard\WidgetSettingValidator;
+use Byfareska\Crud\Dashboard\DashboardWidgetFilter;
+use Byfareska\Crud\Action\RecordActionRunner;
+use Byfareska\Crud\CommandPalette\CommandPaletteRecordSource;
+use Byfareska\Crud\CommandPalette\CommandPaletteSource;
+use Byfareska\Crud\Resource\RecordActionGuard;
+use Byfareska\Crud\Resource\CrudFormFiller;
+use Byfareska\Crud\Resource\CrudFormExtension;
+use Byfareska\Crud\Resource\CrudDefinitionExtension;
+use Byfareska\Crud\Resource\OwnRecordResolver;
+use Byfareska\Crud\Resource\CrudAdditionsProvider;
+use Byfareska\Crud\Resource\CrudResourceProvider;
+use Byfareska\Crud\UseCase\UseCaseErrorMapper;
+use Byfareska\Crud\Resource\ListDefaults;
+use Byfareska\Crud\UseCase\UseCaseMiddleware;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\inline_service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -898,19 +926,57 @@ final class CrudBundle extends AbstractBundle
         }
         $container->registerForAutoconfiguration(Query::class)->addTag(UseCaseExecutor::TAG);
         $container->registerForAutoconfiguration(Command::class)->addTag(UseCaseExecutor::TAG);
-        $container->registerForAutoconfiguration(DayBucket::class)->addTag(DayBucket::TAG);
-        $container->registerForAutoconfiguration(PlatformDayBucket::class)->addTag(PlatformDayBucket::TAG);
-        $container->registerForAutoconfiguration(RecordActionHandler::class)->addTag(RecordActionHandler::TAG);
-        $container->registerForAutoconfiguration(BulkActionHandler::class)->addTag(BulkActionHandler::TAG);
-        $container->registerForAutoconfiguration(ValueFormatter::class)->addTag(ValueFormatter::TAG);
-        $container->registerForAutoconfiguration(RecordGuard::class)->addTag(RecordGuard::TAG);
-        $container->registerForAutoconfiguration(RecordRow::class)->addTag(RecordRow::TAG);
-        $container->registerForAutoconfiguration(ValueNormalizer::class)->addTag(ValueNormalizer::TAG);
-        $container->registerForAutoconfiguration(FileRecordMapper::class)->addTag(FileRecordMapper::TAG);
-        $container->registerForAutoconfiguration(DoctrineFilterHandler::class)->addTag(DoctrineFilterHandler::TAG);
-        $container->registerForAutoconfiguration(DoctrineListExtension::class)->addTag(DoctrineListExtension::TAG);
-        $container->registerForAutoconfiguration(DoctrineScope::class)->addTag(DoctrineScope::TAG);
-        $container->registerForAutoconfiguration(DoctrineSortHandler::class)->addTag(DoctrineSortHandler::TAG);
+        // A service of the application implementing one of these gets its TAG. Here, not by #[AutoconfigureTag] on the
+        // interface: Symfony reads that attribute only off an interface in a directory loaded as services with
+        // autoconfiguration, and the bundle excludes some of its directories (Autocomplete/, Layout/, Files/...).
+        $autoconfigured = [
+            DayBucket::class,
+            PlatformDayBucket::class,
+            RecordActionHandler::class,
+            BulkActionHandler::class,
+            ValueFormatter::class,
+            RecordGuard::class,
+            RecordRow::class,
+            ValueNormalizer::class,
+            FileRecordMapper::class,
+            DoctrineFilterHandler::class,
+            DoctrineListExtension::class,
+            DoctrineScope::class,
+            DoctrineSortHandler::class,
+            ScopeExtension::class,
+            RelationChoiceLabel::class,
+            CrudDriver::class,
+            ResourceFieldNames::class,
+            DoctrineCount::class,
+            DoctrineItems::class,
+            DoctrineSearch::class,
+            LayoutCondition::class,
+            ChartExtension::class,
+            NavigationSource::class,
+            NavigationExtension::class,
+            TopbarWidgetSource::class,
+            WidgetChoices::class,
+            DashboardWidgetSource::class,
+            WidgetSettingValidator::class,
+            DashboardWidgetFilter::class,
+            RecordActionRunner::class,
+            CommandPaletteRecordSource::class,
+            CommandPaletteSource::class,
+            RecordActionGuard::class,
+            CrudFormFiller::class,
+            CrudFormExtension::class,
+            CrudDefinitionExtension::class,
+            OwnRecordResolver::class,
+            CrudAdditionsProvider::class,
+            CrudResourceProvider::class,
+            CrudSaveButton::class,
+            UseCaseErrorMapper::class,
+            ListDefaults::class,
+            UseCaseMiddleware::class,
+        ];
+        foreach ($autoconfigured as $interface) {
+            $container->registerForAutoconfiguration($interface)->addTag($interface::TAG);
+        }
     }
 
     /**
@@ -1042,7 +1108,7 @@ final class CrudBundle extends AbstractBundle
                 $src . '/Action/{BulkDeleteAction,BulkResult,BulkSelection,RunAction}.php',
                 $src . '/Resource/{AfterSave,Column,CrudCell,CrudFailure,CrudFill,CrudListedIn,RecordView}.php',
                 $src . '/Resource/CrudToast.php',
-                $src . '/Value/{ComponentFormat,TypedValue,ValueView}.php',
+                $src . '/Value/{ComponentFormat,TranslatedValue,TypedValue,ValueView}.php',
                 $src . '/UseCase/{AccessDeniedException,InvalidIdException,ListPage,Sort,UseCaseFailed,Failure}.php',
                 $src . '/Component/Widget/CountryFlag.php',
                 $src . '/Chart/Sql/ZoneOffsets.php',

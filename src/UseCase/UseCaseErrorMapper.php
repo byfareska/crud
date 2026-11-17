@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\UseCase;
 
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Throwable;
 
 /**
@@ -12,7 +11,6 @@ use Throwable;
  * #[UseCase] say of one DTO ("NotFound" of the domain → 404, "Conflict" → 409). Asked after them, in the priority
  * of its tag; null = not one it knows. A service, autoconfigured.
  */
-#[AutoconfigureTag(self::TAG)]
 interface UseCaseErrorMapper
 {
     public const string TAG = 'byfareska_crud.use_case_error_mapper';

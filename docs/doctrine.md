@@ -73,6 +73,8 @@ that applies:
 3. its `__toString()`;
 4. its id.
 
+A `RelationChoiceLabel` is a service: autoconfiguration is enough, no tag to add.
+
 The value of a relation in a list item or a record is a `TypedValue('relation', RecordRef)`. As text it is the
 name above; in JSON (live props, URLs, APIs) it is the id. Print it differently with a `type_relation` block in your
 `value_themes`.

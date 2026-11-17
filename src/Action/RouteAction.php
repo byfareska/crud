@@ -64,6 +64,10 @@ final readonly class RouteAction implements PrioritizedAction
         $parameters = $this->parameters;
         foreach ($this->fieldParameters as $parameter => $field) {
             $value = $item[$field] ?? null;
+            // A value that says what it is (a translated enum, a relation) as JSON - and so the addresses - write it.
+            while ($value instanceof \JsonSerializable) {
+                $value = $value->jsonSerialize();
+            }
             $parameters[$parameter] = $value instanceof \BackedEnum ? $value->value : $value;
         }
 

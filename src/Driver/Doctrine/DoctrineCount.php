@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Driver\Doctrine;
 
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-
 /**
  * How many records the list of a source has, in place of the COUNT of its query - named by the source,
  * `DoctrineSource(countWith: LogCount::class)`: a table of millions, counted by the estimate of PostgreSQL
@@ -21,7 +19,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  *         return [(int) $this->connection->fetchOne("SELECT reltuples FROM pg_class WHERE relname = 'log'"), false];
  *     }
  */
-#[AutoconfigureTag(self::TAG)]
 interface DoctrineCount
 {
     public const string TAG = 'byfareska_crud.doctrine_count';

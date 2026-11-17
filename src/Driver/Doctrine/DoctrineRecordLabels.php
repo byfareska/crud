@@ -16,6 +16,7 @@ use Stringable;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Throwable;
+use UnitEnum;
 
 /**
  * What names an entity where it is shown as another record's relation - a cell of a list, the details, a choice of a
@@ -80,6 +81,10 @@ final readonly class DoctrineRecordLabels
                         : null;
                 } catch (Throwable) {
                     $value = null;
+                }
+                // An enum that translates itself by its translation, as the lists print it.
+                if ($value instanceof UnitEnum) {
+                    $value = $this->values->normalize($value);
                 }
                 if ($value instanceof JsonSerializable && !$value instanceof Stringable) {
                     $value = $value->jsonSerialize();

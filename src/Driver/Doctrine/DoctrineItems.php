@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Driver\Doctrine;
 
 use Byfareska\Crud\Attribute\AsCrud;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Adds to the items of a list of entities - and to a record read by its id - what no field of the entity has: the
@@ -31,7 +30,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * (`$query->query->addSelect('(SELECT COUNT(o.id) FROM App\Entity\Order o WHERE o.customer = e) AS orders')`): what
  * a query selects besides the entity is in its item under its alias.
  */
-#[AutoconfigureTag(self::TAG)]
 interface DoctrineItems
 {
     public const string TAG = 'byfareska_crud.doctrine_items';
