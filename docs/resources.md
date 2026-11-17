@@ -44,6 +44,12 @@ format of your own, write a `ValueFormat` plus the `ValueFormatter` service it n
 `ValueNormalizer` services prepare values. Yours runs before the bundle's and can return
 `new TypedValue('money', '12.50')`.
 
+An enum that implements `TranslatableInterface` is printed by its `trans()`, in the locale of the request, in the list,
+the details and the title of a record. Its value in a list item or a record is a
+`TypedValue('enum', TranslatedValue)`: as text the translation, in JSON (live props, URLs, APIs) the enum's value.
+Print it differently with a `type_enum` block in your `value_themes`. Any other enum is its value (or name).
+A Doctrine field with `enumType` holds its enum here too, also a list of them (`simple_array`, `json`).
+
 ### A list on any page
 
 ```twig

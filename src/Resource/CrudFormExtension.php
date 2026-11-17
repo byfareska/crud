@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Resource;
 
 use Byfareska\Crud\Attribute\AsCrud;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Form\FormBuilderInterface;
 
 /**
@@ -32,7 +31,6 @@ use Symfony\Component\Form\FormBuilderInterface;
  * The form is made anew for every live request, the save too, so what it takes away cannot be sent back. By the
  * priority of its tag.
  */
-#[AutoconfigureTag(self::TAG)]
 interface CrudFormExtension
 {
     public const string TAG = 'byfareska_crud.form_extension';

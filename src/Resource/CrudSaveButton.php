@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Resource;
 
 use Byfareska\Crud\Attribute\AsCrud;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Another button of the add and edit forms of a resource, next to "save": it saves the same way, then leads where it
@@ -13,7 +12,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * RecordSaved know which button saved ($then), so a listener does what it promises (the invoice sent, in the
  * transaction of the save).
  */
-#[AutoconfigureTag(self::TAG)]
 interface CrudSaveButton
 {
     public const string TAG = 'byfareska_crud.save_button';

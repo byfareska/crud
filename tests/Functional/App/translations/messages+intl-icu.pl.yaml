@@ -1,0 +1,15 @@
+crud:
+    customer:
+        title: Klienci
+        field:
+            name: { name: Nazwa }
+panel:
+    section:
+        billing: Rozliczenia
+app:
+    status:
+        active: aktywna
+        closed: zamknięta
+    channel:
+        phone: telefon
+        letter: list

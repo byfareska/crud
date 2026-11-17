@@ -20,6 +20,7 @@ use Byfareska\Crud\UseCase\Page;
 use Byfareska\Crud\UseCase\Sort;
 use Byfareska\Crud\Value\CrudValues;
 use Byfareska\Crud\Value\TypedValue;
+use BackedEnum;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\ConversionException;
 use Doctrine\DBAL\Types\Type;
@@ -917,7 +918,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
                 continue;
             }
             if ($metadata->hasField($field) || $metadata->hasAssociation($field)) {
-                $value = $metadata->getFieldValue($entity, $field);
+                $value = $this->fieldValue($metadata, $entity, $field);
             } elseif ($this->propertyAccessor->isReadable($entity, $field)) {
                 $value = $this->propertyAccessor->getValue($entity, $field);
             } else {
@@ -932,6 +933,26 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         }
 
         return $item;
+    }
+
+    /**
+     * The value of a field or relation of an entity as the entity holds it: a field of an enumType is its enum (a list
+     * of them for a list), not the value Doctrine writes to the database.
+     *
+     * @param ClassMetadata<object> $metadata
+     */
+    private function fieldValue(ClassMetadata $metadata, object $entity, string $field): mixed
+    {
+        $value = $metadata->getFieldValue($entity, $field);
+        $enum = $metadata->hasField($field) ? $metadata->getFieldMapping($field)->enumType : null;
+        if ($enum === null || $value === null || $value instanceof BackedEnum) {
+            return $value;
+        }
+        $case = static fn (mixed $plain): mixed => is_int($plain) || is_string($plain)
+            ? $enum::tryFrom($plain) ?? $plain
+            : $plain;
+
+        return is_array($value) ? array_map($case, $value) : $case($value);
     }
 
     /**

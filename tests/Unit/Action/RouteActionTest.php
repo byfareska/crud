@@ -9,6 +9,9 @@ use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Resource\CrudToast;
 use Byfareska\Crud\Tests\Unit\Fixtures\ListThingsDto;
 use Byfareska\Crud\Tests\Unit\Fixtures\ThingPriority;
+use Byfareska\Crud\Value\RecordRef;
+use Byfareska\Crud\Value\TranslatedValue;
+use Byfareska\Crud\Value\TypedValue;
 use PHPUnit\Framework\TestCase;
 
 final class RouteActionTest extends TestCase
@@ -28,6 +31,25 @@ final class RouteActionTest extends TestCase
         self::assertSame(
             ['id' => '12', 'status' => 'open', 'customer' => 7],
             $action->parameters($crud, '12', ['customerId' => 7, 'number' => 'FV/1']),
+        );
+    }
+
+    public function testAValueThatSaysWhatItIsGivesTheAddressWhatJsonHasOfIt(): void
+    {
+        $crud = new AsCrud('order', '/orders', 'cart', list: ListThingsDto::class);
+        $action = new RouteAction(
+            'invoices',
+            'app_invoices',
+            'receipt',
+            fieldParameters: ['status' => 'status', 'customer' => 'customer'],
+        );
+
+        self::assertSame(
+            ['id' => '12', 'status' => 'paid', 'customer' => '7'],
+            $action->parameters($crud, '12', [
+                'status' => new TypedValue('enum', new TranslatedValue('paid', 'zapłacona')),
+                'customer' => new TypedValue('relation', new RecordRef('7', 'Anna Kowalska')),
+            ]),
         );
     }
 

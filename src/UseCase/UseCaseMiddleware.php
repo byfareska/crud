@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Byfareska\Crud\UseCase;
 
 use Closure;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Wraps every use case the panel runs (UseCaseExecutor): a log of who did what, the tenant of the request set for the
@@ -19,7 +18,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  *         return $next($request);
  *     }
  */
-#[AutoconfigureTag(self::TAG)]
 interface UseCaseMiddleware
 {
     public const string TAG = 'byfareska_crud.use_case_middleware';

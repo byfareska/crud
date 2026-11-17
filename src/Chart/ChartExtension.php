@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Chart;
 
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\UX\Chartjs\Model\Chart;
 
 /**
@@ -18,7 +17,6 @@ use Symfony\UX\Chartjs\Model\Chart;
  *         $chart->setOptions(array_replace_recursive($chart->getOptions(), $legend));
  *     }
  */
-#[AutoconfigureTag(self::TAG)]
 interface ChartExtension
 {
     public const string TAG = 'byfareska_crud.chart_extension';

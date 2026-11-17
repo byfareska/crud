@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Dashboard;
 
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-
 /**
  * Checks a value of a widget setting beyond its type, when the user sets it - a URL of a feed, a number within a range,
  * a date: the setting names it, `new WidgetSetting('feed', ..., WidgetSettingType::Text, validator: FeedUrl::class)`.
  * A service, autoconfigured.
  */
-#[AutoconfigureTag(self::TAG)]
 interface WidgetSettingValidator
 {
     public const string TAG = 'byfareska_crud.widget_setting_validator';

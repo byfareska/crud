@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Resource;
 
 use Byfareska\Crud\Attribute\AsCrud;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * Changes what a resource shows for the request being answered: a column only somebody with a role sees, the columns
@@ -33,7 +32,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  * for everybody. Asked once a request per resource, by the priority of its tag; it must not depend on
  * CrudRegistry (it is what asks it).
  */
-#[AutoconfigureTag(self::TAG)]
 interface CrudDefinitionExtension
 {
     public const string TAG = 'byfareska_crud.definition_extension';

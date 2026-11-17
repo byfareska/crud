@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Navigation;
 
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-
 /**
  * Changes the menu for the request, after every NavigationSource gave its items: hides one (a module switched off
  * for a tenant), moves one (the order a user chose), gives one a badge, renames a section. A service, autoconfigured;
@@ -18,7 +16,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
  *             : $item, $items);
  *     }
  */
-#[AutoconfigureTag(self::TAG)]
 interface NavigationExtension
 {
     public const string TAG = 'byfareska_crud.navigation_extension';

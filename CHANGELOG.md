@@ -2,6 +2,50 @@
 
 ## Unreleased
 
+## v0.3.0
+
+Translations of the application win over the default texts, enums that translate themselves are printed translated,
+and a `RelationChoiceLabel` names the entity everywhere.
+
+### Upgrading
+
+- A related entity is named in the cells of lists and in the details the same way as in the choices of forms and
+  filters (`DoctrineRecordLabels`): a `RelationChoiceLabel`, then the title of its resource, then `__toString()`. An
+  entity with `__toString()` whose resource has a `title:` now shows that title in lists and details ("Ewa Lisowska"
+  rather than "Ewa Lisowska (1187234)"). To keep `__toString()` there, write a `RelationChoiceLabel` that returns it.
+  `DoctrineEntityNormalizer` runs at priority -95 instead of -200, before `PlainValueNormalizer` (-100).
+- An enum that implements `TranslatableInterface` is a `TypedValue('enum', TranslatedValue)` in list items and records
+  (`RecordView::$item`, guards, layout conditions), not its value as a string. It prints as its translation and
+  JSON-encodes to its value. Code that compared `$item['status'] === 'paid'` should compare
+  `$item['status']->value->value`, or `json_encode()` it. Enums without `TranslatableInterface` are unchanged.
+- The tags of the bundle's interfaces (`RelationChoiceLabel`, `LayoutCondition`, `CrudDriver`, `ScopeExtension`, ...)
+  are added by `CrudBundle::build()`, no longer by `#[AutoconfigureTag]` on the interfaces. Nothing to change for an
+  autoconfigured service. A service that also has the tag set by hand keeps working.
+- The translation catalogues cached by v0.2.0 are not read again: their file names change (`cache_vary` of the
+  translator), so nothing in `var/cache/<env>/translations` has to be cleared by hand.
+
+### Added
+
+- `TranslatableEnumNormalizer` and `TranslatedValue`: an enum that translates itself is printed by its `trans()` in the
+  locale of the request, in lists, details and record titles; blocks `type_enum*` print it differently.
+
+### Fixed
+
+- The texts made of the names of the resources (`CrudDefaultTexts`) won over the application's translations
+  ("Customers" instead of "Klienci"): FrameworkBundle's translator added every translation file before them. They are
+  now the first entry of the translator's `resource_files` for their locales, so any translation file wins, as
+  documented.
+- A Doctrine field with `enumType` reached the value normalizers as the value Doctrine stores (`"active"`), not as the
+  enum, so no normalizer of the application saw the enum. Lists of enums (`simple_array`, `json`) too.
+- A `RelationChoiceLabel` of the application, autoconfigured, got no tag and was never asked: `#[AutoconfigureTag]` on
+  an interface is read only when the interface's directory is loaded as services, and the bundle excludes
+  `Autocomplete/` and `Layout/`. The same for `LayoutCondition`. All 30 interfaces with a tag are now registered in
+  `CrudBundle::build()`.
+- A relation in a cell of a list or in the details was named by `__toString()`, not by the `RelationChoiceLabel` or the
+  title that names it in forms and filters.
+- `RouteAction::$fieldParameters` put the text of a relation (its name) into the address instead of its id; a
+  translated enum gives its value.
+
 ## v0.2.0
 
 A panel works with the bundle, one route import and `#[AsCrud]` on Doctrine entities alone: no configuration, no

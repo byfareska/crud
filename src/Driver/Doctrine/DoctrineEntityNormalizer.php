@@ -11,13 +11,16 @@ use Byfareska\Crud\Value\ValueNormalizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ManagerRegistry;
+use DateTimeInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+use UnitEnum;
 
 /**
- * An entity of Doctrine ORM (which is no Stringable - that one is its text) as a reference to its record: its id
- * (DoctrineIdCodec) and what names it (DoctrineRecordLabels).
+ * An entity of Doctrine ORM as a reference to its record: its id (DoctrineIdCodec) and what names it
+ * (DoctrineRecordLabels) - a Stringable one too, before the plain values take it as its __toString(), so that it is
+ * named the same in a list, the details and the choices of forms and filters.
  */
-#[AsTaggedItem(priority: -200)]
+#[AsTaggedItem(priority: -95)]
 final readonly class DoctrineEntityNormalizer implements ValueNormalizer
 {
     public function __construct(
@@ -30,6 +33,11 @@ final readonly class DoctrineEntityNormalizer implements ValueNormalizer
     public function supports(mixed $value): bool
     {
         return is_object($value)
+            // What is never an entity, without asking Doctrine about every value of a list.
+            && !$value instanceof UnitEnum
+            && !$value instanceof DateTimeInterface
+            && !$value instanceof TypedValue
+            && !is_iterable($value)
             && $this->doctrine->getManagerForClass($value::class) instanceof EntityManagerInterface;
     }
 

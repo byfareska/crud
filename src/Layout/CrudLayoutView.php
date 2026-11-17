@@ -10,6 +10,7 @@ use Byfareska\Crud\Resource\Column as ListColumn;
 use Byfareska\Crud\Resource\CrudFill;
 use LogicException;
 use Symfony\Component\Form\FormView;
+use Byfareska\Crud\Value\TypedValue;
 
 /**
  * The layout of one page of a resource as it is drawn: what is left of it on that page (CrudLayout::resolve()), the
@@ -105,11 +106,15 @@ final readonly class CrudLayoutView
 
     /**
      * What the badge of a tab shows: the property of the record it names when that is a number or a text that is
-     * not empty.
+     * not empty (a TypedValue as its text).
      */
     public function badge(Tab $tab): string|int|float|null
     {
         $value = $tab->badge === null ? null : ($this->item[$tab->badge] ?? null);
+        // One that says what it is (a translated enum, a relation): as it is printed.
+        if ($value instanceof TypedValue) {
+            $value = (string) $value;
+        }
 
         return is_int($value) || is_float($value) || (is_string($value) && $value !== '') ? $value : null;
     }

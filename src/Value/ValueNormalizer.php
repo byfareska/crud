@@ -7,8 +7,9 @@ namespace Byfareska\Crud\Value;
 /**
  * Makes a value of a record ready to print: what a driver puts into an item, and what a page prints of a value a use
  * case returned. A service, autoconfigured; the first one (by the priority of its tag, #[AsTaggedItem]) that supports
- * a value normalizes it. The bundle's own come last (negative priorities): plain values, enums, dates, Stringable,
- * JsonSerializable and lists ({@see PlainValueNormalizer}), then entities of Doctrine ORM (their id).
+ * a value normalizes it. The bundle's own come last (negative priorities): enums that translate themselves
+ * ({@see TranslatableEnumNormalizer}), entities of Doctrine ORM (a relation), then plain values, other enums, dates,
+ * Stringable, JsonSerializable and lists ({@see PlainValueNormalizer}).
  *
  * One of the application's own goes first: a value object of money as `new TypedValue('money', '12.50')`, say.
  */
