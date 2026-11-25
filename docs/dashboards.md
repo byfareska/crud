@@ -18,6 +18,7 @@ byfareska_crud:
 
 - `role:` restricts a board.
 - `template:` gives it a page of its own; it may extend `@CrudTheme/panel/dashboard.html.twig`.
+- Its name is that of no panel and of no board of another panel: its routes, layouts and widgets go by it.
 
 ## Widgets
 

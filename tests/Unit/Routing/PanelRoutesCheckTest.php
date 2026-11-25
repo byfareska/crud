@@ -14,6 +14,7 @@ use Byfareska\Crud\Tests\Unit\Fixtures\Gadget;
 use Byfareska\Crud\Tests\Unit\Fixtures\RecordingActor;
 use Byfareska\Crud\Tests\Unit\Fixtures\ThingCrud;
 use Byfareska\Crud\Tests\Unit\Fixtures\ThingHistoryPage;
+use InvalidArgumentException;
 use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -97,6 +98,26 @@ final class PanelRoutesCheckTest extends TestCase
 
         $this->expectException(LogicException::class);
         $loader->load(fn (): RouteCollection => $this->imported('/{name}/admin', ''));
+    }
+
+    public function testABoardIsOfOnePanel(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The board "sales" of the panel "partner" is a board of the panel "admin" too');
+
+        $this->loader([
+            'admin' => ['boards' => ['sales' => []]],
+            'partner' => ['boards' => ['sales' => []]],
+        ])->load('partner');
+    }
+
+    public function testABoardIsNotNamedLikeAPanelOnlyResourcesName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The board "panel" of the panel "admin" is named like a panel');
+
+        // "panel" is not configured; ThingCrud is in it.
+        $this->loader(['admin' => ['boards' => ['panel' => []]]])->load('admin');
     }
 
     /**

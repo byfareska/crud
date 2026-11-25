@@ -63,7 +63,7 @@ byfareska_crud:
 | `label` | `panel.scope.<name>` | a translation key |
 | `role` | none | who may see the panel at all: its menu, palette, dashboard and every resource in it |
 | `dashboard` | `true` | whether `/` of the panel is a dashboard of widgets; `false` makes `/` redirect to the first resource in the menu |
-| `boards` | `{}` | more dashboards, see [dashboards.md](dashboards.md) |
+| `boards` | `{}` | more dashboards, see [dashboards.md](dashboards.md); a name is that of no panel nor of a board of another panel |
 | `home` | the dashboard | the route the panel switch and the brand lead to |
 | `theme`, `entries`, `layout`, `paths` | the global ones | per panel |
 

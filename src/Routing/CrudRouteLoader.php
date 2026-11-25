@@ -104,11 +104,24 @@ final class CrudRouteLoader extends Loader
         }
         // More dashboards of the panel, each under a path of its own.
         foreach ($scope->boards as $board => $settings) {
-            if ($board === $scope->name || $this->scopes->isConfigured($board)) {
+            // Its routes, its layouts, its widgets and the panel its live requests are answered in go by its name.
+            if (
+                $board === $scope->name
+                || $this->scopes->isConfigured($board)
+                || $this->crudRoutes->of($board)->count() > 0
+            ) {
                 throw new InvalidArgumentException(sprintf(
                     'The board "%s" of the panel "%s" is named like a panel: name it otherwise.',
                     $board,
                     $scope->name,
+                ));
+            }
+            if ($this->scopes->panelOf($board) !== $scope->name) {
+                throw new InvalidArgumentException(sprintf(
+                    'The board "%s" of the panel "%s" is a board of the panel "%s" too: name it otherwise.',
+                    $board,
+                    $scope->name,
+                    $this->scopes->panelOf($board),
                 ));
             }
             $routes->addCollection($this->dashboard($board, rtrim($settings['path'], '/')));
