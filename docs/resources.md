@@ -146,6 +146,12 @@ Every record gets details, edit and delete. Add more with `actions:`:
   an action people who may not edit may do.
 - `tone: ActionTone::Info` colours it.
 - Its label is `crud.<resource>.action.<name>`.
+- The values of `fieldParameters`, like the ids of records, are record data that goes into URLs. The router encodes
+  `?`, `#` and `..`, but not `/`, and in production (`strict_requirements: null`) it doesn't check requirements: a
+  value of `/evil.example` as the first part of a path makes `//evil.example`, another site. Give a route that takes
+  record data a constant first part (`/customers/{customer}/invoices`), as the bundle's routes have (the panel's
+  prefix and the resource's `path` come before `{id}`; don't give a resource `path: '/'` in a panel without a prefix
+  when its ids are text people type), and don't let such values have a `/`.
 
 A `RecordActionGuard` decides which records an action is for. Details and edit go by their `RecordGuard`s only.
 Deleting asks the guards of `delete` too, whatever your `DeleteAction` is called: a record they refuse has no delete

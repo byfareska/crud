@@ -61,6 +61,13 @@ the field shows only the files of the record and those signed for it.
 A signature covers the storage and the path, without an expiry: a file the user was shown in a field (their upload,
 the library, a record they edit) can be attached to any other field over that storage that accepts it.
 
+The panel's file URLs (uploads, signed downloads, `lazy` image sizes) are absolute, signed with the scheme and host
+of the request, since that's what the signature is checked against. Set `framework.trusted_hosts` (and
+`trusted_proxies` behind a proxy) so a request can't name another host for them. Nothing the bundle stores is built
+from the request: rich text keeps the URLs of public storages (`public_url` or Flysystem's), and the bundle's
+references (`private://...`) have no host at all. Upload URLs work for a day and downloads for `ttl`; the URL
+of a `lazy` size has no expiry, so the browser can cache it.
+
 ### Serving uploaded files
 
 A `public` storage under `public/` is served by the web server from the panel's origin. A field that accepts SVG or
@@ -244,6 +251,10 @@ A storage's `variants` setting decides when sizes are made:
 | `eager` (default) | when the image is uploaded; run `variants:generate` for older images |
 | `lazy` | when a size is first requested, through the panel |
 | `none` | no sizes |
+
+Only the sizes of `variants` are made, of the images of a storage, by a signed URL: a browser can't ask for another
+width, fit or format, and a size that is there already isn't made again. An image of more than `max_pixels` (default
+40 million) gets no sizes.
 
 ```sh
 bin/console byfareska:crud:files:variants:generate [--storage=] [--variant=] [--overwrite]
