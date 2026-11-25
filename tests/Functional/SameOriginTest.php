@@ -15,7 +15,8 @@ use Symfony\Component\Routing\RouterInterface;
 /**
  * What changes something in a panel is answered only to a page of the same origin: a browser saying the request comes
  * from another site (or another subdomain) is refused, whatever headers that site got the browser to send; the live
- * route takes no HEAD, which LiveComponent would answer by hydrating the component from the address.
+ * route takes no HEAD, which LiveComponent would answer by hydrating the component from the address, nor a request
+ * without X-Requested-With, nor child components named by anything but a tag - whatever version of LiveComponent.
  */
 final class SameOriginTest extends PanelTestCase
 {
@@ -54,6 +55,33 @@ final class SameOriginTest extends PanelTestCase
         self::assertSame(405, $this->live('PUT', '/_crud/Crud:List', $props)->getStatusCode());
     }
 
+    public function testALiveRequestNeedsTheHeaderOfAScriptOfThePage(): void
+    {
+        $this->boot();
+        $this->seed();
+
+        $request = Request::create('/_crud/Crud:List', 'POST', ['data' => json_encode([
+            'props' => json_decode($this->props(), true),
+        ], JSON_THROW_ON_ERROR)]);
+        // The Accept header alone: a page of another site sends it without the browser asking first.
+        $request->headers->set('Accept', 'application/vnd.live-component+html');
+
+        self::assertSame(400, $this->handle($request)->getStatusCode());
+    }
+
+    public function testAChildComponentIsNamedByATagOnly(): void
+    {
+        $this->boot();
+        $this->seed();
+        $props = $this->props();
+
+        $tag = static fn (string $tag): array => ['live-1' => ['fingerprint' => 'x', 'tag' => $tag]];
+        self::assertSame(400, $this->live('POST', '/_crud/Crud:List', $props, children: $tag('div onclick=alert(1)'))
+            ->getStatusCode());
+        self::assertSame(200, $this->live('POST', '/_crud/Crud:List', $props, children: $tag('div'))
+            ->getStatusCode());
+    }
+
     public function testWhatChangesADashboardIsOnlyForThePageItself(): void
     {
         $router = $this->boot()->get('router');
@@ -88,6 +116,7 @@ final class SameOriginTest extends PanelTestCase
      * browser that does not say). A GET and a HEAD carry the props in the address.
      *
      * @param array<string, string> $args
+     * @param array<string, mixed> $children
      */
     private function live(
         string $method,
@@ -95,11 +124,13 @@ final class SameOriginTest extends PanelTestCase
         string $props,
         array $args = [],
         ?string $site = null,
+        array $children = [],
     ): Response {
         $request = $method === 'POST'
             ? Request::create($uri, 'POST', ['data' => json_encode([
                 'props' => json_decode($props, true),
                 'args' => $args,
+                'children' => $children,
             ], JSON_THROW_ON_ERROR)])
             : Request::create($uri . '?' . http_build_query(['props' => $props, 'updated' => '{}']), $method);
         $request->headers->set('X-Requested-With', 'XMLHttpRequest');

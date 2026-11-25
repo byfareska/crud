@@ -62,8 +62,10 @@ a CORS preflight. Don't let other origins send that header with credentials in y
 `nelmio_cors` on `^/`). On top of that, the panel's live route, its file upload and the dashboard's changes refuse
 (403) a request whose `Sec-Fetch-Site` header says it comes from another origin: `cross-site`, `same-site` (another
 subdomain) or `none`. Requests without the header (older browsers, other clients) depend on `X-Requested-With`
-alone. The live route accepts only `GET` and `POST` (`HEAD` gets 405). Components served at `/_components/...` don't
-get these checks.
+alone. The live route accepts only `GET` and `POST` (`HEAD` gets 405), needs `X-Requested-With` (400; LiveComponent
+itself asks for it only since 2.36 / 3.1) and refuses child components whose tag isn't an element name. Components
+served at `/_components/...` don't get these checks: there, use LiveComponent 2.36+ or 3.1+, which fix the CSRF, the
+props checksum and the child tags.
 
 ### Parameters in the prefix
 
