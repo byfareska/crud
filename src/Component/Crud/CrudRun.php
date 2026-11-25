@@ -18,6 +18,7 @@ use Byfareska\Crud\Resource\CrudFailure;
 use Byfareska\Crud\Resource\CrudRegistry;
 use Byfareska\Crud\Resource\CrudReturn;
 use Byfareska\Crud\Resource\FailureMessage;
+use Byfareska\Crud\Resource\OwnRecords;
 use Byfareska\Crud\Resource\RecordScreen;
 use Byfareska\Crud\Routing\LocalUrl;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -72,6 +73,7 @@ final class CrudRun implements ScopedComponent
         private readonly RequestStack $requestStack,
         private readonly TranslatorInterface $translator,
         private readonly ?CrudReturn $return = null,
+        private readonly ?OwnRecords $ownRecords = null,
     ) {
     }
 
@@ -102,8 +104,9 @@ final class CrudRun implements ScopedComponent
         $crud = $this->registry->get($this->resource);
         // The component is reached without its page too (the live endpoint).
         $this->access->assertGranted($crud);
-        // One's own record is nobody else's, whoever signed the id in.
-        if ($crud->own && $this->id !== $this->access->ownId()) {
+        // One's own record is nobody else's, whoever signed the id in - the one its OwnRecordResolver says, as the
+        // page and the form go by.
+        if ($crud->own && $this->id !== ($this->ownRecords?->idOf($crud) ?? $this->access->ownId())) {
             throw new AccessDeniedHttpException(sprintf('"%s" is the record of the one signed in.', $crud->name));
         }
 
