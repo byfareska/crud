@@ -956,7 +956,7 @@ class CrudList implements ScopedComponent
     #[PostHydrate]
     public function returnToFirstPageWhenFiltersChanged(): void
     {
-        $this->selected = self::chosen(array_filter($this->selected, is_string(...)));
+        $this->selected = $this->chosen(array_filter($this->selected, is_string(...)));
         if ($this->filters !== $this->pagedFilters) {
             $this->stateChanged = true;
             $this->page = 1;
@@ -1013,7 +1013,7 @@ class CrudList implements ScopedComponent
         $ids = array_map($this->idOf(...), $result->items);
         $this->selected = $this->pageSelection($result) === true
             ? array_values(array_diff($this->selected, $ids))
-            : self::chosen([...$this->selected, ...$ids]);
+            : $this->chosen([...$this->selected, ...$ids]);
     }
 
     /**
@@ -1023,7 +1023,7 @@ class CrudList implements ScopedComponent
      *
      * @return list<string>
      */
-    private static function chosen(array $ids): array
+    private function chosen(array $ids): array
     {
         return array_slice(array_values(array_unique($ids)), 0, self::MAX_SELECTED);
     }

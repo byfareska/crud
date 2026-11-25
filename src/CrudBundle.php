@@ -1002,6 +1002,7 @@ final class CrudBundle extends AbstractBundle
      *     form: array{save: string, save_buttons: list<string>},
      *     entries: list<string>,
      *     assets: string,
+     *     frame_options: string|false,
      *     theme: string,
      *     themes: array<string, array{path: string, parent: string}>,
      *     color_themes: list<string>,
