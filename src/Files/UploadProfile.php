@@ -13,7 +13,8 @@ use InvalidArgumentException;
  *
  * The kinds ("accept") are MIME types ("application/pdf"), groups ("image/*") or extensions (".pdf"); none = any
  * kind but those a browser would run as a page of the panel - HTML, SVG, scripts - which are taken only when named by
- * their MIME type.
+ * their MIME type. That holds for the extension too: a file whose path ends in ".svg" is SVG to a web server, whatever
+ * its bytes say.
  */
 final readonly class UploadProfile
 {
@@ -37,6 +38,38 @@ final readonly class UploadProfile
         'text/x-php',
         'application/x-sh',
         'text/x-shellscript',
+    ];
+
+    /**
+     * The extensions a web server sends as one of ACTIVE, with those MIME types: a file of such a path is taken only
+     * when one of them is named in "accept".
+     */
+    public const array ACTIVE_EXTENSIONS = [
+        'html' => ['text/html', 'application/xhtml+xml'],
+        'htm' => ['text/html', 'application/xhtml+xml'],
+        'shtml' => ['text/html'],
+        'xhtml' => ['application/xhtml+xml'],
+        'xht' => ['application/xhtml+xml'],
+        'svg' => ['image/svg+xml'],
+        'svgz' => ['image/svg+xml'],
+        'xml' => ['application/xml', 'text/xml'],
+        'xsl' => ['application/xml', 'text/xml'],
+        'xslt' => ['application/xml', 'text/xml'],
+        'xsd' => ['application/xml', 'text/xml'],
+        'rng' => ['application/xml', 'text/xml'],
+        'xbl' => ['application/xml', 'text/xml'],
+        'js' => ['text/javascript', 'application/javascript'],
+        'mjs' => ['text/javascript', 'application/javascript'],
+        'cjs' => ['text/javascript', 'application/javascript'],
+        'jsm' => ['text/javascript', 'application/javascript'],
+        'php' => ['application/x-httpd-php', 'application/x-php', 'text/x-php'],
+        'php3' => ['application/x-httpd-php', 'application/x-php', 'text/x-php'],
+        'php4' => ['application/x-httpd-php', 'application/x-php', 'text/x-php'],
+        'php5' => ['application/x-httpd-php', 'application/x-php', 'text/x-php'],
+        'phps' => ['application/x-httpd-php', 'application/x-php', 'text/x-php'],
+        'phtml' => ['application/x-httpd-php', 'application/x-php', 'text/x-php'],
+        'phar' => ['application/x-httpd-php', 'application/x-php', 'text/x-php'],
+        'sh' => ['application/x-sh', 'text/x-shellscript'],
     ];
 
     /**
@@ -99,14 +132,26 @@ final readonly class UploadProfile
     }
 
     /**
+     * Whether a file of this MIME type or extension is one a browser would run as a page (ACTIVE, ACTIVE_EXTENSIONS).
+     *
+     * @param string|null $mimeType null = not known
+     * @param string $extension lower-case, without the dot
+     */
+    public static function isActive(?string $mimeType, string $extension): bool
+    {
+        return ($mimeType !== null && in_array(strtolower($mimeType), self::ACTIVE, true))
+            || isset(self::ACTIVE_EXTENSIONS[strtolower($extension)]);
+    }
+
+    /**
      * @param string $mimeType what the file is, as read from its bytes
      * @param string $extension lower-case, without the dot
      */
     public function accepts(string $mimeType, string $extension): bool
     {
         $mimeType = strtolower($mimeType);
-        if (in_array($mimeType, self::ACTIVE, true)) {
-            return in_array($mimeType, $this->accept, true);
+        if (!$this->namesActive($mimeType, $extension)) {
+            return false;
         }
         if ($this->accept === []) {
             return true;
@@ -135,12 +180,33 @@ final readonly class UploadProfile
 
         // Without its MIME type: by the extension, as the kinds name it.
         $extension = $file->reference->extension();
+        if (isset(self::ACTIVE_EXTENSIONS[$extension])) {
+            return $this->namesActive(null, $extension);
+        }
 
         return $this->accept === [] || array_any(
             $this->accept,
             static fn (string $kind): bool => $kind === '.' . $extension
                 || (str_starts_with($kind, 'image/') && in_array($extension, self::IMAGE_EXTENSIONS, true)),
         );
+    }
+
+    /**
+     * Whether what a browser would run of a file is named in "accept" by its MIME type: the MIME type the file is, when
+     * it is one of ACTIVE, and one of those its extension is sent as (ACTIVE_EXTENSIONS). True for any other file.
+     */
+    private function namesActive(?string $mimeType, string $extension): bool
+    {
+        if (
+            $mimeType !== null
+            && in_array($mimeType, self::ACTIVE, true)
+            && !in_array($mimeType, $this->accept, true)
+        ) {
+            return false;
+        }
+        $sentAs = self::ACTIVE_EXTENSIONS[strtolower($extension)] ?? null;
+
+        return $sentAs === null || array_intersect($sentAs, $this->accept) !== [];
     }
 
     /**

@@ -17,6 +17,7 @@ byfareska_crud:
     layout: '@CrudTheme/panel/layout.html.twig'   # what the pages extend
     icon_template: '@CrudTheme/crud/icon.html.twig'  # the Twig template of every icon: another set (see panels.md#icons)
     paths: { new: new, edit: edit, page: page }   # /products/new, /products/7/edit, /products/page/3
+    frame_options: SAMEORIGIN   # X-Frame-Options of the panels' responses: SAMEORIGIN | DENY | false (see panels.md)
 
     preview: true            # a click on a row opens the preview drawer; AsCrud "preview" per resource
     per_page: [15, 30, 50, 100]
@@ -63,7 +64,7 @@ byfareska_crud:
 | `label` | `panel.scope.<name>` | a translation key |
 | `role` | none | who may see the panel at all: its menu, palette, dashboard and every resource in it |
 | `dashboard` | `true` | whether `/` of the panel is a dashboard of widgets; `false` makes `/` redirect to the first resource in the menu |
-| `boards` | `{}` | more dashboards, see [dashboards.md](dashboards.md) |
+| `boards` | `{}` | more dashboards, see [dashboards.md](dashboards.md); a name is that of no panel nor of a board of another panel |
 | `home` | the dashboard | the route the panel switch and the brand lead to |
 | `theme`, `entries`, `layout`, `paths` | the global ones | per panel |
 
@@ -82,13 +83,24 @@ crud_admin:
 
 Each import adds:
 
-- `crud_dashboard_<panel>` at `/` (when the panel has a dashboard) and its JSON endpoints under `/_dashboard`;
+- `crud_dashboard_<panel>` at `/` (when the panel has a dashboard) and its JSON endpoints under `/_dashboard`, else
+  `crud_home_<panel>` at `/`, a redirect to its first list; `crud_dashboard_<board>` for each of its `boards`;
 - `crud_<resource>_list`, `_new`, `_show`, `_edit`, plus the routes of `#[AsCrudPage]`, for every resource of the
   panel;
-- `crud_live_<panel>` at `/_crud/{component}/{action}`: the live components of the panel, under its prefix, so the
-  firewall of `^/admin` covers them;
+- `crud_live_<panel>` at `/_crud/{component}/{action}`: the live components of the panel, under its prefix and only
+  there, so the firewall and `access_control` of `^/admin` cover them;
 - `crud_autocomplete_<panel>` at `/_crud/autocomplete/{alias}`, with `symfony/ux-autocomplete`: the searches of the
   relations of its forms and filters, under its prefix for the same reason;
 - the file endpoints under `/_files`, when [files](files.md) are enabled.
 
 Every route has the default `_scope`. Run `bin/console debug:router | grep crud_` to see them.
+
+What the import says - `prefix`, `host`, `schemes`, `requirements`, `condition` - applies to every one of these
+routes, so a panel restricted to a host or a scheme is restricted everywhere, live requests and files included.
+
+The pages know what they show from the defaults of their routes alone (`crud`, `name`, `board`, `_scope`) and from
+their own paths (`id`, `page`). A parameter of the `prefix` or the `host` takes precedence over a default, so it
+must be named like none of `crud`, `id`, `page`, `name`, `board` nor start with `_` (`_locale` and `_format`
+excepted): `/{shop}/admin` and `{tenant}.example.com`, not `/{name}/admin`. Otherwise the address would choose the
+resource or the page while the firewall and `access_control` see another path, and the routes fail to load with an
+error naming the parameter. Don't use `name_prefix` either: the bundle finds its routes by their names.

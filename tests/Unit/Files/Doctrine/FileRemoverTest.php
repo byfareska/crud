@@ -78,6 +78,19 @@ final class FileRemoverTest extends TestCase
         $this->remover->remove(FileReference::parse('https://cdn.example.com/a.png'));
     }
 
+    public function testNotAFileItsLibraryDoesNotKnow(): void
+    {
+        // In the storage, not in crud_file: a backup, a file of another application.
+        $this->files->filesystem->write('backups/db.sql', 'data');
+
+        try {
+            $this->remover->remove(FileReference::parse('public://backups/db.sql'), evenIfUsed: true);
+            self::fail('A file the library does not know was deleted.');
+        } catch (InvalidArgumentException) {
+        }
+        self::assertTrue($this->files->filesystem->fileExists('backups/db.sql'));
+    }
+
     public function testNotAFileOfNoStorage(): void
     {
         $this->expectException(InvalidArgumentException::class);

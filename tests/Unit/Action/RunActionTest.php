@@ -13,13 +13,19 @@ use Byfareska\Crud\Action\RouteActionHandler;
 use Byfareska\Crud\Action\RunAction;
 use Byfareska\Crud\Action\RunActionHandler;
 use Byfareska\Crud\Attribute\AsCrud;
+use Byfareska\Crud\Component\Crud\CrudRun;
 use Byfareska\Crud\Driver\Doctrine\DoctrineSource;
 use Byfareska\Crud\Event\RecordChanged;
 use Byfareska\Crud\Event\RecordChanging;
+use Byfareska\Crud\Resource\CrudAccess;
 use Byfareska\Crud\Resource\CrudFailure;
 use Byfareska\Crud\Resource\CrudOperation;
 use Byfareska\Crud\Resource\CrudRecords;
 use Byfareska\Crud\Resource\CrudRegistry;
+use Byfareska\Crud\Resource\CrudResourceProvider;
+use Byfareska\Crud\Resource\DefaultFailureMessage;
+use Byfareska\Crud\Resource\OwnRecordResolver;
+use Byfareska\Crud\Resource\OwnRecords;
 use Byfareska\Crud\Resource\RecordActionGuard;
 use Byfareska\Crud\Resource\RecordChanges;
 use Byfareska\Crud\Resource\RecordGuard;
@@ -28,10 +34,17 @@ use Byfareska\Crud\Resource\RecordScreen;
 use Byfareska\Crud\Resource\RecordView;
 use Byfareska\Crud\Security\Actor;
 use Byfareska\Crud\Tests\Unit\Fixtures\ApproveInvoice;
+use Byfareska\Crud\Tests\Unit\Fixtures\EditThingDto;
+use Byfareska\Crud\Tests\Unit\Fixtures\ShowThingDto;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
@@ -154,6 +167,110 @@ final class RunActionTest extends TestCase
         self::assertSame('approved 9', $actions->run($crud, 'remind', '9')?->title);
     }
 
+    public function testAnActionThatAsksTheGuardsOfUpdateIsNotForSomebodyTheRequestRefusesEditing(): void
+    {
+        $runs = [
+            new RunAction('approve', 'check2', ApproveInvoice::class),
+            new RunAction('remind', 'bell', ApproveInvoice::class, update: false),
+        ];
+        // roles: ['update' => 'ROLE_MANAGER'] for a clerk, or an extension's refusing().
+        $crud = $this->invoices($runs)->refusing(CrudOperation::Update);
+        $actions = $this->actions();
+
+        self::assertSame(['remind'], array_map(
+            static fn (RecordAction $action): string => $action->name,
+            array_values(array_filter($actions->of($crud), static fn (RecordAction $action): bool
+                => $action instanceof RunAction)),
+        ));
+        try {
+            $actions->run($crud, 'approve', '7');
+            self::fail('What may not be edited was changed by an action.');
+        } catch (CrudFailure $failure) {
+            self::assertSame(403, $failure->status);
+        }
+        self::assertSame([], $this->runner->done);
+        // Not a change of what may be edited: only the guards of the action.
+        self::assertSame('approved 7', $actions->run($crud, 'remind', '7')?->title);
+
+        // Records nobody edits (no "update" at all) keep their actions: nothing is refused for the request.
+        $readOnly = new AsCrud(
+            'invoice',
+            '/invoices',
+            'receipt',
+            source: new DoctrineSource(stdClass::class, operations: [CrudOperation::List, CrudOperation::Read]),
+            actions: $runs,
+        );
+        self::assertSame('approved 8', $this->actions()->run($readOnly, 'approve', '8')?->title);
+    }
+
+    public function testOnOnesOwnRecordItIsTheRecordItsResolverSays(): void
+    {
+        $own = new AsCrud(
+            'my_company',
+            '/my-company',
+            'building',
+            read: ShowThingDto::class,
+            update: EditThingDto::class,
+            actions: [new RunAction('approve', 'check2', ApproveInvoice::class)],
+            own: true,
+        );
+        $registry = new CrudRegistry(providers: [new readonly class ($own) implements CrudResourceProvider {
+            public function __construct(private AsCrud $own)
+            {
+            }
+
+            public function resources(): iterable
+            {
+                yield $this->own;
+            }
+        }]);
+        $access = self::createStub(CrudAccess::class);
+        // The one signed in is user 7; their company, record 3 of another table.
+        $access->method('ownId')->willReturn('7');
+        $company = new readonly class implements OwnRecordResolver {
+            public function resource(): string
+            {
+                return 'my_company';
+            }
+
+            public function ownId(AsCrud $crud): string
+            {
+                return '3';
+            }
+        };
+        $request = new Request();
+        $request->setSession(new Session(new MockArraySessionStorage()));
+        $requests = new RequestStack();
+        $requests->push($request);
+        $run = function (string $id) use ($registry, $access, $company, $requests): void {
+            $component = new CrudRun(
+                $registry,
+                $access,
+                $this->actions(registry: $registry),
+                new RunActionHandler(new IdentityTranslator(), new ServiceLocator([])),
+                new DefaultFailureMessage(new IdentityTranslator()),
+                $requests,
+                new IdentityTranslator(),
+                ownRecords: new OwnRecords($access, [$company]),
+            );
+            $component->resource = 'my_company';
+            $component->id = $id;
+            $component->action = 'approve';
+            $component->run();
+        };
+
+        $run('3');
+        self::assertSame([['3', null]], $this->runner->done);
+
+        // Company 7 is somebody else's, whatever the id of the one signed in.
+        $this->expectException(AccessDeniedHttpException::class);
+        try {
+            $run('7');
+        } finally {
+            self::assertSame([['3', null]], $this->runner->done);
+        }
+    }
+
     public function testAListenerRefuses(): void
     {
         $crud = $this->invoices([new RunAction('approve', 'check2', ApproveInvoice::class)]);
@@ -208,6 +325,7 @@ final class RunActionTest extends TestCase
         array $guards = [],
         array $actionGuards = [],
         ?EventDispatcher $events = null,
+        CrudRegistry $registry = new CrudRegistry(),
     ): RecordActions {
         $events ??= new EventDispatcher();
         $events->addListener(RecordChanging::class, function (RecordChanging $event): void {
@@ -241,7 +359,7 @@ final class RunActionTest extends TestCase
         $urls = new UrlGenerator(new RouteCollection(), new RequestContext());
 
         return new RecordActions(
-            new CrudRegistry(),
+            $registry,
             $this->actor($roles),
             new ServiceLocator([
                 RunActionHandler::class => static fn (): RunActionHandler => new RunActionHandler(

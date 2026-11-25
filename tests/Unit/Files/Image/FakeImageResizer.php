@@ -18,6 +18,9 @@ final class FakeImageResizer implements ImageResizer
     /** @var list<string> "<variant> <mime type>" of each size made */
     public array $made = [];
 
+    /** @var list<string> the mime type of each image it was given to read */
+    public array $read = [];
+
     public function supports(string $mimeType): bool
     {
         return in_array($mimeType, ['image/png', 'image/jpeg', 'image/webp'], true);
@@ -25,6 +28,7 @@ final class FakeImageResizer implements ImageResizer
 
     public function resize(string $contents, string $mimeType, ImageVariant $variant, int $quality): ResizedImage
     {
+        $this->read[] = $mimeType;
         $size = @getimagesizefromstring($contents);
         if ($size === false) {
             throw new ImageVariantFailed('Not an image.');

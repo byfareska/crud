@@ -7,6 +7,7 @@ namespace Byfareska\Crud\Component\Navigation;
 use Byfareska\Crud\CommandPalette\CommandPalette as Palette;
 use Byfareska\Crud\CommandPalette\PaletteItem;
 use Byfareska\Crud\Panel\ScopedComponent;
+use Byfareska\Crud\Panel\Scopes;
 use Byfareska\Crud\Security\Actor;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Translation\LocaleSwitcher;
@@ -40,8 +41,9 @@ final class CommandPalette implements ScopedComponent
 
     /**
      * The panel the palette is in (the route scope of the page, e.g. "admin"): it offers what is for that panel. Set
-     * by the page and again by the browser when the palette opens - the modal is kept across Turbo visits, also
-     * from one panel to the other. Not a matter of access: what needs a role still asks for it.
+     * by the page and again by the browser when the palette opens. "" = the panel of the request. Its live requests
+     * are answered only under the prefix of that panel (LivePanelGuard): another panel's palette is not to be asked
+     * for through this one's firewall and access_control - a page of another panel draws a palette of its own.
      */
     #[LiveProp(writable: true)]
     public string $scope = '';
@@ -52,6 +54,7 @@ final class CommandPalette implements ScopedComponent
         private readonly Actor $actor,
         #[Autowire(param: 'byfareska_crud.command_palette.limit')]
         private readonly int $limit = 14,
+        private readonly ?Scopes $scopes = null,
     ) {
     }
 
@@ -66,9 +69,10 @@ final class CommandPalette implements ScopedComponent
         return $id === null ? self::STORAGE_KEY : self::STORAGE_KEY . '.' . substr(hash('sha256', $id), 0, 16);
     }
 
+    /** Not none: a palette of every panel would be answered under the prefix of any of them. */
     public function panelScope(): ?string
     {
-        return $this->scope === '' ? null : $this->scope;
+        return $this->scope === '' ? $this->scopes?->current()->name : $this->scope;
     }
 
     /**
@@ -82,7 +86,7 @@ final class CommandPalette implements ScopedComponent
             limit: $this->limit,
             commandsOnly: $this->isCommandsOnly(),
             recent: array_values(array_filter($this->recent, is_string(...))),
-            scope: $this->scope === '' ? null : $this->scope,
+            scope: $this->panelScope(),
         );
 
         $groups = [];
@@ -94,13 +98,14 @@ final class CommandPalette implements ScopedComponent
     }
 
     /**
-     * The typed text without the ">" commands prefix.
+     * The typed text without the ">" commands prefix - as much of it as is looked for (Palette::MAX_QUERY).
      */
     public function getTerm(): string
     {
         $query = trim($this->query);
+        $term = $this->isCommandsOnly() ? trim(substr($query, \strlen(self::COMMANDS_PREFIX))) : $query;
 
-        return $this->isCommandsOnly() ? trim(substr($query, \strlen(self::COMMANDS_PREFIX))) : $query;
+        return trim(mb_substr($term, 0, Palette::MAX_QUERY));
     }
 
     /**

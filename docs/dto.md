@@ -60,6 +60,23 @@ final readonly class ListTasks implements Query   // or Command; both are invoka
 
 Example: [`src/Crud/Dto`](https://github.com/byfareska/crud-example/tree/main/src/Crud/Dto).
 
+### What the panel checks and what your use cases check
+
+Before a DTO runs, the panel checks the resource's `role` and `roles`, and the `RecordGuard`s of the record it read
+(through `read`). The id of the record comes from the address, never from the form: `update` and `delete` get the id
+the user was allowed. Without a `read`, the guards see only the id, so `update` and `delete` check it themselves.
+`DoctrineScope`s don't apply to DTOs.
+
+Everything else is your use cases' job:
+
+- `list` and `read` return only what the user may see (their tenant, their team). A `read` that refuses throws
+  `AccessDeniedException` (403) or a not-found exception of yours mapped to 404: the edit form, the copy (`?from=`)
+  and the details all go through it.
+- Any other id the DTO carries (the customer of an order, a project) is whatever the user sent. A `ChoiceType` only
+  takes its choices, but a text or hidden field takes anything, and a copy brings the original's values back, even
+  ones the user can no longer choose. `create` and `update` check that the user may use them.
+- The form is the DTO's form type: the panel doesn't guess fields, so whatever it has (a role, an owner) the user sets.
+
 ## A driver of your own
 
 Implement `CrudSource` (`driver()`, `supports()`, `searchField()`) and a `CrudDriver` service with the same name

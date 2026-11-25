@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Component\Crud;
 
 use Byfareska\Crud\Action\ActionButton;
+use Byfareska\Crud\Action\DuplicateAction;
 use Byfareska\Crud\Action\RecordActions;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Attribute\AsCrudFormSection;
@@ -101,7 +102,8 @@ class CrudForm implements ScopedComponent
 
     /**
      * What a new record starts with, as in the address (?with[parent]=...): a link can open the form already
-     * filled in where it came from. Only plain values of properties the DTO has.
+     * filled in where it came from. Only plain values of properties the DTO has - any of them, also of a field on a
+     * tab the one filling it in never opens: a link of somebody else's can fill in more than it shows.
      *
      * @var array<string, mixed>
      */
@@ -110,7 +112,8 @@ class CrudForm implements ScopedComponent
 
     /**
      * The record a new one starts as a copy of, as in the address (?from=<id>, DuplicateAction): only one the one
-     * looking may read, only for fields of the add form they may fill in.
+     * looking may read and is offered the DuplicateAction of (its role, its RecordActionGuards), only for fields of
+     * the add form they may fill in.
      */
     #[LiveProp]
     public ?string $from = null;
@@ -323,8 +326,9 @@ class CrudForm implements ScopedComponent
     }
 
     /**
-     * Fills the add form in from the record it copies: one in its scopes and readable by its guards, only the fields
-     * the form still has, enabled and mapped; then RecordCopying, for what else a copy takes.
+     * Fills the add form in from the record it copies: one in its scopes, readable by its guards and offered its
+     * DuplicateAction (RecordActions::duplicateAction()), only the fields the form still has, enabled and mapped - not
+     * a hidden property (AsCrud::hides()), whatever form has it; then RecordCopying, for what else a copy takes.
      *
      * @param FormBuilderInterface<mixed> $builder
      */
@@ -334,10 +338,18 @@ class CrudForm implements ScopedComponent
         try {
             $source = $this->records->view($crud, $from, RecordScreen::Details);
             $this->guards->assertAllowed(CrudOperation::Read, $source);
+            // The address is only a way to the DuplicateAction: what its buttons would not offer - its role, a
+            // RecordActionGuard of it, a resource that has none - is not copied this way either.
+            if (
+                $this->recordActions instanceof RecordActions
+                && !$this->recordActions->duplicateAction($source) instanceof DuplicateAction
+            ) {
+                throw CrudFailure::forbidden();
+            }
             $fields = [];
-            // Not a section (unmapped), not a field kept from the user (disabled).
+            // Not a section (unmapped), not a field kept from the user (disabled), not what nobody is to see.
             foreach ($builder->all() as $name => $field) {
-                if (!$field->getDisabled() && $field->getMapped()) {
+                if (!$field->getDisabled() && $field->getMapped() && !$crud->hides((string) $name)) {
                     $fields[] = (string) $name;
                 }
             }
@@ -545,8 +557,14 @@ class CrudForm implements ScopedComponent
     {
         $crud = $this->getDefinition();
         $driver = $this->drivers->of($crud);
-        // A driver that can fills it in at the end, from what is left of the form (see PrefillsForm).
-        $builder = $driver->form($crud, $this->id, $driver instanceof PrefillsForm ? [] : $this->with);
+        // A driver that can fills it in at the end, from what is left of the form (see PrefillsForm). Never a hidden
+        // property.
+        $with = array_filter(
+            $this->with,
+            static fn (int|string $field): bool => !$crud->hides((string) $field),
+            ARRAY_FILTER_USE_KEY,
+        );
+        $builder = $driver->form($crud, $this->id, $driver instanceof PrefillsForm ? [] : $with);
         // What the request makes of it: a field a role may not change, one a tenant has not.
         foreach ($this->formExtensions as $extension) {
             if (in_array($extension->resource(), [$crud->name, CrudFormExtension::EVERY], true)) {
@@ -586,10 +604,10 @@ class CrudForm implements ScopedComponent
         }
 
         // What the address gives a new record: only for fields the user may fill in here - not one an extension
-        // disabled or removed, nor one a When keeps off the page.
-        if ($this->id === null && $this->with !== [] && $driver instanceof PrefillsForm) {
+        // disabled or removed, nor one a When keeps off the page, nor a hidden property.
+        if ($this->id === null && $with !== [] && $driver instanceof PrefillsForm) {
             $driver->prefill($crud, $builder, array_filter(
-                $this->with,
+                $with,
                 static fn (int|string $field): bool => $builder->has((string) $field)
                     && !$builder->get((string) $field)->getDisabled()
                     && $builder->get((string) $field)->getMapped(),

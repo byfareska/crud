@@ -9,8 +9,9 @@
  * - files: null when the field uploads nothing, else
  *   { upload(blob, { name, onProgress }) → Promise<file>, pick({ images }) → Promise<file[]> | null,
  *     addressOf(file) → string, sizes }
- *   - a file is { ref, url, name, alt, mime, size, width, height, image, sizes } (see lib/files.js); pick is null
- *     without a library;
+ *   - a file is { ref, url, link, name, alt, mime, size, width, height, image, sizes } (see lib/files.js); pick is
+ *     null without a library. A link of the text goes to its "link", never to its "url": "link" is null for a file a
+ *     browser would run (SVG, HTML), which is put into the text as an image only;
  *   - addressOf(file): the address an image uploaded or picked is put into the text with - its size the field says
  *     ("size" of its "files"), else its url;
  *   - sizes: null, or { label, of(address) } when the field offers sizes of images: of(address) gives the sizes of the

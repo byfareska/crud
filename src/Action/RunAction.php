@@ -12,10 +12,11 @@ namespace Byfareska\Crud\Action;
  *     actions: [new RunAction('approve', 'check2', ApproveInvoice::class, message: 'app.invoice.approve_question')]
  *
  * In the list and its preview drawer it is the live action "run" of the list; on a page of the record the Crud:Run
- * component. Either way it goes through RecordActions::run(): offered to the one asking (role), what its dialog asks
- * for checked (input), then RecordChanges - a transaction, the guards of Update (unless $operation says otherwise)
- * and of the action (RecordActionGuard by its name), RecordChanging and RecordChanged - and the runner. Never a link:
- * nothing is changed by a GET a browser could prefetch.
+ * component. Either way it goes through RecordActions::run(): offered to the one asking (role; with $update not to
+ * somebody the request refuses editing - AsCrud::$roles, refusing()), what its dialog asks for checked (input), then
+ * RecordChanges - a transaction, the guards of Update (unless $update says otherwise) and of the action
+ * (RecordActionGuard by its name), RecordChanging and RecordChanged - and the runner. Never a link: nothing is
+ * changed by a GET a browser could prefetch.
  */
 final readonly class RunAction implements PrioritizedAction, AsksForInput
 {
@@ -30,8 +31,9 @@ final readonly class RunAction implements PrioritizedAction, AsksForInput
      * @param bool $inline in the list a button on the row instead of an item of the row menu
      * @param bool $danger it destroys something: drawn in red
      * @param string|null $label translation key of its text; null = crud.<resource>.action.<name>
-     * @param bool $update whether the guards of Update are asked too (what may not be edited may not be changed so);
-     *     false = only those of the action
+     * @param bool $update whether it is a change of what may be edited: the guards of Update are asked too, and it is
+     *     not offered to somebody the request refuses editing (AsCrud::$roles "update", refusing()) - what may not be
+     *     edited may not be changed so; false = only its role and the guards of the action
      * @param list<string> $fields what it needs of an item of the list besides its columns (for a RecordActionGuard)
      * @param int $priority where it stands among the actions of a record, lower first
      * @param ActionTone|null $tone the colour of its button; null = Secondary (Danger when $danger)

@@ -36,7 +36,8 @@ export default class extends Controller {
     }
 
     // overlay:show: every session starts from an empty query, the current list of recent items and the panel of the
-    // page (data-scope of the shell: the modal is kept across Turbo visits, also into the other panel).
+    // page (data-scope of the shell; the modal of a page is drawn for it, and its live requests are refused under the
+    // prefix of another panel).
     reset(event) {
         if (!this.component || event?.target !== this.element) {
             return;

@@ -15,6 +15,7 @@ use Byfareska\Crud\Attribute\AsCrudPage;
 use Byfareska\Crud\Attribute\AsDashboardWidget;
 use Byfareska\Crud\Attribute\AsTopbarWidget;
 use Byfareska\Crud\Autocomplete\AutocompleteRelationFilterField;
+use Byfareska\Crud\Autocomplete\AutocompletedFormFields;
 use Byfareska\Crud\Autocomplete\RelationAutocompleter;
 use Byfareska\Crud\Autocomplete\RelationChoiceLabels;
 use Byfareska\Crud\Chart\DayBucket;
@@ -179,6 +180,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\UX\Autocomplete\OptionsAwareAutocompleterInterface;
+use Byfareska\Crud\Routing\PanelFrameOptions;
 use Byfareska\Crud\Routing\PanelLiveUrls;
 use Symfony\Component\DependencyInjection\Reference;
 use Byfareska\Crud\Chart\ChartTimezone;
@@ -278,6 +280,15 @@ final class CrudBundle extends AbstractBundle
                     )
                     ->values(['auto', 'builtin', 'reprise', 'encore', 'importmap', 'none'])
                     ->defaultValue('auto')
+                ->end()
+                ->enumNode('frame_options')
+                    ->info(
+                        'The X-Frame-Options of the answers of the panels: "SAMEORIGIN" (only pages of the same '
+                        . 'origin may show them in a frame), "DENY" (none may) or false (not sent). A response that '
+                        . 'has one already, or a Content-Security-Policy with frame-ancestors, keeps its own.',
+                    )
+                    ->values([PanelFrameOptions::SAMEORIGIN, 'DENY', false])
+                    ->defaultValue(PanelFrameOptions::SAMEORIGIN)
                 ->end()
                 ->arrayNode('entries')
                     ->info(
@@ -991,6 +1002,7 @@ final class CrudBundle extends AbstractBundle
      *     form: array{save: string, save_buttons: list<string>},
      *     entries: list<string>,
      *     assets: string,
+     *     frame_options: string|false,
      *     theme: string,
      *     themes: array<string, array{path: string, parent: string}>,
      *     color_themes: list<string>,
@@ -1048,6 +1060,7 @@ final class CrudBundle extends AbstractBundle
         );
         $parameters->set('byfareska_crud.entries', $config['entries']);
         $parameters->set('byfareska_crud.assets', $config['assets']);
+        $parameters->set('byfareska_crud.frame_options', $config['frame_options']);
         $parameters->set('byfareska_crud.paths', $config['paths']);
         $parameters->set('byfareska_crud.theme', $config['theme']);
         $themes = [
@@ -1204,6 +1217,8 @@ final class CrudBundle extends AbstractBundle
         if ($hasAutocomplete) {
             $services->set(RelationAutocompleter::class)
                 ->tag('ux.autocompleter', ['alias' => RelationAutocompleter::ALIAS]);
+            // Whether the form of the one asking has the relation it searches.
+            $services->set(AutocompletedFormFields::class);
             $services->set(RelationChoiceLabels::class);
             $services->set(AutocompleteRelationFilterField::class);
             $services->alias(RelationFilterField::class, AutocompleteRelationFilterField::class);

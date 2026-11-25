@@ -170,7 +170,12 @@ export default class extends Controller {
             icon.hidden = shown;
         }
         if (link) {
-            link.href = file.url ?? '#';
+            // No link to a file a browser would run (HTML, SVG) at an address of its storage: the server gives none.
+            if (file.link) {
+                link.href = file.link;
+            } else {
+                link.removeAttribute('href');
+            }
         }
         if (name) {
             name.textContent = file.name;

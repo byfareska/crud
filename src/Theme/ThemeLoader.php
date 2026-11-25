@@ -95,6 +95,10 @@ final class ThemeLoader implements LoaderInterface
     private function parse(string $name): ?array
     {
         $name = ltrim(str_replace('\\', '/', $name), '/');
+        // No way out of the theme's directory: not for a component either (components/Ui/../../../.env).
+        if (str_contains('/' . $name . '/', '/../')) {
+            return null;
+        }
         if (preg_match(self::COMPONENTS, $name) === 1) {
             return [null, $name];
         }
@@ -107,8 +111,7 @@ final class ThemeLoader implements LoaderInterface
         }
         $namespace = substr($name, 0, $slash);
         $file = substr($name, $slash + 1);
-        // No way out of the theme's directory.
-        if ($file === '' || str_contains('/' . $file . '/', '/../')) {
+        if ($file === '') {
             return null;
         }
         if ($namespace === self::NAMESPACE) {

@@ -19,7 +19,8 @@ use Twig\Environment;
  * {@see CrudRouteLoader}, one set per scope with a dashboard ("board" = the name of the scope).
  *
  * The endpoints answer 204 and take JSON only from a script of the page: they ask for the header X-Requested-With,
- * which a page of another site cannot send without the browser asking first.
+ * which a page of another site cannot send without the browser asking first; a browser saying the request comes from
+ * another origin is refused before (SameOriginGuard).
  */
 #[AsController]
 final readonly class DashboardController

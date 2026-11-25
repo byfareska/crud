@@ -36,6 +36,9 @@ final readonly class StorageFileLibrary implements FileLibrary
 
     public function find(FileReference $reference): ?StoredFile
     {
+        if ($reference->storage !== $this->name || $this->excluded($reference->path)) {
+            return null;
+        }
         $entry = $this->storage->entry($reference->path);
 
         return $entry instanceof StorageEntry ? $this->file($entry) : null;
@@ -91,7 +94,7 @@ final readonly class StorageFileLibrary implements FileLibrary
 
         $entries = [];
         foreach ($this->storage->list() as $entry) {
-            if ($this->exclude === null || !str_starts_with($entry->path, $this->exclude . '/')) {
+            if (!$this->excluded($entry->path)) {
                 $entries[] = $entry;
             }
         }
@@ -105,6 +108,12 @@ final readonly class StorageFileLibrary implements FileLibrary
         }
 
         return $entries;
+    }
+
+    /** Whether a path is not one of its files: a size of an image. */
+    private function excluded(string $path): bool
+    {
+        return $this->exclude !== null && str_starts_with($path, $this->exclude . '/');
     }
 
     private function file(StorageEntry $entry): StoredFile

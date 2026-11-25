@@ -17,6 +17,9 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 /**
  * The bulk actions of a resource for the one asking - those of #[AsCrud(bulkActions: ...)] - their buttons for the
  * records chosen and their running, by the {@see BulkActionHandler} each names.
+ *
+ * One is offered by its role; a {@see BulkDeleteAction} without one by the role of deleting a record: only to somebody
+ * offered a {@see DeleteAction} of the resource (see of()). What is not offered is not run either.
  */
 final readonly class BulkActions
 {
@@ -29,13 +32,19 @@ final readonly class BulkActions
     }
 
     /**
+     * What the one asking is offered: an action whose role they have, or without one. A BulkDeleteAction without a role
+     * of its own takes that of the DeleteAction of the resource (AsCrud::$actions): who may not delete one record by
+     * its button is not offered to delete many; of several DeleteActions, the role of one is enough. A resource with
+     * no DeleteAction (a NoAction or another action in its place), or with one that has no role (the built-in one),
+     * leaves it to everybody the resource is for.
+     *
      * @return list<BulkAction>
      */
     public function of(AsCrud $crud): array
     {
         return array_values(array_filter(
             $crud->bulkActions,
-            fn (BulkAction $action): bool => $action->role === null || $this->actor->isGranted($action->role, $crud),
+            fn (BulkAction $action): bool => $this->offered($action, $crud),
         ));
     }
 
@@ -89,6 +98,43 @@ final readonly class BulkActions
         }
 
         return null;
+    }
+
+    private function offered(BulkAction $action, AsCrud $crud): bool
+    {
+        $roles = match (true) {
+            $action->role !== null => [$action->role],
+            $action instanceof BulkDeleteAction => $this->deleteRoles($crud),
+            default => [],
+        };
+
+        return $roles === [] || array_any($roles, fn (string $role): bool => $this->actor->isGranted($role, $crud));
+    }
+
+    /**
+     * The roles of the DeleteActions of a resource, one of which deleting a record by its button needs - as
+     * RecordActions offers them: those declared and, unless an action of AsCrud::$actions takes its name, the
+     * built-in one, which has none. Empty = no role is needed: one of them has none, or there is no DeleteAction.
+     *
+     * @return list<string>
+     */
+    private function deleteRoles(AsCrud $crud): array
+    {
+        $roles = [];
+        $builtIn = true;
+        foreach ($crud->actions as $action) {
+            if ($action->name === DeleteAction::NAME) {
+                $builtIn = false;
+            }
+            if ($action instanceof DeleteAction) {
+                if ($action->role === null) {
+                    return [];
+                }
+                $roles[] = $action->role;
+            }
+        }
+
+        return $builtIn ? [] : $roles;
     }
 
     private function handler(BulkAction $action): BulkActionHandler

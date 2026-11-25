@@ -173,9 +173,13 @@ final readonly class RichTextFiles
     }
 
     /**
-     * What the browser of a field is given: where it uploads, and the tokens of the window of the library - of every
-     * file the field takes, and of its images only (what an image of the editor is picked from); null = none. And the
-     * sizes it offers, with those of the images of its HTML.
+     * What the browser of a field is given: where it uploads, and the tokens of the window of the library - of the
+     * files a link of the editor is picked from, and of its images only (what an image of the editor is picked from);
+     * null = none. And the sizes it offers, with those of the images of its HTML.
+     *
+     * A file a browser would run (UploadProfile::ACTIVE: SVG, HTML), which the field takes when it names its MIME type,
+     * is picked as an image only, never for a link: the text links a file at its public address - of the site the text
+     * is shown on, the panel's too - where opening it would run its script as the one who clicked.
      *
      * @param array<string, mixed> $files the "files" of the field
      * @return array{upload_url: string|null, library_token: string|null, image_token: string|null,
@@ -265,13 +269,19 @@ final readonly class RichTextFiles
             ? UploadProfile::IMAGES
             : array_values(array_filter(
                 $profile->accept,
-                static fn (string $kind): bool => in_array($kind, UploadProfile::IMAGES, true) || $kind === 'image/*',
+                static fn (string $kind): bool => in_array($kind, UploadProfile::IMAGES, true)
+                    || in_array($kind, ['image/*', 'image/svg+xml'], true),
             ));
+        // Without the kinds it names that a browser would run: "accept" left empty by that is no link at all.
+        $links = array_values(array_filter(
+            $profile->accept,
+            static fn (string $kind): bool => !in_array($kind, UploadProfile::ACTIVE, true),
+        ));
 
         return [
             'upload_url' => $this->browser->uploadUrl($profile),
-            'library_token' => $this->browser->libraryToken(
-                new UploadProfile($profile->storage, $profile->accept, null, $browse),
+            'library_token' => $profile->accept !== [] && $links === [] ? null : $this->browser->libraryToken(
+                new UploadProfile($profile->storage, $links, null, $browse),
                 false,
             ),
             'image_token' => $images === [] ? null : $this->browser->libraryToken(

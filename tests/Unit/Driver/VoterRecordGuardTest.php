@@ -77,6 +77,10 @@ final class VoterRecordGuardTest extends TestCase
         self::assertFalse($guard->allows(CrudOperation::Delete, $record($anna)));
         self::assertTrue($actions->allowsAction('refund', $record($anna)));
         self::assertFalse($actions->allowsAction('refund', $record($adam)));
+        self::assertTrue(
+            $actions->allowsAction('delete', $record($anna)),
+            'Deleting is asked of the Voters by the RecordGuard (DELETE), not as an action.',
+        );
         self::assertFalse(
             $guard->allows(CrudOperation::Read, new RecordView($crud, '999', [], RecordScreen::List)),
             'No entity: refused.',

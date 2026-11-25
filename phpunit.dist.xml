@@ -7,6 +7,10 @@
          failOnNotice="true"
          failOnWarning="true"
          cacheDirectory=".phpunit.cache">
+    <php>
+        <!-- Every class of tests/Functional boots a kernel of its own: their containers stay loaded. -->
+        <ini name="memory_limit" value="512M"/>
+    </php>
     <testsuites>
         <testsuite name="byfareska/crud">
             <directory>tests</directory>

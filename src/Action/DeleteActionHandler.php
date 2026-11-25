@@ -38,8 +38,10 @@ final readonly class DeleteActionHandler implements RecordActionHandler
         if (!$record->crud->can(CrudOperation::Delete)) {
             return null;
         }
-        // Refused for this record: with a reason (ExplainsRefusal) a disabled button saying it, else none.
-        $refusal = $this->guards->refusal(CrudOperation::Delete, $record);
+        // Refused for this record - by a guard of deleting it, or of the action "delete" (what RecordDeletion asks,
+        // whatever this one is named): with a reason (ExplainsRefusal) a disabled button saying it, else none.
+        $refusal = $this->guards->refusal(CrudOperation::Delete, $record)
+            ?? $this->guards->actionRefusal(DeleteAction::NAME, $record);
         if ($refusal instanceof CrudFailure && !RecordGuards::explains($refusal)) {
             return null;
         }

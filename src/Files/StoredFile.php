@@ -33,6 +33,16 @@ final readonly class StoredFile
         return new self($reference, $reference->basename());
     }
 
+    /**
+     * Whether a browser would run it as a page - HTML, SVG, a script (UploadProfile::ACTIVE), by its MIME type or its
+     * extension: opened from where the panel is, it would act as the one looking. The panel shows such an image only
+     * as an image (<img>), and never opens such a file from an address of its storage.
+     */
+    public function isActive(): bool
+    {
+        return UploadProfile::isActive($this->mimeType, $this->reference->extension());
+    }
+
     public function isImage(): bool
     {
         return $this->mimeType !== null

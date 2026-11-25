@@ -22,6 +22,12 @@ final readonly class CommandPalette
     public const string GROUP_SUGGESTED = 'panel.palette.group.suggested';
 
     /**
+     * The most characters of what was typed that are looked for: the browser sends any text, and every entry is
+     * compared with it, every source of records searches by it.
+     */
+    public const int MAX_QUERY = 200;
+
+    /**
      * @param iterable<CommandPaletteRecordSource> $recordSources
      * @param list<string> $suggested keys of entries
      */
@@ -41,7 +47,7 @@ final readonly class CommandPalette
     }
 
     /**
-     * @param string $query what was typed
+     * @param string $query what was typed; of a longer text, the first MAX_QUERY characters
      * @param bool $commandsOnly only the commands (what was typed began with ">")
      * @param list<string> $recent keys of what was chosen lately, the latest first
      * @param string|null $scope the panel the palette is in
@@ -56,7 +62,7 @@ final readonly class CommandPalette
         array $recent = [],
         ?string $scope = null,
     ): array {
-        $query = trim($query);
+        $query = trim(mb_substr(trim($query), 0, self::MAX_QUERY));
         $items = $this->catalog->items($locale, scope: $scope);
         if ($commandsOnly) {
             $items = array_filter($items, static fn (PaletteItem $item): bool => $item->command);

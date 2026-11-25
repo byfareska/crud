@@ -56,7 +56,7 @@ final readonly class QuickActions
 
     /**
      * Those the one acting may use: of $keys, or all when none is chosen - on the dashboard of $board, those of its
-     * panel and of none (null = of every panel).
+     * panel (the one that has the board) and of none (null = of every panel).
      *
      * @param list<string> $keys
      *
@@ -64,11 +64,12 @@ final readonly class QuickActions
      */
     public function available(array $keys = [], ?string $board = null): array
     {
+        $panel = $board === null ? null : $this->scopes->panelOf($board);
         $available = [];
         foreach ($this->all() as $key => $action) {
             if (
                 ($keys === [] || in_array($key, $keys, true))
-                && CommandPaletteCatalog::inScope($action['entry']->scope, $board)
+                && CommandPaletteCatalog::inScope($action['entry']->scope, $panel)
                 && $this->scopes->isGrantedIn($action['entry']->scope, $action['entry']->role)
                 && ($action['entry']->offered === null || ($action['entry']->offered)())
             ) {

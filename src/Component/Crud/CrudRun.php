@@ -11,13 +11,18 @@ use Byfareska\Crud\Action\RecordAction;
 use Byfareska\Crud\Action\RecordActions;
 use Byfareska\Crud\Action\RunAction;
 use Byfareska\Crud\Action\RunActionHandler;
+use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Panel\ScopedComponent;
 use Byfareska\Crud\Resource\CrudAccess;
 use Byfareska\Crud\Resource\CrudFailure;
 use Byfareska\Crud\Resource\CrudRegistry;
+use Byfareska\Crud\Resource\CrudReturn;
 use Byfareska\Crud\Resource\FailureMessage;
+use Byfareska\Crud\Resource\OwnRecords;
 use Byfareska\Crud\Resource\RecordScreen;
+use Byfareska\Crud\Routing\LocalUrl;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -67,6 +72,8 @@ final class CrudRun implements ScopedComponent
         private readonly FailureMessage $failureMessage,
         private readonly RequestStack $requestStack,
         private readonly TranslatorInterface $translator,
+        private readonly ?CrudReturn $return = null,
+        private readonly ?OwnRecords $ownRecords = null,
     ) {
     }
 
@@ -97,8 +104,9 @@ final class CrudRun implements ScopedComponent
         $crud = $this->registry->get($this->resource);
         // The component is reached without its page too (the live endpoint).
         $this->access->assertGranted($crud);
-        // One's own record is nobody else's, whoever signed the id in.
-        if ($crud->own && $this->id !== $this->access->ownId()) {
+        // One's own record is nobody else's, whoever signed the id in - the one its OwnRecordResolver says, as the
+        // page and the form go by.
+        if ($crud->own && $this->id !== ($this->ownRecords?->idOf($crud) ?? $this->access->ownId())) {
             throw new AccessDeniedHttpException(sprintf('"%s" is the record of the one signed in.', $crud->name));
         }
 
@@ -121,11 +129,28 @@ final class CrudRun implements ScopedComponent
                 : $this->translator->trans('crud.toast.done'));
         }
 
-        // The page again, with the record as it is now - or where the action leads.
-        $back = $result->redirect ?? $this->requestStack->getMainRequest()?->headers->get('X-Live-Url')
-            ?? $this->requestStack->getMainRequest()?->headers->get('referer');
+        // Where the action leads, else the page again, with the record as it is now.
+        $back = $result->redirect ?? $this->pageAgain($crud);
 
         return is_string($back) && $back !== '' ? new RedirectResponse($back) : null;
+    }
+
+    /**
+     * The page the button is on: the address the request comes from (X-Live-Url, else the Referer) when it is one of
+     * this application - a header says anything, another site too - else the way back of the record (CrudReturn).
+     */
+    private function pageAgain(AsCrud $crud): ?string
+    {
+        $request = $this->requestStack->getMainRequest();
+        if ($request instanceof Request) {
+            $page = LocalUrl::of($request->headers->get('X-Live-Url'), $request)
+                ?? LocalUrl::of($request->headers->get('referer'), $request);
+            if ($page !== null) {
+                return $page;
+            }
+        }
+
+        return $this->return?->url($crud, $this->id);
     }
 
     private function runAction(): RunAction

@@ -9,7 +9,12 @@ namespace Byfareska\Crud\Action;
  * in the list, the preview drawer, on the details page and the edit form (then back to the list). Declared in
  * AsCrud::$actions it takes the place of the built-in one there, e.g. with texts of its own:
  * `new DeleteAction(message: 'app.invoice.delete')`. Not offered for a record its guards do not let be deleted
- * (RecordGuard); RecordDeleting may still refuse.
+ * (RecordGuard of Delete, RecordActionGuard of "delete" - by that name, whatever this one is named); RecordDeleting may
+ * still refuse. RecordDeletion asks them again whichever way the record is deleted.
+ *
+ * Its $role takes away deleting by its button, and by a BulkDeleteAction without a role of its own: that one is
+ * offered only to somebody offered a DeleteAction of the resource. To keep deleting from somebody altogether, it is
+ * AsCrud::$roles['delete'] (or refusing()), which a CrudDefinitionExtension cannot drop with the declared actions.
  */
 final readonly class DeleteAction implements RecordAction, AsksForInput
 {
@@ -19,7 +24,8 @@ final readonly class DeleteAction implements RecordAction, AsksForInput
      * @param string $message translation key of the question
      * @param string $hint translation key of what is said under it
      * @param string $icon a Bootstrap Icons name
-     * @param string|null $role only somebody with this role is offered the action
+     * @param string|null $role only somebody with this role is offered the action - and a BulkDeleteAction without a
+     *     role of its own
      * @param bool $inline in the list a button on the row instead of an item of the row menu
      * @param ConfirmInput|null $input a field of the question: a reason of the delete, in RecordDeleting::$input
      */

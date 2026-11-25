@@ -13,6 +13,10 @@ class Person implements Stringable
     #[ORM\Id, ORM\GeneratedValue, ORM\Column]
     public ?int $id = null;
 
+    /** What not everybody who sees the person is to know. */
+    #[ORM\Column]
+    public string $phone = '';
+
     public function __construct(
         #[ORM\Column]
         public string $name,

@@ -32,6 +32,11 @@ use Symfony\Component\Routing\RouteCollection;
  * "/_files/download", "/_files/variant"). Every route gets the default
  * "_scope", which the menu, the palette and the layout go by, and which access_control can go by: `attributes: {
  * _scope: admin }` - besides the role of the scope, which the bundle checks itself on every way to its resources.
+ *
+ * What the import says (prefix, host, schemes, requirements, condition) is said of every one of these routes, so a
+ * panel is all under its prefix and on its host. Its pages know what they are of by the defaults of their routes alone
+ * ("crud", "name", "board", "_scope"): a parameter of the prefix or the host named like one of them would let the
+ * address choose it, and PanelRoutesCheck refuses the routes then.
  */
 #[AutoconfigureTag('routing.loader')]
 final class CrudRouteLoader extends Loader
@@ -46,6 +51,18 @@ final class CrudRouteLoader extends Loader
 
     /** The default of the live route of a scope: its requests are of the page they come from, not of their own. */
     public const string LIVE = '_crud_live';
+
+    /**
+     * The default of the routes of a panel that change something - its live route, the upload of files, the layout of
+     * a dashboard: answered only to a page of the same origin ({@see SameOriginGuard}).
+     */
+    public const string SAME_ORIGIN = '_crud_same_origin';
+
+    /**
+     * The option of every route of a panel: the parameters of the route as the bundle made it, before the route import
+     * put its prefix and host before it - what {@see PanelRoutesCheck} tells the parameters of the import from.
+     */
+    public const string VARIABLES = 'byfareska_crud_variables';
 
     public function __construct(
         private readonly CrudRoutes $crudRoutes,
@@ -93,11 +110,24 @@ final class CrudRouteLoader extends Loader
         }
         // More dashboards of the panel, each under a path of its own.
         foreach ($scope->boards as $board => $settings) {
-            if ($board === $scope->name || $this->scopes->isConfigured($board)) {
+            // Its routes, its layouts, its widgets and the panel its live requests are answered in go by its name.
+            if (
+                $board === $scope->name
+                || $this->scopes->isConfigured($board)
+                || $this->crudRoutes->of($board)->count() > 0
+            ) {
                 throw new InvalidArgumentException(sprintf(
                     'The board "%s" of the panel "%s" is named like a panel: name it otherwise.',
                     $board,
                     $scope->name,
+                ));
+            }
+            if ($this->scopes->panelOf($board) !== $scope->name) {
+                throw new InvalidArgumentException(sprintf(
+                    'The board "%s" of the panel "%s" is a board of the panel "%s" too: name it otherwise.',
+                    $board,
+                    $scope->name,
+                    $this->scopes->panelOf($board),
                 ));
             }
             $routes->addCollection($this->dashboard($board, rtrim($settings['path'], '/')));
@@ -106,7 +136,7 @@ final class CrudRouteLoader extends Loader
         if ($this->files) {
             $routes->add(FileRoutes::upload($scope->name), new Route(
                 '/_files',
-                ['_controller' => FilesController::class . '::upload'],
+                ['_controller' => FilesController::class . '::upload', self::SAME_ORIGIN => true],
                 methods: ['POST'],
             ));
             $routes->add(FileRoutes::download($scope->name), new Route(
@@ -130,12 +160,16 @@ final class CrudRouteLoader extends Loader
                 methods: ['GET'],
             ));
         }
-        // The live components of its pages, under its prefix: in the firewall of the panel (PanelLiveUrls).
+        // The live components of its pages, under its prefix: in the firewall of the panel (PanelLiveUrls). Its own
+        // components are answered only here (LivePanelGuard), to a page of the same origin (SameOriginGuard).
         $routes->add($scope->liveRoute(), new Route(
             '/_crud/{_live_component}/{_live_action}',
-            ['_live_action' => 'get', self::LIVE => true],
+            ['_live_action' => 'get', self::LIVE => true, self::SAME_ORIGIN => true],
         ));
         $routes->addDefaults([Scope::ATTRIBUTE => $scope->name]);
+        foreach ($routes->all() as $route) {
+            $route->setOption(self::VARIABLES, $route->compile()->getVariables());
+        }
 
         return $routes;
     }
@@ -182,7 +216,9 @@ final class CrudRouteLoader extends Loader
 ): void {
             $routes->add(Scope::boardRoute($board, $action), new Route(
                 $path === '/' && $prefix !== '' ? $prefix : $prefix . $path,
-                ['_controller' => DashboardController::class . '::' . $controllerMethod, 'board' => $board],
+                // What changes the layout only from a page of the same origin (SameOriginGuard); the page from any.
+                ['_controller' => DashboardController::class . '::' . $controllerMethod, 'board' => $board]
+                    + ($method === 'GET' ? [] : [self::SAME_ORIGIN => true]),
                 ['id' => '[A-Za-z0-9_-]+'],
                 methods: [$method],
             ));

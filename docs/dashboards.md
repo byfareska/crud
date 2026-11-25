@@ -18,6 +18,7 @@ byfareska_crud:
 
 - `role:` restricts a board.
 - `template:` gives it a page of its own; it may extend `@CrudTheme/panel/dashboard.html.twig`.
+- Its name is that of no panel and of no board of another panel: its routes, layouts and widgets go by it.
 
 ## Widgets
 
@@ -40,10 +41,13 @@ final class CatalogWidget
 | Argument | |
 | --- | --- |
 | `default: true` | on the layout everybody starts with |
-| `boards` | the dashboards it may be on |
+| `boards` | the dashboards it may be on (panels and boards by name); without it, **every** dashboard of every panel |
 | `size` | cells of the grid (`dashboard.columns`, 12 by default) |
 | `settings` | a settings dialog (see below) |
 | `lazy` | loaded after the page |
+
+With several panels, give a widget that shows what only one of them is for `boards` (or a `role`): otherwise the
+users of every panel can add it to their dashboards, and its live requests are answered under their prefix.
 
 `dashboard.disabled_widgets` removes widgets by key, the bundle's own included (`panel.clock`, `panel.note`,
 `panel.quick_actions`). A `DashboardWidgetSource` yields widgets known only at run time (one per record, say). A

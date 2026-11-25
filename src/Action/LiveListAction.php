@@ -21,7 +21,9 @@ use Byfareska\Crud\Component\Crud\CrudList;
  *     #[LiveAction]
  *     public function toggleActive(#[LiveArg] string $id): void { ... }
  *
- * The live action asks itself who may do it (getDefinition(), the guards): the button is only a way to it.
+ * The live action asks itself who may do it (getDefinition(), the guards): the button is only a way to it. Its id is
+ * what the browser sends, signed by nothing: a record of the list (CrudList::isInList()), changed through
+ * RecordChanges - read in the scopes of the resource, its guards asked - not found by the id alone.
  */
 final readonly class LiveListAction implements PrioritizedAction
 {

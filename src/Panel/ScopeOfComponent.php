@@ -11,10 +11,10 @@ use Symfony\UX\TwigComponent\Event\PreRenderEvent;
 
 /**
  * The panel of a request of LiveComponent's own endpoint (/_components/<name>/..., not the live route of a panel,
- * which says it): that address has no route default "_scope",
- * so the component rendered ({@see ScopedComponent}) says it, before its templates are looked for in a theme. Only
- * there: on a page the panel is known before anything is drawn, and a component of another panel shown on it does not
- * change it halfway.
+ * which says it): that address has no route default "_scope", so the component rendered ({@see ComponentPanel}) says
+ * it, before its templates are looked for in a theme. Only there: on a page the panel is known before anything is
+ * drawn, and a component of another panel shown on it does not change it halfway. (A component of a panel whose
+ * routes are imported is answered only under its prefix - LivePanelGuard - so this is for a panel without them.)
  */
 #[AsEventListener]
 final readonly class ScopeOfComponent
@@ -24,6 +24,7 @@ final readonly class ScopeOfComponent
 
     public function __construct(
         private RequestStack $requestStack,
+        private ComponentPanel $panels,
     ) {
     }
 
@@ -35,13 +36,12 @@ final readonly class ScopeOfComponent
             !$request instanceof Request
             || !$request->attributes->has(self::LIVE_COMPONENT)
             || $request->attributes->has(Scope::ATTRIBUTE)
-            || !$component instanceof ScopedComponent
         ) {
             return;
         }
 
-        $scope = $component->panelScope();
-        if ($scope !== null && $scope !== '') {
+        $scope = $this->panels->of($component);
+        if ($scope !== null) {
             $request->attributes->set(Scope::ATTRIBUTE, $scope);
         }
     }

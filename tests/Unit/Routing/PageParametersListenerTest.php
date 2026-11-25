@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Tests\Unit\Routing;
 
+use Byfareska\Crud\Routing\CrudRouteLoader;
 use Byfareska\Crud\Routing\PageParameters;
 use Byfareska\Crud\Routing\PageParametersListener;
 use PHPUnit\Framework\TestCase;
@@ -52,6 +53,29 @@ final class PageParametersListenerTest extends TestCase
         self::assertSame('POST', $router->getContext()->getMethod(), 'The context is that of the request again.');
     }
 
+    public function testUnderTheLiveRouteOfAPanelItsPrefixSaysWhatItsParametersAre(): void
+    {
+        // What access_control, a voter on the route attribute "shop" see: "acme". The header says "globex".
+        $parameters = $this->live('/acme/admin/_crud/Crud:List/delete', '/globex/admin/categories/5/products');
+
+        self::assertSame(['shop' => 'acme'], $parameters->all(), 'Nothing of a page under another prefix.');
+    }
+
+    public function testUnderTheLiveRouteOfAPanelThePageAddsTheParametersOfItsPath(): void
+    {
+        $all = $this->live('/acme/admin/_crud/Crud:List', '/acme/admin/categories/5/products?page=2')->all();
+        ksort($all);
+
+        self::assertSame(['category' => '5', 'shop' => 'acme'], $all);
+    }
+
+    public function testUnderTheLiveRouteOfAPanelAPageOfAnotherPanelSaysNothing(): void
+    {
+        $parameters = $this->live('/acme/admin/_crud/Crud:List', '/acme/partner/regions/7/stores');
+
+        self::assertSame(['shop' => 'acme'], $parameters->all());
+    }
+
     public function testOnlyAPageOfAPanelSaysWhatItsParametersAre(): void
     {
         $router = $this->router();
@@ -65,12 +89,54 @@ final class PageParametersListenerTest extends TestCase
         self::assertSame([], $router->getContext()->getParameters());
     }
 
+    /**
+     * A live request of the live route of the panel "admin" (as RouterListener leaves it), from a page.
+     */
+    private function live(string $uri, string $page): PageParameters
+    {
+        $router = $this->router();
+        $parameters = new PageParameters();
+        $request = Request::create($uri, 'POST');
+        $request->headers->set('X-Live-Url', $page);
+        $router->getContext()->fromRequest($request);
+        // What RouterListener sets.
+        $matched = [];
+        foreach ($router->matchRequest($request) as $name => $value) {
+            $request->attributes->set((string) $name, $value);
+            if ($name !== '_route') {
+                $matched[$name] = $value;
+            }
+        }
+        $request->attributes->set('_route_params', $matched);
+
+        new PageParametersListener($router, $parameters)($this->event($request));
+
+        self::assertSame($parameters->all(), $router->getContext()->getParameters(), 'What is generated has them.');
+
+        return $parameters;
+    }
+
     private function router(): Router
     {
         $routes = new RouteCollection();
         $routes->add('crud_product_list', new Route('/products', ['crud' => 'product', '_scope' => 'admin']));
         $routes->add('crud_product_show', new Route('/products/{id}', ['crud' => 'product', '_scope' => 'admin']));
+        $routes->add('crud_category_products', new Route(
+            '/categories/{category}/products',
+            ['crud' => 'product', '_scope' => 'admin'],
+        ));
+        $routes->add('crud_live_admin', new Route(
+            '/_crud/{_live_component}/{_live_action}',
+            ['_live_action' => 'get', '_scope' => 'admin', CrudRouteLoader::LIVE => true],
+        ));
         $routes->addPrefix('/{shop}/admin');
+        $partner = new RouteCollection();
+        $partner->add('crud_region_stores', new Route(
+            '/regions/{region}/stores',
+            ['crud' => 'store', '_scope' => 'partner'],
+        ));
+        $partner->addPrefix('/{shop}/partner');
+        $routes->addCollection($partner);
         $routes->add('blog', new Route('/blog/{shop}'));
 
         return new Router(new ClosureLoader(), static fn (): RouteCollection => $routes);

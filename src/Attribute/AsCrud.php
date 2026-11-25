@@ -111,6 +111,20 @@ final readonly class AsCrud
         'credentials', 'otp', 'totp', 'apikey', 'api key', 'private key', 'pin code',
     ];
 
+    /**
+     * The words of the name of a property that says what somebody may do or is vouched for, which they are not to
+     * set for themselves - "roles", "isAdmin", "isVerified", "enabled", "tenant", "team", "hourlyRate": the guessed
+     * edit form of an "own" resource (one's account, one's profile) leaves it out. Named in its "fields" it is there.
+     * Words, not parts of them: "activity" and "planet" are guessed. Other resources guess them as any other field.
+     */
+    public const array PRIVILEGED = [
+        'role', 'roles', 'permission', 'permissions', 'privilege', 'privileges', 'group', 'groups', 'admin',
+        'superadmin', 'super admin', 'superuser', 'super user', 'staff', 'enabled', 'disabled', 'active', 'inactive',
+        'verified', 'approved', 'confirmed', 'trusted', 'banned', 'blocked', 'locked', 'suspended', 'expired',
+        'expires', 'tenant', 'owner', 'team', 'teams', 'organization', 'organisation', 'balance', 'credit', 'credits',
+        'rate', 'salary', 'discount', 'plan', 'quota',
+    ];
+
     /** What a parameter of its path is made of: {category}, {tenantId}. */
     public const string PARAMETER = '/^[a-z][A-Za-z0-9_]*$/';
 
@@ -132,11 +146,19 @@ final readonly class AsCrud
     /** The filter of the list the palette types into; null = records are not found by typing. */
     public ?string $search;
 
-    /** @var list<Column> */
+    /** @var list<Column> the columns of the list: those given, but not one of "hidden" */
     public array $columns;
 
     /** @var list<Column> */
     public array $details;
+
+    /**
+     * The columns as given, a hidden one too: what with() starts from, so a resource that hides fewer properties for a
+     * request has their columns back.
+     *
+     * @var list<Column>
+     */
+    private array $givenColumns;
 
     /** @var list<LayoutNode|string> */
     public array $formLayout;
@@ -184,14 +206,18 @@ final readonly class AsCrud
      * @param string|null $listHead a Twig component shown in the list above its rows, given the "filters" in use and
      *     the "resource"; rendered inside the live list, so a click on it can set a filter (live action "filter")
      * @param string|null $listActions a Twig component shown in the head of the list page, next to "new", given the
-     *     "filters" of the address and the "resource" - buttons that depend on the filter in use
+     *     "filters" of the address and the "resource" - buttons that depend on the filter in use. Those "filters" are
+     *     the query of the address as it is (?filters[...]), once, when the page loads: not checked by the filters
+     *     of the list, not those the list shows once they are changed on the page, and anything a link says. Not for
+     *     an action on "every matching record" - a crafted link would make it act on records other than those shown;
+     *     a bulk action of the list (BulkSelection) is
      * @param CrudListedIn|null $listedIn no list page of its own: the records are shown in the list of another resource
      *     - see CrudListedIn; $section, the list in the palette and $listHead do not apply then
      * @param string $scope the panel (route scope) the pages are in, e.g. "panel" or "admin": the "byfareska_crud"
      *     route import of that scope puts its prefix and host before $path, and the scope has its menu, palette and
      *     layout
      * @param bool $own the one record is the one signed in (their id): no list, create nor delete, pages without an id
-     *     in the address
+     *     in the address; its guessed form leaves out what looks privileged (PRIVILEGED) and relations to users
      * @param bool|null $preview a click on a row of the list opens the record in the preview drawer; false = the
      *     first column leads to the details page (or to the edit form) and the rest of the row is not to be clicked;
      *     null = byfareska_crud.preview
@@ -212,9 +238,14 @@ final readonly class AsCrud
      *     CrudList (more live actions) - see CrudList
      * @param string $formComponent the live component of the add and edit forms: Crud:Form, or one of the application's
      *     own extending CrudForm - see CrudForm
-     * @param list<string> $hidden properties the details never show, also when "details" names them: what the record
-     *     carries for a guard or an action and nobody is to see. Without "details" every property is shown but these
-     *     and those whose name looks secret (SECRET: password, token, hash...)
+     * @param list<string> $hidden properties nobody is to see, whatever else names them - what the record carries for
+     *     a guard or an action: not a column of the list, not a row of the details, not what a record is named by
+     *     ("title"), not a field of a guessed form (nor prefilled by ?with[...] or copied by ?from=), not searched,
+     *     ordered or filtered by. A form type of the application, or the fields of a form it names, are its own: a
+     *     property there is edited all the same. Without "details" every property is shown but these and those whose
+     *     name looks secret (SECRET: password, token, hash...). A CrudDefinitionExtension hides one for a request -
+     *     `$crud->hiding('margin')` - or shows one again (declared hidden for everybody, shown to a role) -
+     *     `$crud->showing('margin')`. See hides()
      * @param array<string, string> $pageTemplates the templates of its pages in place of the theme's, by page: "list",
      *     "show", "form" (add and edit), "page" (AsCrudPage) => a template of the application's, which may extend
      *     "@CrudTheme/crud/<page>.html.twig" and change a block of it
@@ -509,7 +540,11 @@ final readonly class AsCrud
             }
         }
 
-        $this->columns = $this->columnsFrom($columns);
+        $this->givenColumns = $this->columnsFrom($columns);
+        $this->columns = array_values(array_filter(
+            $this->givenColumns,
+            fn (Column $column): bool => !$this->hides($column->field),
+        ));
         $this->details = $this->columnsFrom($details);
         $this->formLayout = $formLayout ?? $layout;
         $this->detailsLayout = $detailsLayout ?? $layout;
@@ -525,6 +560,14 @@ final readonly class AsCrud
      *
      * Columns and details take what the constructor takes, and Column objects as they are. Only the arguments of
      * CHANGEABLE: what the routes are made of stays, and so does who the resource is for. Checked like a declaration.
+     *
+     * Taking a column away only changes the list: the details, the form, the search, the order and the filters still
+     * have the property. To keep it from the one asking, hide it - `$crud->hiding('margin')` takes it out of all of
+     * them (see $hidden).
+     *
+     * What it is given replaces what there was: `with(hidden: ['margin'])` hides the margin and shows again whatever
+     * was hidden before - the declared $hidden, what an extension before hid. Add to what is hidden with hiding(), show
+     * a property again with showing(): both keep the rest as it is.
      *
      * @throws InvalidArgumentException an argument that is not to be changed, or a value the constructor refuses
      */
@@ -605,6 +648,41 @@ final readonly class AsCrud
         return $refused === $this->refused ? $this : $this->rebuilt(['refused' => $refused]);
     }
 
+    /**
+     * The same resource with more properties hidden (see $hidden) - what a
+     * {@see \Byfareska\Crud\Resource\CrudDefinitionExtension} returns to keep one from the one asking:
+     * `$crud->hiding('margin')`. What was hidden, as declared or by an extension before, stays hidden; the columns,
+     * the title and the rest are made again as with() makes them.
+     */
+    public function hiding(string ...$fields): self
+    {
+        $hidden = $this->hidden;
+        foreach ($fields as $field) {
+            if (!in_array($field, $hidden, true)) {
+                $hidden[] = $field;
+            }
+        }
+
+        return $hidden === $this->hidden ? $this : $this->with(hidden: $hidden);
+    }
+
+    /**
+     * The same resource showing again properties it hides (see $hidden) - what a
+     * {@see \Byfareska\Crud\Resource\CrudDefinitionExtension} returns for those who may see what is declared hidden
+     * from everybody else: `$crud->showing('margin')`. Only the properties named, as they are in $hidden: what it does
+     * not name stays hidden, and a path through a hidden one ("customer.email" of a hidden "customer") is not shown
+     * without it. Columns and title as with() makes them.
+     */
+    public function showing(string ...$fields): self
+    {
+        $hidden = array_values(array_filter(
+            $this->hidden,
+            static fn (string $field): bool => !in_array($field, $fields, true),
+        ));
+
+        return $hidden === $this->hidden ? $this : $this->with(hidden: $hidden);
+    }
+
     /** Whether the request refuses it (see refusing()). */
     public function isRefused(CrudOperation $operation): bool
     {
@@ -637,7 +715,7 @@ final readonly class AsCrud
             'path' => $this->path,
             'icon' => $this->icon,
             'source' => $this->source,
-            'columns' => $this->columns,
+            'columns' => $this->givenColumns,
             'details' => $this->details,
             'theme' => $this->theme,
             'palette' => $this->palette,
@@ -703,14 +781,16 @@ final readonly class AsCrud
     }
 
     /**
-     * The fields a record is named by: $title, else the first column.
+     * The fields a record is named by: $title, else the first column - not a hidden one (when "title" names only those,
+     * the first column).
      *
      * @return list<string>
      */
     public function titleFields(): array
     {
-        if ($this->title !== []) {
-            return $this->title;
+        $title = array_values(array_filter($this->title, fn (string $field): bool => !$this->hides($field)));
+        if ($title !== []) {
+            return $title;
         }
 
         return isset($this->columns[0]) ? [$this->columns[0]->field] : [];
@@ -782,7 +862,7 @@ final readonly class AsCrud
      */
     public function showsInDetails(string $field): bool
     {
-        if (in_array($field, $this->hidden, true)) {
+        if ($this->hides($field)) {
             return false;
         }
 
@@ -790,9 +870,36 @@ final readonly class AsCrud
     }
 
     /**
+     * Whether a property is one of "hidden" - or a path through one ("customer.email" of a hidden "customer"): what is
+     * never shown, guessed into a form, prefilled, searched, ordered nor filtered by.
+     */
+    public function hides(string $field): bool
+    {
+        return in_array($field, $this->hidden, true) || in_array(explode('.', $field, 2)[0], $this->hidden, true);
+    }
+
+    /**
      * Whether the name of a property has a word of SECRET, or two of them one after another ("api key").
      */
     public static function looksSecret(string $field): bool
+    {
+        return self::named($field, self::SECRET);
+    }
+
+    /**
+     * Whether the name of a property has a word of PRIVILEGED, or two of them one after another ("super admin").
+     */
+    public static function looksPrivileged(string $field): bool
+    {
+        return self::named($field, self::PRIVILEGED);
+    }
+
+    /**
+     * Whether the name of a property has one of the words, or two of them one after another.
+     *
+     * @param list<string> $words in lower case
+     */
+    private static function named(string $field, array $words): bool
     {
         // "passwordHash", "reset_token", "APIKey" - its words, in lower case.
         $spaced = preg_replace(
@@ -800,10 +907,10 @@ final readonly class AsCrud
             ['$1 $2', '$1 $2', ' '],
             $field,
         );
-        $words = preg_split('/\s+/', strtolower(trim((string) $spaced)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
-        foreach ($words as $index => $word) {
-            $pair = $word . ' ' . ($words[$index + 1] ?? '');
-            if (in_array($word, self::SECRET, true) || in_array($pair, self::SECRET, true)) {
+        $named = preg_split('/\s+/', strtolower(trim((string) $spaced)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        foreach ($named as $index => $word) {
+            $pair = $word . ' ' . ($named[$index + 1] ?? '');
+            if (in_array($word, $words, true) || in_array($pair, $words, true)) {
                 return true;
             }
         }

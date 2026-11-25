@@ -96,6 +96,13 @@ class CrudList implements ScopedComponent
     /** The field of the list form that says what the list is ordered by - see Sort. */
     private const string SORT = 'sort';
 
+    /**
+     * The most records chosen one by one (and page by page): a bulk action reads each chosen record that is not on the
+     * page in view by itself, to check it may be shown - and the browser says which ids, as many as it likes. More is
+     * "select all N matching", read page by page by the query of the list.
+     */
+    public const int MAX_SELECTED = 1000;
+
     /** Name of the resource, as in #[AsCrud]. */
     #[LiveProp]
     public string $resource = '';
@@ -177,7 +184,8 @@ class CrudList implements ScopedComponent
     public ?string $previewId = null;
 
     /**
-     * The records chosen for a bulk action, by id; also those chosen on another page of the list.
+     * The records chosen for a bulk action, by id; also those chosen on another page of the list. At most
+     * MAX_SELECTED: the first of them are kept.
      *
      * @var list<string>
      */
@@ -418,6 +426,30 @@ class CrudList implements ScopedComponent
             parameters: $this->pageParameters?->all() ?? [],
             actor: $this->actor?->id(),
         );
+    }
+
+    /**
+     * Whether the record of an id the browser sent - an argument of a live action (the delete or an action of a row,
+     * the preview, a LiveListAction of a list of the application's own) or the preview in the address - is one of
+     * this list: on a list embedded with fixedFilters (the lines of one order), one they match, not a record of
+     * another order the browser names. Whether it is there, in the scopes of the resource and allowed by its guards
+     * is asked by what is done to it (RecordDeletion, RecordChanges, CrudRecords) - as the bulk actions keep to the
+     * records the list could show (visibleOf()).
+     *
+     * @throws CrudFailure the list cannot be read
+     */
+    protected function isInList(string $id): bool
+    {
+        if ($this->fixedFilters === []) {
+            return true;
+        }
+        foreach ($this->listQuery()->ids($this->getDefinition(), $this->fixedFilters) as $listed) {
+            if ($listed === $id) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -821,6 +853,10 @@ class CrudList implements ScopedComponent
         $crud = $this->getDefinition();
 
         try {
+            // Of the list: the address and the browser can name any record.
+            if (!$this->isInList($this->previewId)) {
+                return null;
+            }
             $details = $this->records->details($crud, $this->previewId);
         } catch (CrudFailure) {
             // Deleted in the meantime: the drawer has nothing to show.
@@ -948,7 +984,7 @@ class CrudList implements ScopedComponent
     #[PostHydrate]
     public function returnToFirstPageWhenFiltersChanged(): void
     {
-        $this->selected = array_values(array_unique(array_filter($this->selected, is_string(...))));
+        $this->selected = $this->chosen(array_filter($this->selected, is_string(...)));
         if ($this->filters !== $this->pagedFilters) {
             $this->stateChanged = true;
             $this->page = 1;
@@ -1005,7 +1041,19 @@ class CrudList implements ScopedComponent
         $ids = array_map($this->idOf(...), $result->items);
         $this->selected = $this->pageSelection($result) === true
             ? array_values(array_diff($this->selected, $ids))
-            : array_values(array_unique([...$this->selected, ...$ids]));
+            : $this->chosen([...$this->selected, ...$ids]);
+    }
+
+    /**
+     * Each id once, at most MAX_SELECTED of them.
+     *
+     * @param array<array-key, string> $ids
+     *
+     * @return list<string>
+     */
+    private function chosen(array $ids): array
+    {
+        return array_slice(array_values(array_unique($ids)), 0, self::MAX_SELECTED);
     }
 
     #[LiveAction]
@@ -1072,6 +1120,10 @@ class CrudList implements ScopedComponent
     ): ?RedirectResponse {
         $crud = $this->getDefinition();
         try {
+            // A record of this list only: the browser can send any id.
+            if (!$this->isInList($id)) {
+                throw CrudFailure::notFound();
+            }
             $result = $this->actions->run($crud, $name, $id, $input, RecordScreen::List);
         } catch (CrudFailure $failure) {
             $this->dispatchBrowserEvent('toast:show', [
@@ -1179,8 +1231,11 @@ class CrudList implements ScopedComponent
         $crud = $this->getDefinition();
 
         try {
-            // Only a delete the buttons offer the one asking: the browser can send any action.
+            // Only a delete the buttons offer the one asking: the browser can send any action, and any id.
             $action = $this->actions->deleteAction($crud, $name) ?? throw CrudFailure::forbidden();
+            if (!$this->isInList($id)) {
+                throw CrudFailure::notFound();
+            }
             // A reason asked for (DeleteAction::$input), checked here: RecordDeleting and RecordDeleted carry it.
             $this->confirmation?->set($action->input?->accepted($input) ?? $input);
             $this->deletion->delete($crud, $id, RecordScreen::List);

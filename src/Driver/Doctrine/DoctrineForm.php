@@ -18,7 +18,8 @@ use InvalidArgumentException;
  *     )
  *
  * The form is given the entity: a new one, or the one edited. The live component has its own protection against
- * cross-site requests, so the form has none ("csrf_protection" is always false).
+ * cross-site requests (the header X-Requested-With LiveComponent asks for; Sec-Fetch-Site under the prefix of a panel,
+ * see SameOriginGuard), so the form has none ("csrf_protection" is always false).
  */
 final readonly class DoctrineForm
 {

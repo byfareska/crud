@@ -11,9 +11,9 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Deletes a file: forgotten by its library, its bytes deleted from its storage - and the sizes of an image with them.
- * Not one records still use (by the
- * index of FileUsages) unless that is confirmed, nor one a listener of FileRemoving keeps, nor a file of another
- * site.
+ * Only a file its library knows (FileLibrary::find()) - not any path of the storage: a backup, a file of another
+ * application. Not one records still use (by the index of FileUsages) unless that is confirmed, nor one a listener of
+ * FileRemoving keeps, nor a file of another site.
  */
 final readonly class FileRemover
 {
@@ -31,12 +31,16 @@ final readonly class FileRemover
      * @return bool whether it was deleted (false: a listener kept it)
      *
      * @throws FileInUse used by records, and not confirmed
-     * @throws InvalidArgumentException a file of another site, or of no storage
+     * @throws InvalidArgumentException a file of another site, of no storage, or one its library does not know
      */
     public function remove(FileReference $reference, bool $evenIfUsed = false): bool
     {
         if ($reference->isExternal() || !$this->storages->has($reference->storage)) {
             throw new InvalidArgumentException(sprintf('"%s" is no file of a storage.', $reference));
+        }
+        $library = $this->libraries->of($reference->storage);
+        if (!$library->find($reference) instanceof StoredFile) {
+            throw new InvalidArgumentException(sprintf('"%s" is no file of the library of its storage.', $reference));
         }
         $usages = $this->usages->of($reference);
         if ($usages !== [] && !$evenIfUsed) {
@@ -49,7 +53,7 @@ final readonly class FileRemover
             return false;
         }
 
-        $this->libraries->of($reference->storage)->remove($reference);
+        $library->remove($reference);
         $this->storages->storage($reference->storage)->delete($reference->path);
         $this->variants?->remove($reference);
 

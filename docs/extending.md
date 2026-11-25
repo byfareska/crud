@@ -54,6 +54,11 @@ final readonly class TaskNumberForAdmins implements CrudDefinitionExtension
 
 - `with()` accepts the attribute's arguments except those routes are built from (`name`, `path`, `scope`, `own`,
   `listedIn`) and `role`; see `AsCrud::CHANGEABLE`.
+- To keep a property from someone, hide it: `$crud->hiding('margin')` takes it out of the list, the details, the
+  guessed form, search, sorting, filters and the palette, and keeps hidden what was hidden. Removing its column only
+  changes the list. `$crud->showing('margin')` shows a declared hidden property to those who may see it.
+  `with(hidden: [...])` replaces the whole list: what it leaves out is shown again. See
+  [resources.md](resources.md#hidden-properties).
 - `$crud->refusing(CrudOperation::Delete)` takes an operation away for the request. A later extension can't give it
   back.
 - The source can change only within the same class, entity, driver and operations:
@@ -72,13 +77,21 @@ live component, extending `CrudList` / `CrudForm` and using its template:
 final class ProductList extends CrudList
 {
     #[LiveAction]
-    public function toggleActive(#[LiveArg] string $id, EntityManagerInterface $entities): void
+    public function toggleActive(#[LiveArg] string $id, RecordChanges $changes, ProductRepository $products): void
     {
         $crud = $this->getDefinition();   // checks who may see the list
-        // the guards ($this->guards), the record ($this->records), the change, a toast
+        if (!$this->isInList($id)) {      // a list with fixedFilters: one of its records
+            return;
+        }
+        // In a transaction, the record read in its scopes (404), its guards asked: never $products->find($id) alone.
+        $changes->change($crud, $id, 'toggle', fn (RecordView $record) => $products->find($id)?->toggle());
     }
 }
 ```
+
+The `id` of a live action is whatever the browser sends: unlike the props, live action arguments aren't signed. Look
+the record up through `RecordChanges` (or `CrudRecords::read()`), which keep to the scopes of the resource and ask its
+guards, not by the id alone.
 
 Don't override the constructor, because the bundle adds what it needs to it. Take services as arguments of live
 actions, or through a `#[Required]` setter for what the template reads.

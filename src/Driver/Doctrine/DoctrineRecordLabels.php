@@ -7,6 +7,8 @@ namespace Byfareska\Crud\Driver\Doctrine;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\Persistence\ObjectManager;
 use Byfareska\Crud\Autocomplete\RelationChoiceLabel;
+use Byfareska\Crud\Attribute\AsCrud;
+use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Resource\CrudRegistry;
 use Byfareska\Crud\Value\CrudValues;
 use Doctrine\ORM\EntityManagerInterface;
@@ -14,6 +16,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use JsonSerializable;
 use Stringable;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Throwable;
 use UnitEnum;
@@ -23,7 +26,7 @@ use UnitEnum;
  * form or a filter, a result of the autocomplete. The first of:
  *
  * 1. a RelationChoiceLabel service of the application ("Kowalska, Anna (PL123)");
- * 2. the title of the resource of its entity (AsCrud "title", else its first column);
+ * 2. the title of the resource of its entity (AsCrud "title", else its first column) - of the panel being shown first;
  * 3. its __toString();
  * 4. its id.
  *
@@ -42,7 +45,40 @@ final readonly class DoctrineRecordLabels
         #[AutowireIterator(RelationChoiceLabel::TAG)]
         private iterable $labels = [],
         private DoctrineIdCodec $ids = new DefaultDoctrineIdCodec(),
+        private ?RequestStack $requests = null,
     ) {
+    }
+
+    /**
+     * The resource whose title names the entities of a class where no RelationChoiceLabel does: the first of its
+     * resources with title fields, of the panel being shown first; null = none.
+     *
+     * @param class-string $class
+     */
+    public function titledBy(string $class): ?AsCrud
+    {
+        return array_find($this->resourcesOf($class), static fn (AsCrud $crud): bool => $crud->titleFields() !== []);
+    }
+
+    /**
+     * The resources of the entities of a class, those of the panel being shown (of the main request) first.
+     *
+     * @return list<AsCrud>
+     */
+    private function resourcesOf(string $class): array
+    {
+        $resources = array_values(array_filter(
+            $this->registry->all(),
+            static fn (AsCrud $crud): bool => $crud->source instanceof DoctrineSource
+                && $crud->source->entity === $class,
+        ));
+        $panel = $this->requests?->getMainRequest()?->attributes->get(Scope::ATTRIBUTE);
+        if (is_string($panel)) {
+            $inPanel = static fn (AsCrud $crud): bool => $crud->scope === $panel;
+            usort($resources, static fn (AsCrud $a, AsCrud $b): int => $inPanel($b) <=> $inPanel($a));
+        }
+
+        return $resources;
     }
 
     public function of(object $entity): string
@@ -66,13 +102,10 @@ final readonly class DoctrineRecordLabels
         return $metadata instanceof ClassMetadata ? (string) $this->ids->encode($metadata, $entity, $this->values) : '';
     }
 
-    /** The title of the first resource of the entity's class that has one; null = none. */
+    /** The title of the first resource of the entity's class that has one (of the panel shown first); null = none. */
     private function titleOf(string $class, object $entity): ?string
     {
-        foreach ($this->registry->all() as $crud) {
-            if (!$crud->source instanceof DoctrineSource || $crud->source->entity !== $class) {
-                continue;
-            }
+        foreach ($this->resourcesOf($class) as $crud) {
             $parts = [];
             foreach ($crud->titleFields() as $field) {
                 try {

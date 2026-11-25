@@ -8,6 +8,10 @@ namespace Byfareska\Crud\Action;
  * The way to the add form filled in as a copy of the record (?from=<id>): `actions: [new DuplicateAction()]`. Offered
  * to a resource that can add and read a record, for one its guards let read, where its driver can copy
  * (CopiesRecords: the doctrine and dto drivers). What else a copy takes - the lines of an order - is RecordCopying's.
+ *
+ * The address is only a way to it: the add form starts as a copy only when this action is offered for that record
+ * (RecordActions::duplicateAction()) - not for a resource that has none, nor for somebody its role or a
+ * RecordActionGuard of "duplicate" refuses; those get a 403.
  */
 final readonly class DuplicateAction implements RecordAction
 {

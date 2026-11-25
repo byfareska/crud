@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Files\Form;
 
 use Byfareska\Crud\Files\Binding\FileBinding;
+use Byfareska\Crud\Files\BrowserFiles;
+use Byfareska\Crud\Files\FileRefused;
 use Byfareska\Crud\Files\FileItem;
 use Byfareska\Crud\Files\FileLibraries;
 use Byfareska\Crud\Files\FileReference;
@@ -17,8 +19,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /**
  * The value of a field of files in the browser - the JSON of its hidden input, [{"ref", "sig", "meta"}] - and back.
  * A file the record did not have is taken only with the signature the server gave it (an upload, the library): the
- * browser cannot name a file of another record, nor of a storage the field does not pick from, nor of a kind it does
- * not take.
+ * browser cannot name a file of another record, nor of a storage the field does not pick from - or the one acting may
+ * not use - nor of a kind it does not take, nor one bigger than it takes.
  *
  * @implements DataTransformerInterface<mixed, string>
  */
@@ -47,6 +49,7 @@ final class FileFieldTransformer implements DataTransformerInterface
         private readonly FileReferenceSigner $signer,
         private readonly FileLibraries $libraries,
         private readonly TranslatorInterface $translator,
+        private readonly BrowserFiles $browser,
     ) {
     }
 
@@ -89,6 +92,16 @@ final class FileFieldTransformer implements DataTransformerInterface
     public function submitted(): array
     {
         return $this->submitted;
+    }
+
+    /**
+     * Whether the browser may be shown a file of a value of the field (BrowserFiles::json(): its name, its address,
+     * a signature): one the record had, or one the server signed for it and the field would take from there. Not a
+     * reference the browser made up - its JSON comes back with the form when it is refused.
+     */
+    public function shows(FileReference $reference, string $signature): bool
+    {
+        return isset($this->known[(string) $reference]) || $this->given($reference, $signature);
     }
 
     /**
@@ -152,24 +165,39 @@ final class FileFieldTransformer implements DataTransformerInterface
         return new FileItem($reference, $meta);
     }
 
-    /** A file the record did not have: given by the server, of a storage and a kind the field takes. */
+    /** A file the record did not have: given by the server, of a storage and a kind the field takes, not too big. */
     private function assertMayBeChosen(FileReference $reference, string $signature): void
     {
-        if (
-            $reference->isExternal()
-            || !in_array($reference->storage, $this->profile->storages(), true)
-            || !$this->signer->verify($reference, $signature)
-        ) {
+        if (!$this->given($reference, $signature)) {
             throw $this->refused('file.field.invalid');
         }
-        if ($this->profile->accept !== [] && !$this->profile->acceptsFile($this->libraries->describe($reference))) {
+        $file = $this->libraries->describe($reference);
+        if (!$this->profile->acceptsFile($file)) {
             throw $this->refused('file.field.kind');
+        }
+        $max = $this->profile->maxSize;
+        if ($max !== null && $file->size !== null && $file->size > $max) {
+            $tooBig = FileRefused::tooBig($max);
+
+            throw $this->refused($tooBig->key, $tooBig->parameters);
         }
     }
 
-    private function refused(string $key): TransformationFailedException
+    /** Signed by the server, of a storage the field picks from and the one acting may use. */
+    private function given(FileReference $reference, string $signature): bool
     {
-        $message = $this->translator->trans($key);
+        return !$reference->isExternal()
+            && in_array($reference->storage, $this->profile->storages(), true)
+            && $this->browser->mayUse($reference->storage)
+            && $this->signer->verify($reference, $signature);
+    }
+
+    /**
+     * @param array<string, string|int> $parameters
+     */
+    private function refused(string $key, array $parameters = []): TransformationFailedException
+    {
+        $message = $this->translator->trans($key, $parameters);
         $failure = new TransformationFailedException($message);
         // Shown as it is: translated here, in the domain of the panel.
         $failure->setInvalidMessage($message);

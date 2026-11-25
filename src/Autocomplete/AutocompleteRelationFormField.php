@@ -12,8 +12,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 /**
  * A relation of a guessed form as a field to search in (symfony/ux-autocomplete): only the entity chosen is loaded,
  * the others are found as one types by RelationAutocompleter - in the scopes of the related resource, for somebody
- * who may add or edit records of this one, named as the lists name them, the record being edited never its own
- * parent. Used for every resource once symfony/ux-autocomplete is installed; see {@see RelationFormField}.
+ * whose form has this field (AutocompletedFormFields), named as the lists name them, the record being edited never
+ * its own parent. What it takes when sent is the driver's query_builder: the same scopes (DoctrineDriver). Used for
+ * every resource once symfony/ux-autocomplete is installed; see {@see RelationFormField}.
  */
 final readonly class AutocompleteRelationFormField implements RelationFormField
 {

@@ -13,7 +13,8 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 /**
  * Changes a record otherwise than by its form - an action of a record (RunAction: "approve", "archive"), a toggle on
  * a row of the list, one record of a bulk action, a controller or a message handler of the application - the way the
- * form and the delete do it: all in a transaction (RecordTransaction), the record read in its scopes, its guards
+ * form and the delete do it: all in a transaction (RecordTransaction), the record read in its scopes (also for one
+ * who may not read it; a resource whose source cannot read a record leaves that to the work), its guards
  * (RecordGuard of the operation, RecordActionGuard of the action), RecordChanging (a listener may refuse), the work,
  * RecordChanged (given what the record was). An audit log listening to RecordSaved and RecordChanged sees every change.
  *
@@ -58,6 +59,12 @@ final readonly class RecordChanges
             function () use ($crud, $id, $action, $work, $input, $operation, $screen): mixed {
                 // Read and guarded in the transaction it is changed in: what a guard goes by is what the change finds.
                 $before = $this->records->view($crud, $id, $screen);
+                // Also when the one changing it may not read it (a role, refusing()): the id comes from the browser
+                // (an argument of a live action), and a record out of the scopes of the resource - of another tenant -
+                // or not there at all is no record to change (404). The guards and the listeners go by what it is.
+                if ($before->item === [] && $crud->source->supports(CrudOperation::Read)) {
+                    $before = new RecordView($crud, $id, $this->records->read($crud, $id), $screen);
+                }
                 if ($operation instanceof CrudOperation) {
                     $this->guards->assertAllowed($operation, $before);
                 }
