@@ -130,7 +130,8 @@ final class CrudRouteLoader extends Loader
                 methods: ['GET'],
             ));
         }
-        // The live components of its pages, under its prefix: in the firewall of the panel (PanelLiveUrls).
+        // The live components of its pages, under its prefix: in the firewall of the panel (PanelLiveUrls). Its own
+        // components are answered only here (LivePanelGuard).
         $routes->add($scope->liveRoute(), new Route(
             '/_crud/{_live_component}/{_live_action}',
             ['_live_action' => 'get', self::LIVE => true],

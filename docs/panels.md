@@ -28,14 +28,31 @@ byfareska_crud:
 `/` of a panel is its dashboard. With `dashboard: false` it redirects to the first resource in its menu. The brand
 and the panel switch lead there.
 
-The live components of a panel are served under its prefix (`/admin/_crud/...`), so a panel behind a firewall of its
-own is complete: an admin panel on `^/admin` and a partner portal on `^/partner` can have different user classes.
+The live components of a panel are served under its prefix (`/admin/_crud/...`), and only there: the list, the
+form, the dashboard widgets, the palette of `admin` are refused (403) under the prefix of another panel and at
+LiveComponent's own `/_components/...`. So a panel behind a firewall of its own is complete, and `access_control` on
+its prefix covers its live requests as it covers its pages: an admin panel on `^/admin` and a partner portal on
+`^/partner` can have different user classes.
+
+- A live component of yours is bound to a panel when it implements `ScopedComponent` (or uses
+  `DashboardWidgetProps`): it is then served only under the prefix of the panel `panelScope()` names. Any other is
+  served wherever it is asked for, under any prefix and at `/_components/...`, so it checks access itself. Its
+  `onUpdated` hooks and `#[PostHydrate]` methods run before the check: don't change anything there that needs the
+  panel.
+- A page of yours outside the prefix (`#[MapCrud]`) that draws a component of a panel sends its live requests under
+  the panel's prefix. When the prefix has parameters (`/{shop}/admin`), give the route of the page the same
+  parameters and the default `_scope: admin`, or its components can't be addressed.
+- A panel whose routes aren't imported with `type: byfareska_crud` has no live route: its components are served at
+  `/_components/...`, outside any prefix.
 
 ### Parameters in the prefix
 
 `prefix: /{shop}/admin` gives one panel per shop. The bundle passes the parameters on (`PageParameters`) to every
 URL generated on the page and in live requests: row links, "back", the page after a save. Whether the signed-in
-user may see that shop is for your application to check, with a `DoctrineScope`, a guard or a `ScopeExtension`.
+user may see that shop is for your application to check, with a `DoctrineScope`, a guard or a `ScopeExtension` - or
+with `access_control`, a voter or a listener on the route attribute `shop`: in a live request (`/acme/admin/_crud/...`)
+the parameters of the prefix are those of the address asked for, never those of the page the browser says it comes
+from (`X-Live-Url`), which only adds the parameters of the page's own path (`/categories/{category}/products`).
 
 A `ScopeExtension` changes a panel for the request, for example `$scope->with(brand: $shop->name)`, a theme per
 tenant or a role behind a feature flag. It can't change the panel's name or whether it has a dashboard.

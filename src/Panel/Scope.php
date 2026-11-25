@@ -27,8 +27,9 @@ final readonly class Scope
      * @param string|null $role who may go into it; null = everybody. The bundle asks it of the panel switch, the
      *     dashboard, the menu and the palette, and of every way to the resources of the panel (Scopes::isGrantedIn()):
      *     a resource without a role of its own is still only for those the panel is for. access_control may guard the
-     *     addresses as well (`attributes: { _scope: admin }`), but sees neither /_components/... nor the pages of the
-     *     application's with #[MapCrud]
+     *     addresses as well (`attributes: { _scope: admin }`) - the live components of the panel are answered only
+     *     under its prefix (LivePanelGuard) - but sees neither the pages of the application's with #[MapCrud] outside
+     *     it nor the live components of the application's of no panel (answered at /_components/... too)
      * @param bool $dashboard whether "/" of the scope is a dashboard of widgets
      * @param string|null $home the route the panel switch leads to; null = its dashboard
      * @param string|null $brand the name its pages go by (the menu, the title of the window); null =
@@ -108,7 +109,13 @@ final readonly class Scope
      */
     public function liveRoute(): string
     {
-        return 'crud_live_' . $this->name;
+        return self::liveRouteOf($this->name);
+    }
+
+    /** The live route of a panel by its name: see liveRoute(). */
+    public static function liveRouteOf(string $scope): string
+    {
+        return 'crud_live_' . $scope;
     }
 
     /** The route of the dashboard of the scope. */

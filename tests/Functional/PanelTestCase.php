@@ -17,6 +17,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Contracts\Service\ResetInterface;
 
 /**
@@ -104,16 +105,24 @@ abstract class PanelTestCase extends TestCase
 
     protected function request(string $uri, string $locale = 'pl'): string
     {
-        assert($this->kernel instanceof TestKernel);
         $request = Request::create($uri);
         $request->setLocale($locale);
         $request->attributes->set('_locale', $locale);
-        $response = $this->kernel->handle($request);
+        $response = $this->handle($request);
         $content = (string) $response->getContent();
         self::assertSame(200, $response->getStatusCode(), $content);
-        $this->kernel->terminate($request, $response);
 
         return $content;
+    }
+
+    /** The response of the application, whatever its status. */
+    protected function handle(Request $request): Response
+    {
+        assert($this->kernel instanceof TestKernel);
+        $response = $this->kernel->handle($request);
+        $this->kernel->terminate($request, $response);
+
+        return $response;
     }
 
     /**

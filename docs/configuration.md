@@ -85,8 +85,8 @@ Each import adds:
 - `crud_dashboard_<panel>` at `/` (when the panel has a dashboard) and its JSON endpoints under `/_dashboard`;
 - `crud_<resource>_list`, `_new`, `_show`, `_edit`, plus the routes of `#[AsCrudPage]`, for every resource of the
   panel;
-- `crud_live_<panel>` at `/_crud/{component}/{action}`: the live components of the panel, under its prefix, so the
-  firewall of `^/admin` covers them;
+- `crud_live_<panel>` at `/_crud/{component}/{action}`: the live components of the panel, under its prefix and only
+  there, so the firewall and `access_control` of `^/admin` cover them;
 - `crud_autocomplete_<panel>` at `/_crud/autocomplete/{alias}`, with `symfony/ux-autocomplete`: the searches of the
   relations of its forms and filters, under its prefix for the same reason;
 - the file endpoints under `/_files`, when [files](files.md) are enabled.

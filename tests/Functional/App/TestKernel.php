@@ -18,7 +18,8 @@ use Symfony\UX\TwigComponent\TwigComponentBundle;
 
 /**
  * An application of the bundle, as one is set up: FrameworkBundle with its translator and translation files of its
- * own, Doctrine ORM (SQLite in memory), the panel "panel" imported, services of its own autoconfigured.
+ * own, Doctrine ORM (SQLite in memory), the panels "panel" and "partner" (/{shop}/partner) and LiveComponent's
+ * endpoint (/_components) imported, services of its own autoconfigured.
  */
 final class TestKernel extends Kernel
 {
@@ -90,7 +91,14 @@ final class TestKernel extends Kernel
             ],
         ]);
         $container->extension('twig_component', ['defaults' => [], 'anonymous_template_directory' => 'components/']);
-        $container->extension('byfareska_crud', ['assets' => 'none']);
+        $container->extension('byfareska_crud', [
+            'assets' => 'none',
+            'scopes' => [
+                'panel' => [],
+                // A panel per shop (/{shop}/partner) nobody may go into: only its addresses are of use.
+                'partner' => ['dashboard' => false, 'role' => 'ROLE_PARTNER'],
+            ],
+        ]);
 
         // The services of the application, as its config/services.yaml loads them: autoconfigured, no tags by hand.
         $services = $container->services();
@@ -102,5 +110,8 @@ final class TestKernel extends Kernel
     protected function configureRoutes(RoutingConfigurator $routes): void
     {
         $routes->import('panel', 'byfareska_crud');
+        $routes->import('partner', 'byfareska_crud')->prefix('/{shop}/partner', false);
+        // LiveComponent's own endpoint, as its recipe imports it.
+        $routes->import('@LiveComponentBundle/config/routes.php')->prefix('/_components');
     }
 }

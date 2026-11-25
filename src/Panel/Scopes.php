@@ -109,6 +109,22 @@ final readonly class Scopes
         return $scope->hasBoard($board) ? $scope : null;
     }
 
+    /**
+     * The panel a name is of: the panel of that name, or the one that has a board of that name (the dashboard a
+     * widget is on, DashboardWidgetProps::panelScope()).
+     */
+    public function panelOf(string $name): string
+    {
+        foreach ($this->scopes as $scope => $config) {
+            $boards = $config['boards'] ?? [];
+            if (is_array($boards) && isset($boards[$name])) {
+                return $scope;
+            }
+        }
+
+        return $name;
+    }
+
     /** Whether the configuration has the scope. */
     public function isConfigured(string $name): bool
     {

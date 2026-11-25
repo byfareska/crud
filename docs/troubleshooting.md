@@ -98,3 +98,15 @@ Their `security` option is `false` by default, so anybody can search them, signe
 
 The bundle's components (`Ui:*`, `Crud:*`, `Panel:*`) are resolved first. The container refuses to build and names the
 template: rename yours, or put it into a theme of your own (see [panels.md](panels.md#themes)).
+
+## A list, a form or a widget answers 403 to every click
+
+Its live requests went somewhere other than the prefix of its panel, where the bundle refuses them (see
+[panels.md](panels.md#panels)):
+
+- It is drawn on a page of yours outside the prefix of a panel whose prefix has parameters (`/{shop}/admin`): give the
+  route of that page the same parameters and the default `_scope` of the panel.
+- Your template hard-codes `data-live-url-value`, or a script sends the request to `/_components/...`: let
+  LiveComponent make the address.
+- A component of yours implements `ScopedComponent` and has a route of its own (`#[AsLiveComponent(route: ...)]`):
+  it is answered only at that route.

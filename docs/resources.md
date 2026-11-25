@@ -182,7 +182,15 @@ every way to a resource: pages, live components, the relation searches, the menu
 
 If you protect the panel with `access_control` or a firewall on its prefix instead, that works too: every address of
 the panel is under its prefix, including its live components (`_crud/...`) and the relation searches
-(`_crud/autocomplete/...`).
+(`_crud/autocomplete/...`), and the bundle answers them nowhere else - a list, a form or a widget of the panel asked
+for under the prefix of another panel or at `/_components/...` is refused (see [panels](panels.md#panels)). What
+`access_control` doesn't see:
+
+- the pages of your own controllers (`#[MapCrud]`) outside the prefix: protect their routes yourself;
+- live components of yours that don't implement `ScopedComponent`: they are served under any prefix and at
+  `/_components/...`, so they check access themselves;
+- with `prefix: /{shop}/admin`, `access_control` sees the path, not who may see which shop: check that in a voter, a
+  listener on the route attribute or a `DoctrineScope`.
 
 For individual records:
 

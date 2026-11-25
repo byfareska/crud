@@ -13,8 +13,9 @@ use Symfony\UX\LiveComponent\Attribute\LiveProp;
  * defaults filled in.
  *
  * A component using it must not have getPlacement() / getSettings(): the property accessor would read those for the
- * LiveProps. Saying it implements ScopedComponent (panelScope() is here), a live widget is drawn in the theme of its
- * dashboard's panel when it loads after the page.
+ * LiveProps. A live widget using it is of the panel of its dashboard (ComponentPanel): its live requests are answered
+ * only under the prefix of that panel, and it is drawn in the theme of that panel when it loads after the page; saying
+ * it implements ScopedComponent (panelScope() is here) is the same.
  */
 trait DashboardWidgetProps
 {

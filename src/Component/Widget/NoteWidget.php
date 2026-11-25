@@ -11,6 +11,7 @@ use Byfareska\Crud\Dashboard\WidgetSetting;
 use Byfareska\Crud\Dashboard\WidgetSettingType;
 use Byfareska\Crud\Dashboard\WidgetSize;
 use Byfareska\Crud\Panel\ScopedComponent;
+use Byfareska\Crud\Routing\LivePanelGuard;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -51,6 +52,7 @@ final class NoteWidget implements ScopedComponent
 
     public function __construct(
         private readonly Dashboards $dashboards,
+        private readonly ?LivePanelGuard $guard = null,
     ) {
     }
 
@@ -67,6 +69,8 @@ final class NoteWidget implements ScopedComponent
 
     public function save(): void
     {
+        // An "onUpdated" hook: run while the props are set, before LivePanelGuard asks where the request is.
+        $this->guard?->assertCurrent($this);
         $this->text = mb_substr($this->text, 0, self::MAX_LENGTH);
         try {
             $this->dashboards->configure($this->board, $this->placement, ['text' => $this->text]);
