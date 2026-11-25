@@ -43,6 +43,15 @@ Without a form type, the form is built from the mapping:
 - **Fields:** every field and owning-side relation, except the id, the `#[Version]` field, columns the database fills
   (generated, not insertable or updatable), names that look secret (`passwordHash`, `apiKey`; see
   `AsCrud::SECRET`) and the resource's `hidden` properties.
+- **What only others may set** is guessed like anything else: `roles`, `isAdmin`, `isVerified`, `enabled`, `tenant`,
+  `owner`, `hourlyRate`, `balance`. Whoever may edit the record changes them. Only the form of an `own` resource
+  leaves them out (see below). On any other resource that has them, name the fields, hide them or disable them for
+  the users who may not set them.
+- **The form of an `own` resource** (my account, my profile) also leaves out names that look privileged (any word of
+  `AsCrud::PRIVILEGED`: `roles`, `isAdmin`, `emailVerifiedAt`, `enabled`, `tenant`, `team`, `owner`, `hourlyRate`,
+  `balance`, `plan`...) and every relation to a Symfony Security user (whose record it is, a manager). Name one in
+  `fields` to have it there all the same. It isn't a list of everything privileged: check what your entity has.
+  An `email` stays: if your users sign in with it or it's verified, change it through a flow of your own.
 - **Read-only properties** (no setter, not public) are left out of the edit form. In the add form they are included
   only if they are constructor arguments. A `createdAt` set in the constructor appears in neither.
 - **Constructors:** a new entity is created with its constructor, which receives the submitted values of the fields

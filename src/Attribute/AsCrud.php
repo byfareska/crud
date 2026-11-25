@@ -111,6 +111,20 @@ final readonly class AsCrud
         'credentials', 'otp', 'totp', 'apikey', 'api key', 'private key', 'pin code',
     ];
 
+    /**
+     * The words of the name of a property that says what somebody may do or is vouched for, which they are not to
+     * set for themselves - "roles", "isAdmin", "isVerified", "enabled", "tenant", "team", "hourlyRate": the guessed
+     * edit form of an "own" resource (one's account, one's profile) leaves it out. Named in its "fields" it is there.
+     * Words, not parts of them: "activity" and "planet" are guessed. Other resources guess them as any other field.
+     */
+    public const array PRIVILEGED = [
+        'role', 'roles', 'permission', 'permissions', 'privilege', 'privileges', 'group', 'groups', 'admin',
+        'superadmin', 'super admin', 'superuser', 'super user', 'staff', 'enabled', 'disabled', 'active', 'inactive',
+        'verified', 'approved', 'confirmed', 'trusted', 'banned', 'blocked', 'locked', 'suspended', 'expired',
+        'expires', 'tenant', 'owner', 'team', 'teams', 'organization', 'organisation', 'balance', 'credit', 'credits',
+        'rate', 'salary', 'discount', 'plan', 'quota',
+    ];
+
     /** What a parameter of its path is made of: {category}, {tenantId}. */
     public const string PARAMETER = '/^[a-z][A-Za-z0-9_]*$/';
 
@@ -203,7 +217,7 @@ final readonly class AsCrud
      *     route import of that scope puts its prefix and host before $path, and the scope has its menu, palette and
      *     layout
      * @param bool $own the one record is the one signed in (their id): no list, create nor delete, pages without an id
-     *     in the address
+     *     in the address; its guessed form leaves out what looks privileged (PRIVILEGED) and relations to users
      * @param bool|null $preview a click on a row of the list opens the record in the preview drawer; false = the
      *     first column leads to the details page (or to the edit form) and the rest of the row is not to be clicked;
      *     null = byfareska_crud.preview
@@ -869,16 +883,34 @@ final readonly class AsCrud
      */
     public static function looksSecret(string $field): bool
     {
+        return self::named($field, self::SECRET);
+    }
+
+    /**
+     * Whether the name of a property has a word of PRIVILEGED, or two of them one after another ("super admin").
+     */
+    public static function looksPrivileged(string $field): bool
+    {
+        return self::named($field, self::PRIVILEGED);
+    }
+
+    /**
+     * Whether the name of a property has one of the words, or two of them one after another.
+     *
+     * @param list<string> $words in lower case
+     */
+    private static function named(string $field, array $words): bool
+    {
         // "passwordHash", "reset_token", "APIKey" - its words, in lower case.
         $spaced = preg_replace(
             ['/([a-z0-9])([A-Z])/', '/([A-Z]+)([A-Z][a-z])/', '/[^A-Za-z0-9]+/'],
             ['$1 $2', '$1 $2', ' '],
             $field,
         );
-        $words = preg_split('/\s+/', strtolower(trim((string) $spaced)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
-        foreach ($words as $index => $word) {
-            $pair = $word . ' ' . ($words[$index + 1] ?? '');
-            if (in_array($word, self::SECRET, true) || in_array($pair, self::SECRET, true)) {
+        $named = preg_split('/\s+/', strtolower(trim((string) $spaced)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        foreach ($named as $index => $word) {
+            $pair = $word . ' ' . ($named[$index + 1] ?? '');
+            if (in_array($word, $words, true) || in_array($pair, $words, true)) {
                 return true;
             }
         }

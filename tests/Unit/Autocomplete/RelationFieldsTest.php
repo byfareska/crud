@@ -44,6 +44,7 @@ use Byfareska\Crud\Resource\DefaultPageSizes;
 use Byfareska\Crud\Resource\RecordGuards;
 use Byfareska\Crud\Resource\RecordView;
 use Byfareska\Crud\Routing\CrudRouteLoader;
+use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Account;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Meeting;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Order;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Person;
@@ -56,6 +57,7 @@ use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\Form\DoctrineOrmExtension;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -83,7 +85,8 @@ use Symfony\UX\Autocomplete\Form\AutocompleteChoiceTypeExtension;
 /**
  * The relations of guessed forms and the relation filters of lists offer - and take when sent - only the entities the
  * scopes of the related resource leave, and a copy takes no other; the searches of a form answer only one whose form
- * has the field; a filter of options of the application's own is no field searched by the bundle.
+ * has the field; a filter of options of the application's own is no field searched by the bundle. The guessed form of
+ * one's own record has nothing that says what they may do.
  */
 final class RelationFieldsTest extends TestCase
 {
@@ -229,6 +232,55 @@ final class RelationFieldsTest extends TestCase
         self::assertInstanceOf(Meeting::class, $copy);
         self::assertSame([$this->anna], array_values($copy->attendees->toArray()));
         self::assertCount(2, $meeting->attendees, 'The original keeps its own.');
+    }
+
+    public function testTheFormOfOnesOwnRecordLeavesOutWhatSaysWhatTheyMayDo(): void
+    {
+        $account = new Account();
+        $this->entities->persist($account);
+        $this->entities->flush();
+        $id = (string) $account->id;
+        $own = new AsCrud('account', '/account', 'person', source: new DoctrineSource(Account::class), own: true);
+        $users = new AsCrud('user', '/users', 'people', source: new DoctrineSource(Account::class));
+        $named = new AsCrud('profile', '/profile', 'person', source: new DoctrineSource(
+            Account::class,
+            fields: ['displayName', 'team'],
+        ), own: true);
+        $driver = $this->driver(false, $this->registry($own, $users, $named, $this->orders(), $this->people()));
+
+        // Not their roles, a flag somebody else vouches for, their rate, their team, a user above them.
+        self::assertSame(['email', 'displayName', 'lastOrder'], $this->fieldsOf($driver->form($own, $id)));
+        // The users of the panel, edited by somebody who may: a form of every property, as before.
+        self::assertSame(
+            ['email', 'displayName', 'roles', 'isVerified', 'enabled', 'hourlyRate', 'team', 'mentor', 'lastOrder'],
+            $this->fieldsOf($driver->form($users, $id)),
+        );
+        // Named, it is the application's choice.
+        self::assertSame(['displayName', 'team'], $this->fieldsOf($driver->form($named, $id)));
+    }
+
+    #[DataProvider('privileged')]
+    public function testWhatLooksPrivilegedGoesByTheWordsOfTheName(string $name, bool $privileged): void
+    {
+        self::assertSame($privileged, AsCrud::looksPrivileged($name));
+    }
+
+    /**
+     * @return iterable<array{string, bool}>
+     */
+    public static function privileged(): iterable
+    {
+        yield ['roles', true];
+        yield ['isAdmin', true];
+        yield ['is_super_admin', true];
+        yield ['emailVerifiedAt', true];
+        yield ['hourlyRate', true];
+        yield ['tenant', true];
+        yield ['email', false];
+        yield ['activity', false];
+        yield ['planet', false];
+        yield ['rateLimiter', true];
+        yield ['displayName', false];
     }
 
     public function testARelationFilterOffersOnlyWhatTheScopesLeave(): void
@@ -509,6 +561,16 @@ final class RelationFieldsTest extends TestCase
         $form->submit($values, false);
 
         return $form;
+    }
+
+    /**
+     * @param FormBuilderInterface<mixed> $builder
+     *
+     * @return list<string>
+     */
+    private function fieldsOf(FormBuilderInterface $builder): array
+    {
+        return array_values(array_map(strval(...), array_keys($builder->all())));
     }
 
     /**

@@ -88,6 +88,12 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
      */
     public const string VERSION_FIELD = '_version';
 
+    /**
+     * A user of Symfony Security, by its name: the bundle works without the package (a relation to one is then to no
+     * such class).
+     */
+    private const string SECURITY_USER = 'Symfony\\Component\\Security\\Core\\User\\UserInterface';
+
     /** Columns of a day, no time: printed as such (TypedValue "day"). */
     private const array DAY_TYPES = ['date', 'date_immutable'];
 
@@ -986,6 +992,11 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
      * should show, and the hidden ones (AsCrud::$hidden), which nobody is to see. Name them in "fields" to have them
      * all the same. The inverse sides of relations are left out too.
      *
+     * The form of an "own" resource is the one signed in editing their own record (their account, their profile):
+     * nothing there may say what they may do or are vouched for - no property whose name looks privileged
+     * (AsCrud::looksPrivileged(): roles, isAdmin, isVerified, enabled, tenant, hourlyRate), no relation to a user of
+     * Symfony Security (whose the record is, who is above them: the owner, a manager).
+     *
      * @param ClassMetadata<object> $metadata
      *
      * @return list<string>
@@ -1006,6 +1017,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
                 || ($mapping->generated ?? ClassMetadata::GENERATED_NEVER) !== ClassMetadata::GENERATED_NEVER
                 || ($create ? $mapping->notInsertable === true : $mapping->notUpdatable === true)
                 || AsCrud::looksSecret($field)
+                || ($crud->own && AsCrud::looksPrivileged($field))
                 || $crud->hides($field)
                 || !$writable($field)
             ) {
@@ -1017,6 +1029,13 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
             if (
                 $metadata->isAssociationInverseSide($relation)
                 || AsCrud::looksSecret($relation)
+                || (
+                    $crud->own
+                    && (
+                        AsCrud::looksPrivileged($relation)
+                        || is_a($metadata->getAssociationTargetClass($relation), self::SECURITY_USER, true)
+                    )
+                )
                 || $crud->hides($relation)
                 || !$writable($relation)
             ) {

@@ -10,7 +10,7 @@ The arguments of `#[AsCrud]` that every driver understands.
 | `path` | `/products`; may have parameters: `/categories/{category}/products` (`requirements:` constrains them) |
 | `scope` | the panel, `panel` by default |
 | `idPattern` | what an id in the URL looks like (`\d+`), so `/products/export` can be a route of your own |
-| `own: true` | a single record, that of the signed-in user (or what an `OwnRecordResolver` says) |
+| `own: true` | a single record, that of the signed-in user (or what an `OwnRecordResolver` says); its guessed form has nothing that looks privileged (see [What a form changes](#what-a-form-changes)) |
 
 A resource whose path has parameters isn't in the menu or the palette. Link to it from a page that knows the
 parameters: `new RouteAction('products', 'crud_category_product_list', 'box-seam', idParameter: 'category')`.
@@ -267,6 +267,19 @@ public function __invoke(RecordSaving $event): void
     }
 }
 ```
+
+**A guessed form edits every property it can write**, also the ones that say what someone may do or is vouched for:
+`roles`, `isAdmin`, `isVerified`, `enabled`, `tenant`, `owner`, `hourlyRate`, `balance`. On a `User` resource for
+your staff, whoever may edit a user, themselves included, can give that user `ROLE_ADMIN` or another rate. Name the
+fields (`fields:` of the source), hide them or disable them in a `CrudFormExtension` for those who may not set
+them, and refuse a change you can't allow in a `RecordSaving` listener.
+
+The guessed form of an `own` resource ("my account", "my profile") is safer by default: it leaves out every property
+whose name has a word of `AsCrud::PRIVILEGED` (`roles`, `admin`, `verified`, `enabled`, `active`, `tenant`, `team`,
+`owner`, `rate`, `balance`, `plan`...) and every relation to a Symfony Security user. These are names, not meanings:
+`kycStatus` or `level` stays. List the `fields` of an own resource instead of relying on the guess. An `email` stays
+too. If users sign in with it, or something trusts it because it was verified, change it in a flow of your own that
+verifies the new address.
 
 ### Related records
 
