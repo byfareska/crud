@@ -47,7 +47,8 @@ its prefix covers its live requests as it covers its pages: an admin panel on `^
 
 ### Parameters in the prefix
 
-`prefix: /{shop}/admin` gives one panel per shop. The bundle passes the parameters on (`PageParameters`) to every
+`prefix: /{shop}/admin` gives one panel per shop (name the parameter like none of the bundle's, see
+[configuration](configuration.md#route-import)). The bundle passes the parameters on (`PageParameters`) to every
 URL generated on the page and in live requests: row links, "back", the page after a save. Whether the signed-in
 user may see that shop is for your application to check, with a `DoctrineScope`, a guard or a `ScopeExtension` - or
 with `access_control`, a voter or a listener on the route attribute `shop`: in a live request (`/acme/admin/_crud/...`)

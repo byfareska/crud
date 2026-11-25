@@ -82,7 +82,8 @@ crud_admin:
 
 Each import adds:
 
-- `crud_dashboard_<panel>` at `/` (when the panel has a dashboard) and its JSON endpoints under `/_dashboard`;
+- `crud_dashboard_<panel>` at `/` (when the panel has a dashboard) and its JSON endpoints under `/_dashboard`, else
+  `crud_home_<panel>` at `/`, a redirect to its first list; `crud_dashboard_<board>` for each of its `boards`;
 - `crud_<resource>_list`, `_new`, `_show`, `_edit`, plus the routes of `#[AsCrudPage]`, for every resource of the
   panel;
 - `crud_live_<panel>` at `/_crud/{component}/{action}`: the live components of the panel, under its prefix and only
@@ -92,3 +93,13 @@ Each import adds:
 - the file endpoints under `/_files`, when [files](files.md) are enabled.
 
 Every route has the default `_scope`. Run `bin/console debug:router | grep crud_` to see them.
+
+What the import says - `prefix`, `host`, `schemes`, `requirements`, `condition` - applies to every one of these
+routes, so a panel restricted to a host or a scheme is restricted everywhere, live requests and files included.
+
+The pages know what they show from the defaults of their routes alone (`crud`, `name`, `board`, `_scope`) and from
+their own paths (`id`, `page`). A parameter of the `prefix` or the `host` takes precedence over a default, so it
+must be named like none of `crud`, `id`, `page`, `name`, `board` nor start with `_` (`_locale` and `_format`
+excepted): `/{shop}/admin` and `{tenant}.example.com`, not `/{name}/admin`. Otherwise the address would choose the
+resource or the page while the firewall and `access_control` see another path, and the routes fail to load with an
+error naming the parameter. Don't use `name_prefix` either: the bundle finds its routes by their names.

@@ -32,6 +32,11 @@ use Symfony\Component\Routing\RouteCollection;
  * "/_files/download", "/_files/variant"). Every route gets the default
  * "_scope", which the menu, the palette and the layout go by, and which access_control can go by: `attributes: {
  * _scope: admin }` - besides the role of the scope, which the bundle checks itself on every way to its resources.
+ *
+ * What the import says (prefix, host, schemes, requirements, condition) is said of every one of these routes, so a
+ * panel is all under its prefix and on its host. Its pages know what they are of by the defaults of their routes alone
+ * ("crud", "name", "board", "_scope"): a parameter of the prefix or the host named like one of them would let the
+ * address choose it, and PanelRoutesCheck refuses the routes then.
  */
 #[AutoconfigureTag('routing.loader')]
 final class CrudRouteLoader extends Loader
@@ -46,6 +51,12 @@ final class CrudRouteLoader extends Loader
 
     /** The default of the live route of a scope: its requests are of the page they come from, not of their own. */
     public const string LIVE = '_crud_live';
+
+    /**
+     * The option of every route of a panel: the parameters of the route as the bundle made it, before the route import
+     * put its prefix and host before it - what {@see PanelRoutesCheck} tells the parameters of the import from.
+     */
+    public const string VARIABLES = 'byfareska_crud_variables';
 
     public function __construct(
         private readonly CrudRoutes $crudRoutes,
@@ -137,6 +148,9 @@ final class CrudRouteLoader extends Loader
             ['_live_action' => 'get', self::LIVE => true],
         ));
         $routes->addDefaults([Scope::ATTRIBUTE => $scope->name]);
+        foreach ($routes->all() as $route) {
+            $route->setOption(self::VARIABLES, $route->compile()->getVariables());
+        }
 
         return $routes;
     }
