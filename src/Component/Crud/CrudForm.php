@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Component\Crud;
 
 use Byfareska\Crud\Action\ActionButton;
+use Byfareska\Crud\Action\DuplicateAction;
 use Byfareska\Crud\Action\RecordActions;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Attribute\AsCrudFormSection;
@@ -111,7 +112,8 @@ class CrudForm implements ScopedComponent
 
     /**
      * The record a new one starts as a copy of, as in the address (?from=<id>, DuplicateAction): only one the one
-     * looking may read, only for fields of the add form they may fill in.
+     * looking may read and is offered the DuplicateAction of (its role, its RecordActionGuards), only for fields of
+     * the add form they may fill in.
      */
     #[LiveProp]
     public ?string $from = null;
@@ -324,9 +326,9 @@ class CrudForm implements ScopedComponent
     }
 
     /**
-     * Fills the add form in from the record it copies: one in its scopes and readable by its guards, only the fields
-     * the form still has, enabled and mapped - not a hidden property (AsCrud::hides()), whatever form has it; then
-     * RecordCopying, for what else a copy takes.
+     * Fills the add form in from the record it copies: one in its scopes, readable by its guards and offered its
+     * DuplicateAction (RecordActions::duplicateAction()), only the fields the form still has, enabled and mapped - not
+     * a hidden property (AsCrud::hides()), whatever form has it; then RecordCopying, for what else a copy takes.
      *
      * @param FormBuilderInterface<mixed> $builder
      */
@@ -336,6 +338,14 @@ class CrudForm implements ScopedComponent
         try {
             $source = $this->records->view($crud, $from, RecordScreen::Details);
             $this->guards->assertAllowed(CrudOperation::Read, $source);
+            // The address is only a way to the DuplicateAction: what its buttons would not offer - its role, a
+            // RecordActionGuard of it, a resource that has none - is not copied this way either.
+            if (
+                $this->recordActions instanceof RecordActions
+                && !$this->recordActions->duplicateAction($source) instanceof DuplicateAction
+            ) {
+                throw CrudFailure::forbidden();
+            }
             $fields = [];
             // Not a section (unmapped), not a field kept from the user (disabled), not what nobody is to see.
             foreach ($builder->all() as $name => $field) {

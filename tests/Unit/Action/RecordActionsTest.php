@@ -10,6 +10,8 @@ use Byfareska\Crud\Action\ComponentActionHandler;
 use Byfareska\Crud\Action\DeleteAction;
 use Byfareska\Crud\Action\DeleteActionHandler;
 use Byfareska\Crud\Action\DetailsActionHandler;
+use Byfareska\Crud\Action\DuplicateAction;
+use Byfareska\Crud\Action\DuplicateActionHandler;
 use Byfareska\Crud\Action\EditAction;
 use Byfareska\Crud\Action\EditActionHandler;
 use Byfareska\Crud\Action\MakesButtons;
@@ -22,6 +24,9 @@ use Byfareska\Crud\Action\RouteAction;
 use Byfareska\Crud\Action\RouteActionHandler;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Attribute\AsCrudPage;
+use Byfareska\Crud\Driver\AbstractCrudDriver;
+use Byfareska\Crud\Driver\CopiesRecords;
+use Byfareska\Crud\Driver\CrudDrivers;
 use Byfareska\Crud\Driver\Doctrine\DoctrineSource;
 use Byfareska\Crud\Resource\CrudAccess;
 use Byfareska\Crud\Resource\CrudFailure;
@@ -44,6 +49,8 @@ use LogicException;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Generator\UrlGenerator;
@@ -123,6 +130,59 @@ final class RecordActionsTest extends TestCase
             operations: [CrudOperation::List, CrudOperation::Read],
         ));
         self::assertSame(['details'], $this->names($this->actions([])->of($readOnly)));
+    }
+
+    public function testACopyOfARecordIsMadeOnlyByTheDuplicateActionOfferedForIt(): void
+    {
+        $copier = new readonly class implements RecordActionGuard {
+            public function resource(): string
+            {
+                return 'gadget';
+            }
+
+            public function fields(): array
+            {
+                return [];
+            }
+
+            public function allowsAction(string $action, RecordView $record): bool
+            {
+                // A gadget with a serial number of its own is not copied.
+                return $action !== DuplicateAction::NAME || $record->id !== '8';
+            }
+        };
+        $secret = new readonly class implements RecordGuard {
+            public function resource(): string
+            {
+                return 'gadget';
+            }
+
+            public function fields(): array
+            {
+                return [];
+            }
+
+            public function allows(CrudOperation $operation, RecordView $record): bool
+            {
+                return $operation !== CrudOperation::Read || $record->id !== '9';
+            }
+        };
+        $copied = static fn (AsCrud $gadget, string $id, RecordActions $actions): ?string => $actions
+            ->duplicateAction(new RecordView($gadget, $id, [], RecordScreen::Details))?->name;
+
+        // A resource without one: no copy by the address.
+        self::assertNull($copied($this->gadget(), '7', $this->actions(['ROLE_COPIER'])));
+        // Its role.
+        $gadget = $this->gadget([new DuplicateAction(role: 'ROLE_COPIER')]);
+        self::assertNull($copied($gadget, '7', $this->actions([])));
+        self::assertSame('duplicate', $copied($gadget, '7', $this->actions(['ROLE_COPIER'])));
+        // Its RecordActionGuard, and the guards of reading the record.
+        $guarded = $this->actions(['ROLE_COPIER'], guards: [$secret], actionGuards: [$copier]);
+        self::assertSame('duplicate', $copied($gadget, '7', $guarded));
+        self::assertNull($copied($gadget, '8', $guarded));
+        self::assertNull($copied($gadget, '9', $guarded));
+        // A resource that may not add records.
+        self::assertNull($copied($gadget->refusing(CrudOperation::Create), '7', $this->actions(['ROLE_COPIER'])));
     }
 
     public function testAPriorityPlacesAnActionAndNoActionTakesABuiltInOneAway(): void
@@ -484,9 +544,26 @@ final class RecordActionsTest extends TestCase
         $routes->add('crud_thing_history', new Route('/things/{id}/history'));
         $routes->add('crud_gadget_show', new Route('/gadgets/{id}'));
         $routes->add('crud_gadget_edit', new Route('/gadgets/{id}/edit'));
+        $routes->add('crud_gadget_new', new Route('/gadgets/new'));
         $urls = new UrlGenerator($routes, new RequestContext());
         $recordGuards = new RecordGuards($guards, $actionGuards);
         $requests = new RequestStack();
+        // The driver of the gadgets, which can start an add form as a copy (CopiesRecords).
+        $copying = new class extends AbstractCrudDriver implements CopiesRecords {
+            public function name(): string
+            {
+                return DoctrineSource::DRIVER;
+            }
+
+            public function listForm(AsCrud $crud): FormInterface
+            {
+                throw new LogicException('Not listed here.');
+            }
+
+            public function copy(AsCrud $crud, string $id, FormBuilderInterface $builder, array $fields): void
+            {
+            }
+        };
 
         $handlers = [
             RouteActionHandler::class => static fn (): RouteActionHandler => new RouteActionHandler($urls),
@@ -498,6 +575,8 @@ final class RecordActionsTest extends TestCase
                 => new EditActionHandler($urls, $recordGuards, $requests),
             DeleteActionHandler::class => static fn (): DeleteActionHandler
                 => new DeleteActionHandler($recordGuards, new IdentityTranslator()),
+            DuplicateActionHandler::class => static fn (): DuplicateActionHandler
+                => new DuplicateActionHandler($urls, $recordGuards, new CrudDrivers([$copying])),
         ];
         if ($withComponents) {
             $handlers[ComponentActionHandler::class] = static fn (): ComponentActionHandler

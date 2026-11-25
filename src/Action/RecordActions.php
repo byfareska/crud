@@ -124,6 +124,26 @@ final readonly class RecordActions implements ResetInterface
     }
 
     /**
+     * The DuplicateAction offered to the one asking for this record - what the add form goes by before it starts as a
+     * copy of it (?from=<id>), so a copy its buttons would not offer (its role, a RecordActionGuard of the action, a
+     * resource without one) is not made by the address either. Null = none.
+     */
+    public function duplicateAction(RecordView $record): ?DuplicateAction
+    {
+        foreach ($this->of($record->crud) as $action) {
+            if (
+                $action instanceof DuplicateAction
+                && $this->guards->allowsAction($action->name, $record)
+                && $this->handler($action)->button($action, $record) instanceof ActionButton
+            ) {
+                return $action;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Does the action of that name to a record, on the server (RunAction, or another whose handler RunsRecordAction):
      * only one offered to the one asking (its role) and for this record (its button), what its dialog asks for checked
      * (AsksForInput), in RecordChanges - a transaction, the guards of the action (and of Update, unless the handler
