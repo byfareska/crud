@@ -54,6 +54,17 @@ that already has an `X-Frame-Options`, or a `Content-Security-Policy` with `fram
 by NelmioSecurityBundle), keeps its own. Your own pages outside the panel's routes - the sign-in page among them - get
 nothing from the bundle.
 
+### Requests from other sites
+
+The forms of the panel have no CSRF token. A save, a delete, an action, a file upload or a change to a dashboard
+needs the `X-Requested-With` header, which the panel's scripts send and a page of another origin can't send without
+a CORS preflight. Don't let other origins send that header with credentials in your CORS configuration (e.g.
+`nelmio_cors` on `^/`). On top of that, the panel's live route, its file upload and the dashboard's changes refuse
+(403) a request whose `Sec-Fetch-Site` header says it comes from another origin: `cross-site`, `same-site` (another
+subdomain) or `none`. Requests without the header (older browsers, other clients) depend on `X-Requested-With`
+alone. The live route accepts only `GET` and `POST` (`HEAD` gets 405). Components served at `/_components/...` don't
+get these checks.
+
 ### Parameters in the prefix
 
 `prefix: /{shop}/admin` gives one panel per shop (name the parameter like none of the bundle's, see

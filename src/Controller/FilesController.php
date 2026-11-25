@@ -38,8 +38,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  * firewall of the panel, for those the panel - and the storage's "role" - is for.
  *
  * An upload is taken only from a script of the page (the header X-Requested-With, which a page of another site cannot
- * send without the browser asking first), and only as the signed address says: the browser cannot choose another
- * storage, kind or size.
+ * send without the browser asking first; a browser saying it comes from another origin is refused before, see
+ * SameOriginGuard), and only as the signed address says: the browser cannot choose another storage, kind or size.
  */
 #[AsController]
 final readonly class FilesController

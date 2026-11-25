@@ -53,6 +53,12 @@ final class CrudRouteLoader extends Loader
     public const string LIVE = '_crud_live';
 
     /**
+     * The default of the routes of a panel that change something - its live route, the upload of files, the layout of
+     * a dashboard: answered only to a page of the same origin ({@see SameOriginGuard}).
+     */
+    public const string SAME_ORIGIN = '_crud_same_origin';
+
+    /**
      * The option of every route of a panel: the parameters of the route as the bundle made it, before the route import
      * put its prefix and host before it - what {@see PanelRoutesCheck} tells the parameters of the import from.
      */
@@ -130,7 +136,7 @@ final class CrudRouteLoader extends Loader
         if ($this->files) {
             $routes->add(FileRoutes::upload($scope->name), new Route(
                 '/_files',
-                ['_controller' => FilesController::class . '::upload'],
+                ['_controller' => FilesController::class . '::upload', self::SAME_ORIGIN => true],
                 methods: ['POST'],
             ));
             $routes->add(FileRoutes::download($scope->name), new Route(
@@ -155,10 +161,10 @@ final class CrudRouteLoader extends Loader
             ));
         }
         // The live components of its pages, under its prefix: in the firewall of the panel (PanelLiveUrls). Its own
-        // components are answered only here (LivePanelGuard).
+        // components are answered only here (LivePanelGuard), to a page of the same origin (SameOriginGuard).
         $routes->add($scope->liveRoute(), new Route(
             '/_crud/{_live_component}/{_live_action}',
-            ['_live_action' => 'get', self::LIVE => true],
+            ['_live_action' => 'get', self::LIVE => true, self::SAME_ORIGIN => true],
         ));
         $routes->addDefaults([Scope::ATTRIBUTE => $scope->name]);
         foreach ($routes->all() as $route) {
@@ -210,7 +216,9 @@ final class CrudRouteLoader extends Loader
 ): void {
             $routes->add(Scope::boardRoute($board, $action), new Route(
                 $path === '/' && $prefix !== '' ? $prefix : $prefix . $path,
-                ['_controller' => DashboardController::class . '::' . $controllerMethod, 'board' => $board],
+                // What changes the layout only from a page of the same origin (SameOriginGuard); the page from any.
+                ['_controller' => DashboardController::class . '::' . $controllerMethod, 'board' => $board]
+                    + ($method === 'GET' ? [] : [self::SAME_ORIGIN => true]),
                 ['id' => '[A-Za-z0-9_-]+'],
                 methods: [$method],
             ));
