@@ -2,10 +2,13 @@
 
 ## Unreleased
 
+## v0.4.0
+
 A security release: what a user may not see stays out of the forms, searches, sorting and filters, relation searches
 and choices keep to the scopes of the related resource, the live components of a panel are answered only under its
-prefix, and the media library and file fields refuse files they were not given. Read Upgrading: most changes only make
-the bundle stricter, some can be noticed.
+prefix and only to pages of its own origin, copies, actions and deletes keep to the roles and guards of their actions,
+the guessed form of an `own` resource leaves out what looks privileged, and the media library and file fields refuse
+files they were not given. Read Upgrading: most changes only make the bundle stricter, some can be noticed.
 
 ### Upgrading
 
