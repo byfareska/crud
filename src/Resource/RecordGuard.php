@@ -14,7 +14,10 @@ namespace Byfareska\Crud\Resource;
  * buttons of the built-in actions (DetailsAction, EditAction, DeleteAction) go away.
  *
  * The record is what the place has of it: an item of the list there (with what fields() asks for), every property
- * read elsewhere - empty on the edit form of a resource that cannot read one.
+ * read elsewhere - empty on the edit form of a resource that cannot read one. On a save it is the record as stored,
+ * before the form changed it: what the form writes (an owner, a tenant) is not asked of again. A field that decides
+ * a guard is kept out of the form (AsCrud::$hidden of a guessed one, a CrudFormExtension that disables it), or the
+ * change is refused by a listener of RecordSaving, which gets the data the form made.
  */
 interface RecordGuard
 {

@@ -87,7 +87,8 @@ resource leave, whether as a `<select>` or as you type, and they take nothing el
 another tenant's customer sent by hand is refused ("The selected choice is invalid"). The entity a record already has
 in the relation stays its value, so editing still works when the scopes no longer leave it, but it can't be chosen
 for another record. The resource is the one `relations:` names for the relation, else the first of the entity's
-(of the same panel first); an entity without a resource is narrowed by the `DoctrineScope::EVERY` scopes.
+(of the same panel first); an entity without a resource is narrowed by the `DoctrineScope::EVERY` scopes. The `role`,
+`roles` and guards of the related resource aren't asked: see [related records](resources.md#related-records).
 
 A form type of your own (`form:`), a field a `CrudFormExtension` adds and a filter given its own `query_builder` are
 yours to narrow: the bundle leaves them as they are.

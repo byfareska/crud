@@ -121,7 +121,14 @@ Every record gets details, edit and delete. Add more with `actions:`:
 
 - `inline: true` puts an action on the row instead of in its menu.
 - `priority:` orders actions.
-- `role:` restricts who sees an action.
+- `role:` restricts who sees an action, and who may do it. It takes away only that action: to restrict an
+  operation, use `roles` (see [How the restrictions add up](#how-the-restrictions-add-up)).
+- `?from=<id>` copies a record into the add form only for a user offered the `DuplicateAction` for that record (its
+  `role`, a `RecordActionGuard` of `duplicate`, the guards of reading it). Without a `DuplicateAction` the address
+  answers 403.
+- A `RunAction` changes what may be edited (`update: true`, the default): the `RecordGuard`s of `update` are asked
+  too, and it is not offered to a user whose `roles` (or a `refusing()`) take `update` away. Give `update: false` to
+  an action people who may not edit may do.
 - `tone: ActionTone::Info` colours it.
 - Its label is `crud.<resource>.action.<name>`.
 
@@ -199,6 +206,57 @@ For individual records:
 - `VoterRecordGuard` and `VoterActionGuard` delegate to your voters.
 - `DoctrineScope` decides which records exist at all.
 - `RecordRow` adds classes or attributes to rows.
+
+### How the restrictions add up
+
+Roles and refusals only narrow. The panel's role, `role` and the role of the operation in `roles` all have to
+allow it. A `CrudDefinitionExtension` can't change `role` or `roles`, and what one extension refuses with `refusing()`, a
+later one can't give back: the bundle throws a `LogicException`.
+
+An action's `role` and its `RecordActionGuard` take away that action only. `new DeleteAction(role: 'ROLE_ADMIN')`
+removes the delete button of a row, but a `BulkDeleteAction` without a role still deletes, and an extension that
+returns `$crud->with(actions: [...])` without the declared actions brings back the built-in delete, which has no
+role. To keep an operation from someone, use `roles: ['delete' => 'ROLE_ADMIN']` or `refusing()`: every way to it
+asks that.
+
+`with()` replaces the value you give it. `with(hidden: ['margin'])` shows again what was hidden before, the declared
+`hidden` too, and `with(actions: [...])` drops the declared actions. Add to the current value:
+`with(hidden: [...$crud->hidden, 'margin'])`, `with(actions: [...$crud->actions, $export])`.
+
+### What a form changes
+
+Guards and scopes are asked of the record as it is stored, before the form changes it. The saved record isn't
+checked again, and `RecordGuard`s are never asked about a new one: who may add records is `roles['create']`. If the
+form can change what a guard or a scope goes by (an owner, a tenant), a user who may edit their own customer can give
+it to someone else. A guessed Doctrine form has every relation it can write, offering the entities in the
+`DoctrineScope`s of the related resource. Hide such a field, disable it in a `CrudFormExtension`, or refuse the change
+in a `RecordSaving` listener, which runs in the transaction of the save:
+
+```php
+#[AsEventListener]
+public function __invoke(RecordSaving $event): void
+{
+    if ($event->data instanceof Customer && $event->data->owner !== $this->currentUser()) {
+        throw CrudFailure::forbidden();
+    }
+}
+```
+
+### Related records
+
+A relation of a guessed form or a relation filter offers the entities in the `DoctrineScope`s of the related
+resource. Its `role`, `roles` and `RecordGuard`s aren't asked: whoever may fill in the form sees the names of those
+entities and may choose them. Hide or disable the field for users who shouldn't.
+
+A relation in a list cell or in the details shows the name of the entity the record holds, never a link. A to-many
+relation you name in `columns` or `details` (the `orders` of a customer) lists every entity of the collection, not
+narrowed by the scopes, role or guards of the related resource. To show related records as the user may see them,
+embed the related resource's list with `fixedFilters` ([A list on any page](#a-list-on-any-page)): it keeps to that
+resource's access, scopes and guards.
+
+The components of `#[AsCrudDetailsSection]` and the DTOs of `#[AsCrudFormSection]` are yours. Their `role` is asked
+with the resource as the subject, and they get the id of a record the user may read (details) or edit (edit form).
+Records of another resource they show or change, they check themselves.
 
 ## Events and transactions
 

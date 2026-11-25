@@ -35,7 +35,13 @@ use Byfareska\Crud\Attribute\AsCrud;
  *
  * Every way to the resource sees what it returns: the list, the details, the forms, the menu, whether the palette
  * offers it. It may also take operations away for the request, $crud->refusing(CrudOperation::Delete) - their buttons
- * go and their pages answer 403 - but never give back what an extension before it refused. What the routes are made
+ * go and their pages answer 403 - but never give back what an extension before it refused.
+ *
+ * with() replaces what it is given, as declared or as an extension before changed it: `with(hidden: ['margin'])`
+ * shows again what was hidden before, `with(actions: [...])` takes the declared actions away - and with them a
+ * NoAction or the role of a built-in one, so the built-in action is back for everybody the operation is for. Add to
+ * the value it has (`[...$crud->hidden, 'margin']`); restrict an operation by its role (AsCrud::$roles) or
+ * refusing(), which nothing after gives back, not by the role of its action. What the routes are made
  * of (name, path, scope, own, source, listedIn), the role and the roles stay as declared - the routes are built once
  * for everybody. Asked once a request per resource, by the priority of its tag; it must not depend on
  * CrudRegistry (it is what asks it).
