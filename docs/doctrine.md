@@ -93,6 +93,10 @@ for another record. The resource is the one `relations:` names for the relation,
 A form type of your own (`form:`), a field a `CrudFormExtension` adds and a filter given its own `query_builder` are
 yours to narrow: the bundle leaves them as they are.
 
+A copy (`?from=`, `DuplicateAction`) takes of a relation only the entities the `DoctrineScope`s leave the user now,
+whatever form it fills in: the original's customer or project the user no longer sees isn't copied, and the field
+starts empty (or with what the entity factory gave it).
+
 ### Choices or a field to search in
 
 What a relation of a guessed form is depends on the `RelationFormField` service:

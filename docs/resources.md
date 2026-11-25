@@ -126,7 +126,7 @@ Every record gets details, edit and delete. Add more with `actions:`:
 
 | Action | |
 | --- | --- |
-| `new DuplicateAction()` | the add form prefilled from the record (`RecordCopying` adjusts the copy) |
+| `new DuplicateAction()` | the add form prefilled from the record (`RecordCopying` adjusts the copy); relations only within the current `DoctrineScope`s |
 | `new RouteAction('invoices', 'app_customer_invoices', 'receipt', fieldParameters: ['customer' => 'customerId'])` | a link |
 | `new ComponentAction('restock', 'App:Restock', 'box', fields: ['stock'])` | a Twig component draws it |
 | `new LiveListAction('toggle', 'toggleActive', 'toggle-on')` | a live action of your own list component |

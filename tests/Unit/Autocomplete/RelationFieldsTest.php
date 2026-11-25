@@ -44,6 +44,7 @@ use Byfareska\Crud\Resource\DefaultPageSizes;
 use Byfareska\Crud\Resource\RecordGuards;
 use Byfareska\Crud\Resource\RecordView;
 use Byfareska\Crud\Routing\CrudRouteLoader;
+use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Meeting;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Order;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Person;
 use Byfareska\Crud\Tests\Unit\Fixtures\Entity\Team;
@@ -81,8 +82,8 @@ use Symfony\UX\Autocomplete\Form\AutocompleteChoiceTypeExtension;
 
 /**
  * The relations of guessed forms and the relation filters of lists offer - and take when sent - only the entities the
- * scopes of the related resource leave; the searches of a form answer only one whose form has the field; a filter of
- * options of the application's own is no field searched by the bundle.
+ * scopes of the related resource leave, and a copy takes no other; the searches of a form answer only one whose form
+ * has the field; a filter of options of the application's own is no field searched by the bundle.
  */
 final class RelationFieldsTest extends TestCase
 {
@@ -158,6 +159,76 @@ final class RelationFieldsTest extends TestCase
         self::assertSame(['Anna', 'Adam'], $this->choices($edited->get('createdBy')));
         self::assertTrue($this->submitted($driver->form($this->orders(), $id), (string) $this->adam->id)->isValid());
         self::assertFalse($this->submitted($driver->form($this->orders(), $id), (string) $this->bob->id)->isValid());
+    }
+
+    public function testARelationOfManyKeepsWhatTheRecordHasButTakesNoOther(): void
+    {
+        // Adam came to the meeting before the scopes left him out: he stays, Anna may be added, Bob may not.
+        $meeting = new Meeting();
+        $meeting->attendees->add($this->adam);
+        $this->entities->persist($meeting);
+        $this->entities->flush();
+        $id = (string) $meeting->id;
+        $meetings = $this->meetings();
+        $driver = $this->driver(false, $this->registry($meetings, $this->people()));
+
+        $edited = $driver->form($meetings, $id)->getForm();
+        self::assertSame(['Anna', 'Adam'], $this->choices($edited->get('attendees')));
+        $kept = $this->sent($driver->form($meetings, $id), ['attendees' => [(string) $this->adam->id]]);
+        self::assertTrue($kept->isValid(), (string) $kept->getErrors(true));
+        $added = $this->sent($driver->form($meetings, $id), [
+            'attendees' => [(string) $this->adam->id, (string) $this->anna->id],
+        ]);
+        self::assertTrue($added->isValid(), (string) $added->getErrors(true));
+
+        // Sent by hand: another one the scopes leave out, next to the one the record has - or instead of it.
+        $adam = (string) $this->adam->id;
+        $bob = (string) $this->bob->id;
+        foreach ([[$adam, $bob], [$bob]] as $attendees) {
+            $this->entities->clear();
+            $sent = $this->sent($driver->form($meetings, $id), ['attendees' => $attendees]);
+            self::assertFalse($sent->isValid(), 'Bob, of another tenant, sent by hand: ' . implode(',', $attendees));
+            $data = $sent->getData();
+            self::assertInstanceOf(Meeting::class, $data);
+            self::assertNotContains($bob, array_map(
+                static fn (Person $person): string => (string) $person->id,
+                $data->attendees->toArray(),
+            ));
+        }
+    }
+
+    public function testACopyTakesOfARelationOnlyWhatTheScopesLeaveNow(): void
+    {
+        // Adam was chosen before the scopes left him out: a copy is no way to choose him again.
+        $byAdam = new Order();
+        $byAdam->createdBy = $this->adam;
+        $byAnna = new Order();
+        $byAnna->createdBy = $this->anna;
+        $meeting = new Meeting();
+        $meeting->attendees->add($this->adam);
+        $meeting->attendees->add($this->anna);
+        foreach ([$byAdam, $byAnna, $meeting] as $entity) {
+            $this->entities->persist($entity);
+        }
+        $this->entities->flush();
+        $orders = $this->orders();
+        $meetings = $this->meetings();
+        $driver = $this->driver(false, $this->registry($orders, $meetings, $this->people()));
+
+        foreach ([[$byAdam, null], [$byAnna, $this->anna]] as [$original, $copied]) {
+            $form = $driver->form($orders, null);
+            $driver->copy($orders, (string) $original->id, $form, ['createdBy']);
+            $copy = $form->getData();
+            self::assertInstanceOf(Order::class, $copy);
+            self::assertSame($copied, $copy->createdBy);
+        }
+
+        $form = $driver->form($meetings, null);
+        $driver->copy($meetings, (string) $meeting->id, $form, ['attendees']);
+        $copy = $form->getData();
+        self::assertInstanceOf(Meeting::class, $copy);
+        self::assertSame([$this->anna], array_values($copy->attendees->toArray()));
+        self::assertCount(2, $meeting->attendees, 'The original keeps its own.');
     }
 
     public function testARelationFilterOffersOnlyWhatTheScopesLeave(): void
@@ -245,6 +316,14 @@ final class RelationFieldsTest extends TestCase
             Order::class,
             fields: $fields,
             filters: $filters === [] ? ['author' => new FieldFilter('createdBy', Comparison::CHOICE)] : $filters,
+        ));
+    }
+
+    private function meetings(): AsCrud
+    {
+        return new AsCrud('meeting', '/meetings', 'people', source: new DoctrineSource(
+            Meeting::class,
+            fields: ['attendees'],
         ));
     }
 
@@ -414,6 +493,20 @@ final class RelationFieldsTest extends TestCase
     {
         $form = $builder->getForm();
         $form->submit(['createdBy' => $person], false);
+
+        return $form;
+    }
+
+    /**
+     * @param FormBuilderInterface<mixed> $builder
+     * @param array<string, mixed> $values
+     *
+     * @return FormInterface<mixed>
+     */
+    private function sent(FormBuilderInterface $builder, array $values): FormInterface
+    {
+        $form = $builder->getForm();
+        $form->submit($values, false);
 
         return $form;
     }

@@ -539,8 +539,9 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
 
         foreach ($fields as $field) {
             // Of the entity itself: not its id, nor its version; a relation of many (tags) as a new collection of the
-            // same entities - the copy has them too, the original keeps its own. The inverse side (the lines of an
-            // order) is RecordCopying's: those would be moved, not copied.
+            // same entities - the copy has them too, the original keeps its own - and of a relation only the entities
+            // the scopes of the related resource leave now (DoctrineRelations::within()). The inverse side (the lines
+            // of an order) is RecordCopying's: those would be moved, not copied.
             $copies = $metadata->hasField($field)
                 ? !$metadata->isIdentifier($field) && (!$metadata->isVersioned || $metadata->versionField !== $field)
                 : $metadata->hasAssociation($field) && !$metadata->isAssociationInverseSide($field);
@@ -553,8 +554,19 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
                 continue;
             }
             $value = $this->propertyAccessor->getValue($copied, $field);
-            if ($value instanceof Collection) {
-                $value = new ArrayCollection($value->toArray());
+            if ($metadata->hasAssociation($field)) {
+                // Only what the one copying may choose now: not an entity the scopes no longer leave them.
+                $target = $metadata->getAssociationTargetClass($field);
+                if ($value instanceof Collection) {
+                    $value = new ArrayCollection($this->relations->within(
+                        $crud,
+                        $target,
+                        array_filter($value->toArray(), is_object(...)),
+                        $field,
+                    ));
+                } elseif (is_object($value) && $this->relations->within($crud, $target, [$value], $field) === []) {
+                    continue;
+                }
             }
 
             try {

@@ -146,6 +146,50 @@ final readonly class DoctrineRelations
     }
 
     /**
+     * Those of the entities the scopes leave now, in the order given - what a copy of a record may take of a relation
+     * (DuplicateAction): what the original holds is not what the one copying it may choose (an entity of a project
+     * they no longer see). Not one of another kind, nor one not saved yet. One query.
+     *
+     * @param class-string $entity
+     * @param iterable<object> $entities
+     * @param string|null $relation the relation (or the path of it), for DoctrineSource::$relations
+     *
+     * @return list<object>
+     */
+    public function within(AsCrud $from, string $entity, iterable $entities, ?string $relation = null): array
+    {
+        $query = $this->query($from, $entity, $relation);
+        $builder = $query->query;
+        $any = $builder->expr()->orX();
+        $given = [];
+        foreach ($entities as $one) {
+            $is = $this->is($query, $one);
+            if ($is instanceof Andx) {
+                $any->add($is);
+                $given[] = $one;
+            }
+        }
+        if ($given === []) {
+            return [];
+        }
+        $builder->andWhere($any);
+
+        // By their ids: the entities found may be other objects than those given (another entity manager).
+        $left = [];
+        $result = $builder->getQuery()->getResult();
+        foreach (is_iterable($result) ? $result : [] as $found) {
+            if (is_object($found)) {
+                $left[] = $query->metadata->getIdentifierValues($found);
+            }
+        }
+
+        return array_values(array_filter(
+            $given,
+            static fn (object $one): bool => in_array($query->metadata->getIdentifierValues($one), $left),
+        ));
+    }
+
+    /**
      * The condition the query's "e" is that entity by, its id field by field; null = not one of its entities, or one
      * not saved yet.
      */
