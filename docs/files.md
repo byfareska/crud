@@ -45,6 +45,13 @@ download instead of no `Content-Type` at all. SVG, HTML, XML and scripts are acc
 MIME type (`accept: ['image/svg+xml']`; `image/*` or `.svg` isn't enough). The same goes for a file whose path ends
 in such an extension, whatever its bytes say, and for files picked from the library.
 
+A `PathGenerator` of your own (`path: { generator: app.paths }`) gets the extension of the file's kind and the name it
+was uploaded under, which the browser chose: make that name plain before it goes into a path
+(`ShardedPathGenerator::slug()`). The uploader writes nothing at a path that has `..`, a leading `/`, a backslash, a
+control character or an empty part, a part starting with `.` (`.htaccess`), another extension than the one given,
+more than 255 bytes, or that is in the directory of the image sizes (`_variants/`): the upload fails and the error is
+logged. An upload never replaces a file that is already at its path.
+
 The browser can't choose a storage or a file it wasn't given: upload URLs are signed with their storage and what
 they accept, and a submitted reference must be signed by the upload or the library, or already be in the record. A
 signed reference must also be of a storage the field picks from and the user may use (`role`), of a kind the field

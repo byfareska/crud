@@ -9,14 +9,20 @@ use Byfareska\Crud\Event\FileUploading;
 use Byfareska\Crud\Files\FileLibraries;
 use Byfareska\Crud\Files\FileQuery;
 use Byfareska\Crud\Files\FileRefused;
+use Byfareska\Crud\Files\FileStorageFailed;
 use Byfareska\Crud\Files\FileStorages;
 use Byfareska\Crud\Files\FileUploader;
 use Byfareska\Crud\Files\Flysystem\FlysystemFileStorage;
+use Byfareska\Crud\Files\Image\ImageVariant;
+use Byfareska\Crud\Files\Image\ImageVariants;
+use Byfareska\Crud\Files\PathGenerator;
 use Byfareska\Crud\Files\ShardedPathGenerator;
 use Byfareska\Crud\Files\StorageFileLibrary;
 use Byfareska\Crud\Files\UploadProfile;
+use Byfareska\Crud\Tests\Unit\Files\Image\FakeImageResizer;
 use League\Flysystem\Filesystem;
 use League\Flysystem\InMemory\InMemoryFilesystemAdapter;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -34,6 +40,8 @@ final class FileUploaderTest extends TestCase
 
     private Filesystem $filesystem;
 
+    private FileStorages $storages;
+
     private EventDispatcher $events;
 
     private FileUploader $uploader;
@@ -49,19 +57,14 @@ final class FileUploaderTest extends TestCase
         $storage = new FlysystemFileStorage($this->filesystem);
         $this->library = new StorageFileLibrary($storage, 'public');
         $this->events = new EventDispatcher();
-        $this->uploader = new FileUploader(
-            new FileStorages(
-                ['public' => [], 'legacy' => ['upload' => false]],
-                new ServiceLocator([
-                    'public' => static fn (): FlysystemFileStorage => $storage,
-                    'legacy' => static fn (): FlysystemFileStorage => $storage,
-                ]),
-            ),
-            new FileLibraries(new ServiceLocator(['public' => fn (): StorageFileLibrary => $this->library])),
-            new ShardedPathGenerator(),
-            $this->events,
-            1024 * 1024,
+        $this->storages = new FileStorages(
+            ['public' => [], 'legacy' => ['upload' => false]],
+            new ServiceLocator([
+                'public' => static fn (): FlysystemFileStorage => $storage,
+                'legacy' => static fn (): FlysystemFileStorage => $storage,
+            ]),
         );
+        $this->uploader = $this->uploader(new ShardedPathGenerator());
     }
 
     protected function tearDown(): void
@@ -151,6 +154,100 @@ final class FileUploaderTest extends TestCase
         } catch (FileRefused $refused) {
             self::assertSame(['app.virus', ['name' => 'a.txt']], [$refused->key, $refused->parameters]);
         }
+    }
+
+    /**
+     * A PathGenerator of the application that makes the path of what the browser sent - the name of the upload, a
+     * value of the record - cannot put the file outside of the storage, in a hidden file, under another extension or
+     * among the sizes of images: nothing is written.
+     */
+    #[DataProvider('pathsNoUploadMayHave')]
+    public function testNoUploadAtAPathItMayNotHave(string $path): void
+    {
+        $uploader = $this->uploader($this->generator($path), new ImageVariants(
+            $this->storages,
+            new FakeImageResizer(),
+            [new ImageVariant('thumbnail', 96, 96)],
+        ));
+
+        try {
+            $uploader->upload($this->file('Just a text.'), new UploadProfile('public'), 'notes.txt');
+            self::fail(sprintf('"%s" is no path of an upload.', $path));
+        } catch (FileStorageFailed $failed) {
+            self::assertStringContainsString('The PathGenerator gave', $failed->getMessage());
+        }
+        self::assertSame([], $this->filesystem->listContents('', true)->toArray());
+        self::assertSame([], $this->library->browse(new FileQuery('public'))->files);
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function pathsNoUploadMayHave(): iterable
+    {
+        yield 'up out of the storage' => ['../../public/index.txt'];
+        yield 'up within it' => ['ab/../../x.txt'];
+        yield 'from the root' => ['/etc/x.txt'];
+        yield 'a backslash' => ['ab\\..\\x.txt'];
+        yield 'a control character' => ["ab/x\0.txt"];
+        yield 'not UTF-8' => ["ab/\xff.txt"];
+        yield 'an empty part' => ['ab//x.txt'];
+        yield 'a part "."' => ['ab/./x.txt'];
+        yield 'a hidden file' => ['ab/.user.ini.txt'];
+        yield 'a hidden directory' => ['.well-known/x.txt'];
+        yield 'another extension' => ['ab/notes.html'];
+        yield 'no extension' => ['ab/notes'];
+        yield 'too long' => [str_repeat('a', FileUploader::MAX_PATH_LENGTH) . '.txt'];
+        yield 'a size of an image' => ['_variants/thumbnail/ab/x.txt'];
+    }
+
+    public function testAPathOfTheApplicationsGenerator(): void
+    {
+        $stored = $this->uploader($this->generator('2026/11/notes.txt'))
+            ->upload($this->file('Just a text.'), new UploadProfile('public'), 'notes.txt');
+
+        self::assertSame('public://2026/11/notes.txt', (string) $stored->reference);
+        self::assertTrue($this->filesystem->fileExists('2026/11/notes.txt'));
+    }
+
+    public function testNotOverAFileThatIsThere(): void
+    {
+        $this->filesystem->write('2026/11/notes.txt', 'Of someone else.');
+
+        try {
+            $this->uploader($this->generator('2026/11/notes.txt'))
+                ->upload($this->file('Just a text.'), new UploadProfile('public'), 'notes.txt');
+            self::fail('The path is taken.');
+        } catch (FileStorageFailed) {
+            self::assertSame('Of someone else.', $this->filesystem->read('2026/11/notes.txt'));
+        }
+    }
+
+    private function uploader(PathGenerator $paths, ?ImageVariants $variants = null): FileUploader
+    {
+        return new FileUploader(
+            $this->storages,
+            new FileLibraries(new ServiceLocator(['public' => fn (): StorageFileLibrary => $this->library])),
+            $paths,
+            $this->events,
+            1024 * 1024,
+            $variants,
+        );
+    }
+
+    private function generator(string $path): PathGenerator
+    {
+        return new readonly class ($path) implements PathGenerator {
+            public function __construct(
+                private string $path,
+            ) {
+            }
+
+            public function generate(string $storage, string $extension, string $name): string
+            {
+                return $this->path;
+            }
+        };
     }
 
     private function png(): File
