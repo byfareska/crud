@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Fixed
+
+- With `symfony/ux-live-component` 2.36.3 / 3.8.1 or later, every live request of a panel answered 404 ("Component
+  ... is only served by route ux_live_component"): those versions answer a component without a route of its own only
+  at LiveComponent's route. The live route of a panel says it is that route under another address
+  (`_canonical_route: ux_live_component`).
+
 ## v0.4.0
 
 A security release: what a user may not see stays out of the forms, searches, sorting and filters, relation searches
