@@ -101,7 +101,8 @@ class CrudForm implements ScopedComponent
 
     /**
      * What a new record starts with, as in the address (?with[parent]=...): a link can open the form already
-     * filled in where it came from. Only plain values of properties the DTO has.
+     * filled in where it came from. Only plain values of properties the DTO has - any of them, also of a field on a
+     * tab the one filling it in never opens: a link of somebody else's can fill in more than it shows.
      *
      * @var array<string, mixed>
      */

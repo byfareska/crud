@@ -192,7 +192,11 @@ final readonly class AsCrud
      * @param string|null $listHead a Twig component shown in the list above its rows, given the "filters" in use and
      *     the "resource"; rendered inside the live list, so a click on it can set a filter (live action "filter")
      * @param string|null $listActions a Twig component shown in the head of the list page, next to "new", given the
-     *     "filters" of the address and the "resource" - buttons that depend on the filter in use
+     *     "filters" of the address and the "resource" - buttons that depend on the filter in use. Those "filters" are
+     *     the query of the address as it is (?filters[...]), once, when the page loads: not checked by the filters
+     *     of the list, not those the list shows once they are changed on the page, and anything a link says. Not for
+     *     an action on "every matching record" - a crafted link would make it act on records other than those shown;
+     *     a bulk action of the list (BulkSelection) is
      * @param CrudListedIn|null $listedIn no list page of its own: the records are shown in the list of another resource
      *     - see CrudListedIn; $section, the list in the palette and $listHead do not apply then
      * @param string $scope the panel (route scope) the pages are in, e.g. "panel" or "admin": the "byfareska_crud"
