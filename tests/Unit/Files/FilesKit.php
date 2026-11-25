@@ -47,7 +47,8 @@ use Symfony\Component\Validator\Validation;
 
 /**
  * The files of a panel "admin" for tests: the storage "public" in memory with a library listing it, "private" (signed
- * addresses, for ROLE_ADMIN), "archive" (no library) - and what the fields of files are made of. With $variants (eager,
+ * addresses, for ROLE_ADMIN), "archive" (no library), "legacy" (only to pick from, with a library listing it) - and
+ * what the fields of files are made of. With $variants (eager,
  * lazy), "public" makes the sizes of images: the bundle's and "large" (1600 wide, WebP), by FakeImageResizer.
  */
 final readonly class FilesKit
@@ -90,9 +91,10 @@ final readonly class FilesKit
                 'public' => ['public_url' => '/uploads', 'variants' => $variants],
                 'private' => ['url' => 'signed', 'role' => 'ROLE_ADMIN'],
                 'archive' => ['upload' => false],
+                'legacy' => ['upload' => false],
             ],
             new ServiceLocator(array_fill_keys(
-                ['public', 'private', 'archive'],
+                ['public', 'private', 'archive', 'legacy'],
                 static fn (): FlysystemFileStorage => $storage,
             )),
         );
@@ -110,6 +112,7 @@ final readonly class FilesKit
             'public' => static fn (): FileLibrary => $own,
             'private' => static fn (): StorageFileLibrary => new StorageFileLibrary($storage, 'private'),
             'archive' => static fn (): NoFileLibrary => new NoFileLibrary(),
+            'legacy' => static fn (): StorageFileLibrary => new StorageFileLibrary($storage, 'legacy'),
         ]));
 
         $routes = new RouteCollection();

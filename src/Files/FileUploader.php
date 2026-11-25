@@ -23,6 +23,13 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 final readonly class FileUploader
 {
+    /**
+     * The extension of a file of a kind without one of its own: a web server sends it as bytes to download
+     * (application/octet-stream) - without any, it would send no Content-Type and a browser would guess one from the
+     * bytes, HTML among them.
+     */
+    public const string NEUTRAL_EXTENSION = 'bin';
+
     /** How many times a path taken already is asked for again. */
     private const int ATTEMPTS = 5;
 
@@ -115,14 +122,14 @@ final readonly class FileUploader
 
     /**
      * The extension of the kind the file is: the one it came with when the kind has it (".jpeg" stays), else the
-     * first of the kind; none for a kind without one.
+     * first of the kind; NEUTRAL_EXTENSION for a kind without one.
      */
     private function extension(string $mimeType, string $name): string
     {
         $extensions = MimeTypes::getDefault()->getExtensions($mimeType);
         $given = strtolower(pathinfo($name, PATHINFO_EXTENSION));
 
-        return in_array($given, $extensions, true) ? $given : ($extensions[0] ?? '');
+        return in_array($given, $extensions, true) ? $given : ($extensions[0] ?? self::NEUTRAL_EXTENSION);
     }
 
     private function freePath(FileStorage $storage, string $name, string $extension, string $original): string

@@ -43,6 +43,21 @@ final class BrowserFilesTest extends TestCase
         self::assertSame($alt, trim($alt));
     }
 
+    public function testAFileABrowserWouldRunIsOpenedFromThePanelOnlyAtItsSignedDownload(): void
+    {
+        $browser = new FilesKit(['ROLE_ADMIN'])->browser;
+        $svg = new StoredFile(FileReference::parse('public://ab/logo.svg'), 'logo.svg', 'image/svg+xml');
+        $html = new StoredFile(FileReference::parse('public://ab/page.html'), 'page.html');
+        $private = new StoredFile(FileReference::parse('private://ab/logo.svg'), 'logo.svg', 'image/svg+xml');
+
+        $json = $browser->json($svg);
+
+        self::assertSame(['/uploads/ab/logo.svg', null], [$json['url'], $json['link']], 'Shown as an image only.');
+        self::assertNull($browser->link($html));
+        self::assertStringContainsString('/admin/_files/download?', (string) $browser->link($private));
+        self::assertSame('/uploads/ab/cd/x7k2abcd.png', $browser->json($this->file('a.png'))['link']);
+    }
+
     private function file(string $name): StoredFile
     {
         return new StoredFile(new FileReference('public', 'ab/cd/x7k2abcd.png'), $name, 'image/png', 4);

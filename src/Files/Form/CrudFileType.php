@@ -80,6 +80,7 @@ final class CrudFileType extends AbstractType
             $this->signer,
             $this->libraries,
             $this->translator,
+            $this->browser,
         );
         $builder->addViewTransformer($transformer);
         $builder->setAttribute(self::BINDING, $options['binding']);
@@ -129,7 +130,10 @@ final class CrudFileType extends AbstractType
                 $multiple,
             )
             : null;
-        $view->vars['files'] = $this->files(is_string($view->vars['value'] ?? null) ? $view->vars['value'] : '');
+        $view->vars['files'] = $this->files(
+            is_string($view->vars['value'] ?? null) ? $view->vars['value'] : '',
+            $this->transformerOf($form),
+        );
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -305,11 +309,13 @@ final class CrudFileType extends AbstractType
     }
 
     /**
-     * The files of a value of the field, as the browser shows them.
+     * The files of a value of the field, as the browser shows them: those the browser may be shown
+     * (FileFieldTransformer::shows()). The value comes back as the browser sent it when it is refused; a reference it
+     * made up is left out, not described nor signed - else the field would tell what is at any path and sign it.
      *
      * @return list<array<string, mixed>>
      */
-    private function files(string $value): array
+    private function files(string $value, ?FileFieldTransformer $transformer): array
     {
         $entries = $value === '' ? [] : json_decode($value, true);
         $files = [];
@@ -317,7 +323,10 @@ final class CrudFileType extends AbstractType
             $reference = is_array($entry) && is_string($entry['ref'] ?? null)
                 ? FileReference::tryParse($entry['ref'])
                 : null;
-            if (!$reference instanceof FileReference) {
+            if (
+                !$reference instanceof FileReference
+                || !$transformer?->shows($reference, is_string($entry['sig'] ?? null) ? $entry['sig'] : '')
+            ) {
                 continue;
             }
             $meta = is_array($entry['meta'] ?? null) ? array_filter($entry['meta'], is_string(...)) : [];
@@ -325,5 +334,19 @@ final class CrudFileType extends AbstractType
         }
 
         return $files;
+    }
+
+    /**
+     * @param FormInterface<mixed> $form
+     */
+    private function transformerOf(FormInterface $form): ?FileFieldTransformer
+    {
+        foreach ($form->getConfig()->getViewTransformers() as $transformer) {
+            if ($transformer instanceof FileFieldTransformer) {
+                return $transformer;
+            }
+        }
+
+        return null;
     }
 }

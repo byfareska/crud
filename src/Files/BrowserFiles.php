@@ -45,10 +45,14 @@ final readonly class BrowserFiles
     /**
      * "alt": the alternative text a field gives a file it takes in (when it asks for one and none is typed) - the name
      * it was uploaded under, made plain. "preview": the address of its size "preview" (the image itself without
-     * one); "sizes": the sizes of an image of a storage that makes them on upload, which a field of rich text offers.
+     * one); "sizes": the sizes of an image of a storage that makes them on upload, which a field of rich text offers;
+     * "link": the address the panel opens it at in a new window (link()).
      *
-     * @return array{ref: string, sig: string, url: string|null, preview: string|null, name: string, alt: string,
-     *     mime: string|null, size: int|null, width: int|null, height: int|null, image: bool,
+     * Only for a file the one looking may have - the signature lets the browser give it to a field: an upload of
+     * theirs, a file of the library they may pick from, a file of the record they edit.
+     *
+     * @return array{ref: string, sig: string, url: string|null, link: string|null, preview: string|null, name: string,
+     *     alt: string, mime: string|null, size: int|null, width: int|null, height: int|null, image: bool,
      *     sizes: array<string, array{url: string|null, width: int|null, height: int|null}>}
      */
     public function json(StoredFile $file): array
@@ -59,6 +63,7 @@ final readonly class BrowserFiles
             'ref' => (string) $file->reference,
             'sig' => $this->signer->sign($file->reference),
             'url' => $url,
+            'link' => $this->link($file, $url),
             'preview' => $this->variants instanceof ImageVariants
                 ? $this->urls->url($file->reference, ImageVariant::PREVIEW)
                 : $url,
@@ -71,6 +76,28 @@ final readonly class BrowserFiles
             'image' => $file->isImage(),
             'sizes' => $this->sizes($file),
         ];
+    }
+
+    /**
+     * The address a file is opened at from the panel (a link, a new window); null = not opened. A file a browser would
+     * run as a page (StoredFile::isActive(): HTML, SVG, scripts) is opened only at the panel's signed download, which
+     * sends it to be saved, never run (FileDownload): at an address of its storage - a public directory of the site of
+     * the panel - its script would act as the one who opened it.
+     *
+     * @param string|null $url its address, when known already
+     */
+    public function link(StoredFile $file, ?string $url = null): ?string
+    {
+        $url ??= $this->urls->url($file->reference);
+        if ($url === null || !$file->isActive()) {
+            return $url;
+        }
+
+        return !$file->reference->isExternal()
+            && $this->storages->has($file->reference->storage)
+            && $this->storages->settings($file->reference->storage)->url === UrlMode::Signed
+                ? $url
+                : null;
     }
 
     /**
@@ -124,7 +151,7 @@ final readonly class BrowserFiles
      */
     public function uploadUrl(UploadProfile $profile, ?string $scope = null): ?string
     {
-        if (!$this->mayUse($profile->storage) || !$this->storages->settings($profile->storage)->upload) {
+        if (!$this->mayUpload($profile->storage)) {
             return null;
         }
         $scope ??= $this->currentScope();
@@ -179,6 +206,15 @@ final readonly class BrowserFiles
     {
         return $this->storages->has($storage)
             && $this->scopes->isGrantedIn($this->currentScope(), $this->storages->settings($storage)->role);
+    }
+
+    /**
+     * Whether the one acting may upload to a storage - one that takes uploads, not one only to pick from - and delete
+     * its files in the library.
+     */
+    public function mayUpload(string $storage): bool
+    {
+        return $this->mayUse($storage) && $this->storages->settings($storage)->upload;
     }
 
     private function currentScope(): ?string

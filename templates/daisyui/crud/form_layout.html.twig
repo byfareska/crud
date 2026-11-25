@@ -165,7 +165,7 @@
     {%- set shown = file is not null and file.image and file.url -%}
     <li class="group relative {{ gallery ? 'flex flex-col gap-1' : 'flex items-center gap-3 rounded-box bg-base-200/50 p-2' }}"
         data-file-field-target="item" data-ref="{{ file.ref|default('') }}" data-sig="{{ file.sig|default('') }}"{% if multiple and not disabled %} draggable="true"{% endif %}>
-        <a data-role="link" href="{{ file.url|default('#') }}" target="_blank" rel="noopener" class="{{ gallery ? 'block aspect-square overflow-hidden rounded-box bg-base-200' : 'flex size-10 shrink-0 items-center justify-center overflow-hidden rounded bg-base-200' }}">
+        <a data-role="link"{% if file.link|default(null) %} href="{{ file.link }}"{% endif %} target="_blank" rel="noopener" class="{{ gallery ? 'block aspect-square overflow-hidden rounded-box bg-base-200' : 'flex size-10 shrink-0 items-center justify-center overflow-hidden rounded bg-base-200' }}">
             <img data-role="image" src="{{ shown ? file.preview|default(file.url) : '' }}" alt="" loading="lazy" class="size-full object-cover"{% if not shown %} hidden{% endif %}>
             <span data-role="icon" class="flex size-full items-center justify-center text-2xl text-base-content/50"{% if shown %} hidden{% endif %}>{{ crud_icon('file-earmark') }}</span>
         </a>

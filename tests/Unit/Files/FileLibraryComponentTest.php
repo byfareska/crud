@@ -9,15 +9,18 @@ use Byfareska\Crud\Files\FileReference;
 use Byfareska\Crud\Files\FileRemover;
 use Byfareska\Crud\Files\FileUsage;
 use Byfareska\Crud\Files\FileUsages;
+use Byfareska\Crud\Files\NoFileLibrary;
+use Byfareska\Crud\Files\NoFileUsages;
 use Byfareska\Crud\Files\UploadProfile;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 
 /**
- * The window of the library shows what the field it was opened for may pick, and deletes a file records use only
- * once that is confirmed.
+ * The window of the library shows what the field it was opened for may pick, and deletes only what it shows - a file
+ * records use only once that is confirmed, after the server asked.
  */
 final class FileLibraryComponentTest extends TestCase
 {
@@ -109,6 +112,90 @@ final class FileLibraryComponentTest extends TestCase
 
         self::assertFalse($this->files->filesystem->fileExists('ab/used.png'));
         self::assertNull($library->inUse);
+    }
+
+    public function testAFileInUseIsDeletedOnlyAfterTheServerAskedAboutIt(): void
+    {
+        $used = $this->files->put('ab/used.png');
+        $other = $this->files->put('ab/other.png');
+        $library = $this->library([new FileUsage('product', '7', 'gallery')]);
+        $library->open($this->files->browser->libraryToken(new UploadProfile('public'), true));
+
+        // "Confirmed" by the browser alone: asked first.
+        $library->remove((string) $used, confirmed: true);
+
+        self::assertTrue($this->files->filesystem->fileExists('ab/used.png'));
+        self::assertSame((string) $used, $library->confirming);
+
+        // What was asked about is that file, not another.
+        $library->remove((string) $other, confirmed: true);
+
+        self::assertTrue($this->files->filesystem->fileExists('ab/other.png'));
+        self::assertSame((string) $other, $library->confirming);
+
+        $library->remove((string) $other, confirmed: true);
+
+        self::assertFalse($this->files->filesystem->fileExists('ab/other.png'));
+        self::assertSame('', $library->confirming);
+    }
+
+    public function testNotAPathOfTheStorageTheWindowDoesNotShow(): void
+    {
+        // Not an upload, not of the kind of the field: a backup next to the uploads.
+        $this->files->filesystem->write('backups/db.sql', 'x');
+        $library = $this->library();
+        $library->open($this->files->browser->libraryToken(UploadProfile::images('public'), false));
+
+        $library->remove('public://backups/db.sql', true);
+        $library->remove('public://backups/db.sql', true);
+
+        self::assertTrue($this->files->filesystem->fileExists('backups/db.sql'));
+    }
+
+    public function testNotAFileItsLibraryDoesNotKnow(): void
+    {
+        $files = new FilesKit(library: new NoFileLibrary());
+        $remover = new FileRemover($files->storages, $files->libraries, new NoFileUsages());
+        $library = new FileLibrary($files->browser, $files->libraries, $remover);
+        $library->open($files->browser->libraryToken(new UploadProfile('public'), false));
+
+        self::assertFalse($library->canRemove(), 'A library that cannot list its files deletes none.');
+
+        $files->filesystem->write('backups/db.sql', 'x');
+        $this->expectException(InvalidArgumentException::class);
+        $remover->remove(FileReference::parse('public://backups/db.sql'), true);
+    }
+
+    public function testNotAFileOfAStorageOnlyToPickFrom(): void
+    {
+        $this->files->filesystem->write('old/a.png', 'data');
+        $library = $this->library();
+        $library->open($this->files->browser->libraryToken(new UploadProfile('public', browse: ['legacy']), false));
+        $library->show('legacy');
+
+        self::assertSame('legacy', $library->getCurrentStorage());
+        self::assertSame(['legacy://old/a.png'], array_column($library->getFiles(), 'ref'), 'Picked from it.');
+        self::assertFalse($library->canRemove());
+
+        $library->remove('legacy://old/a.png', true);
+
+        self::assertTrue($this->files->filesystem->fileExists('old/a.png'));
+    }
+
+    public function testNoHtmlNorSvgInTheWindowOfAFieldOfAnyKind(): void
+    {
+        $this->files->put('ab/a.png');
+        $this->files->filesystem->write('ab/b.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
+        $library = $this->library();
+
+        $library->open($this->files->browser->libraryToken(new UploadProfile('public'), false));
+
+        self::assertSame(['public://ab/a.png'], array_column($library->getFiles(), 'ref'));
+
+        $library = $this->library();
+        $library->open($this->files->browser->libraryToken(new UploadProfile('public', ['image/svg+xml']), false));
+
+        self::assertSame(['public://ab/b.svg'], array_column($library->getFiles(), 'ref'));
     }
 
     public function testNotAFileOfAnotherStorage(): void

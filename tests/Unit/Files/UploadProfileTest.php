@@ -29,6 +29,27 @@ final class UploadProfileTest extends TestCase
         self::assertTrue(new UploadProfile('public', ['image/svg+xml'])->accepts('image/svg+xml', 'svg'));
     }
 
+    public function testWhatAWebServerWouldSendAsAPageOnlyWhenNamedByItsMimeType(): void
+    {
+        self::assertFalse(new UploadProfile('public')->accepts('text/plain', 'svg'), 'Sent as SVG by its extension.');
+        self::assertFalse(new UploadProfile('public', ['.html'])->accepts('text/plain', 'html'));
+        self::assertTrue(new UploadProfile('public', ['application/xml'])->accepts('application/xml', 'xml'));
+        self::assertTrue(new UploadProfile('public', ['text/html'])->accepts('text/html', 'html'));
+        self::assertTrue(UploadProfile::isActive(null, 'SVG'));
+        self::assertFalse(UploadProfile::isActive('image/png', 'png'));
+    }
+
+    public function testAFileOfALibraryWithoutItsKindIsJudgedByItsExtensionAsAWebServerWould(): void
+    {
+        $svg = StoredFile::of(FileReference::parse('legacy://2019/logo.svg'));
+
+        self::assertFalse(new UploadProfile('legacy')->acceptsFile($svg), 'Nothing named: any kind but a page.');
+        self::assertFalse(new UploadProfile('legacy', ['.svg'])->acceptsFile($svg));
+        self::assertFalse(new UploadProfile('legacy', ['image/*'])->acceptsFile($svg));
+        self::assertTrue(new UploadProfile('legacy', ['image/svg+xml'])->acceptsFile($svg));
+        self::assertTrue($svg->isActive());
+    }
+
     public function testAGalleryTakesOnlyImages(): void
     {
         self::assertTrue(UploadProfile::images('public')->imagesOnly());

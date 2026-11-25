@@ -62,7 +62,7 @@ final readonly class StorageFileUrls implements FileUrls
         return match ($settings->url) {
             UrlMode::Public => $settings->publicUrl !== null
                 ? rtrim($settings->publicUrl, '/') . '/' . self::encodePath($reference->path)
-                : $this->storages->storage($reference->storage)->publicUrl($reference->path),
+                : $this->storagePublicUrl($reference),
             UrlMode::Temporary => $this->storages->storage($reference->storage)->temporaryUrl(
                 $reference->path,
                 new DateTimeImmutable(sprintf('+%d seconds', $settings->ttl)),
@@ -88,8 +88,10 @@ final readonly class StorageFileUrls implements FileUrls
             }
             $base = $this->baseOf($name, $settings);
             if ($base !== null && $base !== '' && str_starts_with($url, $base)) {
-                $path = rawurldecode(substr($url, strlen($base)));
-                $reference = FileReference::tryParse($name . '://' . strtok($path, '?#'));
+                // The query and the fragment of the address are cut off before decoding: "%23" is a "#" of a name.
+                $path = substr($url, strlen($base));
+                $path = rawurldecode(substr($path, 0, strcspn($path, '?#')));
+                $reference = FileReference::tryParse($name . '://' . $path);
 
                 // The address of a size is of the image.
                 return $reference instanceof FileReference && $this->variants instanceof ImageVariants
@@ -105,6 +107,20 @@ final readonly class StorageFileUrls implements FileUrls
     public static function encodePath(string $path): string
     {
         return implode('/', array_map(rawurlencode(...), explode('/', $path)));
+    }
+
+    /**
+     * The storage's own public address of a file (Flysystem's public_url): its path encoded as with "public_url" when
+     * the storage puts it at the end as it is (a prefix), as an adapter that encodes it (S3) gives it otherwise - a
+     * "#" or "?" of a name is part of the name, not of the address.
+     */
+    private function storagePublicUrl(FileReference $reference): ?string
+    {
+        $url = $this->storages->storage($reference->storage)->publicUrl($reference->path);
+
+        return $url !== null && str_ends_with($url, $reference->path)
+            ? substr($url, 0, -strlen($reference->path)) . self::encodePath($reference->path)
+            : $url;
     }
 
     /**

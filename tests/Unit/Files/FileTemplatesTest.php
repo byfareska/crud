@@ -6,7 +6,9 @@ namespace Byfareska\Crud\Tests\Unit\Files;
 
 use Byfareska\Crud\Files\Component\FileLibrary;
 use Byfareska\Crud\Files\FileRemover;
+use Byfareska\Crud\Files\Form\CrudFileType;
 use Byfareska\Crud\Files\NoFileUsages;
+use Byfareska\Crud\Files\Twig\FilesExtension;
 use Byfareska\Crud\Files\UploadProfile;
 use Byfareska\Crud\Tests\Unit\Fixtures\Files\Article;
 use Byfareska\Crud\Tests\Unit\Fixtures\Files\Supplier;
@@ -71,6 +73,23 @@ final class FileTemplatesTest extends TestCase
         self::assertStringContainsString('accept="image/jpeg,image/png,image/gif,image/webp,image/avif"', $html);
         // The file, and the one of the <template>.
         self::assertSame(2, substr_count($html, 'data-file-field-target="item"'));
+        self::assertStringContainsString('data-role="link" href="/uploads/ab/a.png"', $html);
+    }
+
+    #[DataProvider('themes')]
+    public function testNoLinkToAnSvgOfThePublicStorage(string $theme): void
+    {
+        $logo = $this->files->put('ab/logo.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>1</script></svg>');
+        $form = $this->files->forms()->createBuilder(FormType::class, ['logo' => (string) $logo])
+            ->add('logo', CrudFileType::class, ['accept' => ['image/svg+xml']])
+            ->getForm()
+            ->createView();
+
+        $html = $this->twig($theme)->createTemplate('{{ form_widget(form.logo) }}')->render(['form' => $form]);
+
+        self::assertStringContainsString('data-ref="public://ab/logo.svg"', $html);
+        self::assertStringContainsString('src="/uploads/ab/logo.svg"', $html, 'Shown as an image.');
+        self::assertStringNotContainsString('href="/uploads/ab/logo.svg"', $html, 'Not opened as a page.');
     }
 
     #[DataProvider('themes')]
@@ -111,12 +130,15 @@ final class FileTemplatesTest extends TestCase
     #[DataProvider('themes')]
     public function testTheValues(string $theme): void
     {
+        $this->files->put('ab/a.png');
+        $this->files->put('ab/b.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>1</script></svg>');
+        $this->files->put('ab/x.pdf', "%PDF-1.4\n");
+        $this->files->put('ab/page.html', '<script>1</script>');
+        $extension = new FilesExtension($this->files->urls, $this->files->libraries, $this->files->browser);
         $twig = $this->twig($theme);
-        $twig->addFunction(new TwigFunction(
-            'crud_file_url',
-            static fn (string $ref): string => '/uploads/' . explode('://', $ref)[1],
-        ));
-        $twig->addFunction(new TwigFunction('crud_file', static fn (): object => (object) ['name' => 'Invoice.pdf']));
+        $twig->addFunction(new TwigFunction('crud_file_url', $extension->url(...)));
+        $twig->addFunction(new TwigFunction('crud_file', $extension->file(...)));
+        $twig->addFunction(new TwigFunction('crud_file_link', $extension->link(...)));
         $values = $twig->load('crud/file_values.html.twig');
 
         self::assertStringContainsString(
@@ -125,9 +147,20 @@ final class FileTemplatesTest extends TestCase
         );
         self::assertStringContainsString('x.pdf', $values->renderBlock('type_file', ['value' => 'public://ab/x.pdf']));
         self::assertStringContainsString(
-            'Invoice.pdf',
+            'href="/uploads/ab/x.pdf"',
             $values->renderBlock('type_file_detail', ['value' => 'public://ab/x.pdf']),
         );
+        self::assertStringContainsString(
+            'href="/uploads/ab/a.png"',
+            $values->renderBlock('type_image_detail', ['value' => 'public://ab/a.png']),
+        );
+        // What a browser would run is not opened from the panel: an SVG is an image only, HTML a name.
+        $svg = $values->renderBlock('type_image_detail', ['value' => 'public://ab/b.svg']);
+        self::assertStringContainsString('<img src="/uploads/ab/b.svg"', $svg);
+        self::assertStringNotContainsString('<a', $svg);
+        $html = $values->renderBlock('type_file_detail', ['value' => 'public://ab/page.html']);
+        self::assertStringContainsString('page.html', $html);
+        self::assertStringNotContainsString('<a', $html);
     }
 
     #[DataProvider('themes')]

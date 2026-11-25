@@ -68,6 +68,29 @@ final class StorageFileUrlsTest extends TestCase
         self::assertEquals($reference, $this->urls->referenceOf($url));
     }
 
+    public function testThePathIsEncodedInThePublicAddressTheStorageGives(): void
+    {
+        // No public_url of the panel: Flysystem's own, which puts the path after its prefix as it is.
+        $storage = new FlysystemFileStorage(
+            new Filesystem(new InMemoryFilesystemAdapter(), ['public_url' => '/media']),
+        );
+        $urls = new StorageFileUrls(
+            new FileStorages(['public' => []], new ServiceLocator([
+                'public' => static fn (): FlysystemFileStorage => $storage,
+            ])),
+            new ServiceLocator([]),
+            new UrlGenerator(new RouteCollection(), new RequestContext()),
+            $this->signer,
+            new RequestStack(),
+        );
+        $reference = FileReference::parse('public://ab/a#b?c d.png');
+
+        $url = $urls->url($reference);
+
+        self::assertSame('/media/ab/a%23b%3Fc%20d.png', $url);
+        self::assertEquals($reference, $urls->referenceOf($url));
+    }
+
     public function testAPrivateFileHasASignedAddressThatWorksForItsTtl(): void
     {
         $url = $this->urls->url(FileReference::parse('private://ab/cd/invoice.pdf'));

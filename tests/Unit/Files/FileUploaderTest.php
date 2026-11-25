@@ -117,6 +117,14 @@ final class FileUploaderTest extends TestCase
         $this->uploader->upload($this->file($svg), new UploadProfile('public', ['image/*']), 'logo.svg');
     }
 
+    public function testAFileOfAKindWithoutAnExtensionIsWrittenAsBytes(): void
+    {
+        // application/x-empty: no extension of its own. Without one, a web server would send no Content-Type.
+        $stored = $this->uploader->upload($this->file(''), new UploadProfile('public'), 'notes');
+
+        self::assertSame(FileUploader::NEUTRAL_EXTENSION, $stored->reference->extension());
+    }
+
     public function testNotBiggerThanTheProfileSays(): void
     {
         $this->expectExceptionObject(FileRefused::tooBig(10));

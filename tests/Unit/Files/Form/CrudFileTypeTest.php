@@ -162,6 +162,115 @@ final class CrudFileTypeTest extends TestCase
         ]);
     }
 
+    public function testARefusedValueTellsNothingOfAFileTheBrowserNamed(): void
+    {
+        $files = new FilesKit(['ROLE_ADMIN']);
+        // A file of another record, never shown to the one editing this one.
+        $secret = $files->put('zz/other-record-secret.png');
+        $form = $files->forms()->createBuilder(FormType::class, new Supplier(), ['data_class' => Supplier::class])
+            ->add('logo')
+            ->getForm();
+
+        $form->submit(['logo' => FilesKit::json([['ref' => (string) $secret]])]);
+
+        self::assertFalse($form->get('logo')->isSynchronized());
+        // The form comes back with what the browser sent: not described, not signed.
+        self::assertSame([], $form->createView()['logo']->vars['files']);
+
+        // Nor taken in another request with a signature made up.
+        $supplier = new Supplier();
+        $again = $files->forms()->createBuilder(FormType::class, $supplier, ['data_class' => Supplier::class])
+            ->add('logo')
+            ->getForm();
+        $again->submit(['logo' => FilesKit::json([['ref' => (string) $secret, 'sig' => 'forged']])]);
+
+        self::assertFalse($again->get('logo')->isSynchronized());
+        self::assertNull($supplier->logo);
+    }
+
+    public function testNoSignedAddressOfAPrivateFileTheBrowserNamed(): void
+    {
+        $files = new FilesKit(['ROLE_ADMIN']);
+        $files->filesystem->write('notes/anything.txt', 'secret');
+        $form = $files->forms()->createBuilder(FormType::class, ['att' => null])
+            ->add('att', CrudFileType::class, ['storage' => 'private', 'multiple' => true])
+            ->getForm();
+
+        $form->submit(['att' => FilesKit::json([['ref' => 'private://notes/anything.txt']])]);
+
+        self::assertSame([], $form->createView()['att']->vars['files']);
+    }
+
+    public function testTheFilesTheServerGaveAreShownAgainWhenTheFormIsRefused(): void
+    {
+        $supplier = new Supplier();
+        $supplier->gallery = [['ref' => 'public://ab/had.png']];
+        $form = $this->form($supplier);
+        $uploaded = $this->files->put('ab/uploaded.png');
+
+        $form->submit(['gallery' => FilesKit::json([
+            ['ref' => 'public://ab/had.png'],
+            $this->entry($uploaded),
+            ['ref' => 'public://ab/made-up.png'],
+        ])]);
+
+        self::assertFalse($form->get('gallery')->isSynchronized());
+        $files = $form->createView()['gallery']->vars['files'];
+        self::assertIsArray($files);
+        self::assertSame(['public://ab/had.png', 'public://ab/uploaded.png'], array_column($files, 'ref'));
+        self::assertIsArray($files[1]);
+        self::assertSame($this->files->signer->sign($uploaded), $files[1]['sig'] ?? null);
+    }
+
+    public function testNotAFileBiggerThanTheFieldTakes(): void
+    {
+        $form = $this->files->forms()->createBuilder(FormType::class, new Supplier())
+            ->add('attachments', CrudFileType::class, ['multiple' => true, 'max_size' => 10])
+            ->getForm();
+        // Picked in the library, uploaded by a field that takes bigger files.
+        $big = $this->files->put('ab/big.txt', str_repeat('a', 11));
+
+        $form->submit(['attachments' => $this->value($big)]);
+
+        self::assertFalse($form->get('attachments')->isSynchronized());
+        self::assertStringContainsString('file.refused.too_big', (string) $form->get('attachments')->getErrors());
+
+        $form = $this->files->forms()->createBuilder(FormType::class, new Supplier())
+            ->add('attachments', CrudFileType::class, ['multiple' => true, 'max_size' => 11])
+            ->getForm();
+        $form->submit(['attachments' => $this->value($big)]);
+
+        self::assertTrue($form->isValid(), (string) $form->getErrors(true));
+    }
+
+    public function testNotAFileOfAStorageTheOneActingMayNotUse(): void
+    {
+        // Signed for an administrator; the one acting is none.
+        $contract = FileReference::parse('private://ab/contract.pdf');
+        $this->files->filesystem->write('ab/contract.pdf', "%PDF-1.4\n");
+        $form = $this->files->forms()->createBuilder(FormType::class, new Supplier())
+            ->add('attachments', CrudFileType::class, ['multiple' => true, 'browse' => ['private']])
+            ->getForm();
+
+        $form->submit(['attachments' => $this->value($contract)]);
+
+        self::assertFalse($form->get('attachments')->isSynchronized());
+        self::assertSame([], $form->createView()['attachments']->vars['files']);
+    }
+
+    public function testNoHtmlNorSvgForAFieldOfAnyKind(): void
+    {
+        $svg = $this->files->put('ab/logo.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>1</script></svg>');
+        $form = $this->files->forms()->createBuilder(FormType::class, new Supplier())
+            ->add('attachments', CrudFileType::class, ['multiple' => true])
+            ->getForm();
+
+        $form->submit(['attachments' => $this->value($svg)]);
+
+        self::assertFalse($form->get('attachments')->isSynchronized());
+        self::assertStringContainsString('file.field.kind', (string) $form->get('attachments')->getErrors());
+    }
+
     public function testNoUploadToAStorageOnlyToPickFrom(): void
     {
         $form = $this->files->forms()->createBuilder(FormType::class, new Supplier())
