@@ -37,6 +37,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Reference;
 
 /**
  * Files are off until byfareska_crud.files is enabled: nothing of them is in the container before.
@@ -219,7 +220,7 @@ final class FilesConfigurationTest extends TestCase
         // Imagick when the PHP that resizes has it, else GD: decided there.
         self::assertSame(['auto'], $builder->getDefinition(InterventionImageResizer::class)->getArguments());
         $builder->removeDefinition(FilesController::class);
-        foreach ([ImageVariants::class, FileStorages::class] as $id) {
+        foreach ([ImageVariants::class, FileStorages::class, FileUploader::class] as $id) {
             $builder->findDefinition($id)->setPublic(true);
         }
         $builder->getAlias(ImageResizer::class)->setPublic(true);
@@ -237,6 +238,10 @@ final class FilesConfigurationTest extends TestCase
         // Addresses of another service, or files never uploaded through the panel: none unless it says.
         self::assertSame(VariantStrategy::None, $variants->strategy('cdn'));
         self::assertSame(VariantStrategy::None, $variants->strategy('legacy'));
+        // No upload goes among the sizes.
+        $uploaderVariants = $builder->getDefinition(FileUploader::class)->getArgument(5);
+        self::assertInstanceOf(Reference::class, $uploaderVariants);
+        self::assertSame(ImageVariants::class, (string) $uploaderVariants);
     }
 
     public function testNoSizesOfImagesUntilEnabled(): void
