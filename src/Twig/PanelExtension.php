@@ -128,13 +128,17 @@ final class PanelExtension extends AbstractExtension implements GlobalsInterface
     /**
      * HTML attributes from an array, escaped: true = the attribute alone, false and null = left out.
      *
+     * A name that is no name of an attribute - with white space, a quote, "=", "/" or ">" in it, which would end it
+     * and start another one (`'x onmouseover' => 'alert(1)'`) - is left out too: the names of the attributes of a
+     * row (RecordRow) or of a button may be made of data of the record, and escaping does not keep those in place.
+     *
      * @param array<string, string|int|bool|null> $attributes
      */
     public function attributes(array $attributes): string
     {
         $html = '';
         foreach ($attributes as $name => $value) {
-            if ($value === null || $value === false) {
+            if ($value === null || $value === false || !$this->isAttributeName((string) $name)) {
                 continue;
             }
             $name = htmlspecialchars((string) $name, ENT_QUOTES | ENT_SUBSTITUTE);
@@ -146,5 +150,14 @@ final class PanelExtension extends AbstractExtension implements GlobalsInterface
         }
 
         return $html;
+    }
+
+    /**
+     * Whether a text is a name of an attribute as HTML reads one: no control character, white space, quote, "<",
+     * ">", "/" or "=" (data-*, aria-*, Alpine's "x-on:click" and "@click" are).
+     */
+    private function isAttributeName(string $name): bool
+    {
+        return preg_match('~^[^\s"\'<>/=\x00-\x1F\x7F]+$~u', $name) === 1;
     }
 }

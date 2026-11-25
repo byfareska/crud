@@ -205,7 +205,8 @@ For individual records:
 - `ExplainsRefusal` shows a disabled button with a reason instead of hiding it.
 - `VoterRecordGuard` and `VoterActionGuard` delegate to your voters.
 - `DoctrineScope` decides which records exist at all.
-- `RecordRow` adds classes or attributes to rows.
+- `RecordRow` adds classes or attributes to rows. The theme escapes their values (`crud_attrs()`) and leaves out a name
+  that is no name of an attribute (a space, a quote, `=`, `/` or `>` in it), so names may be made of data too.
 
 ### How the restrictions add up
 
