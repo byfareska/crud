@@ -98,13 +98,14 @@ final class CommandPalette implements ScopedComponent
     }
 
     /**
-     * The typed text without the ">" commands prefix.
+     * The typed text without the ">" commands prefix - as much of it as is looked for (Palette::MAX_QUERY).
      */
     public function getTerm(): string
     {
         $query = trim($this->query);
+        $term = $this->isCommandsOnly() ? trim(substr($query, \strlen(self::COMMANDS_PREFIX))) : $query;
 
-        return $this->isCommandsOnly() ? trim(substr($query, \strlen(self::COMMANDS_PREFIX))) : $query;
+        return trim(mb_substr($term, 0, Palette::MAX_QUERY));
     }
 
     /**
