@@ -67,17 +67,44 @@ A Doctrine field with `enumType` holds its enum here too, also a list of them (`
 ## Details and forms
 
 - `details: [...]`: what the details page and the drawer show. Default: every property except secret-looking names.
-  `hidden: [...]` hides properties whatever their name.
+- `hidden: [...]`: properties nobody sees, whatever else names them. See [Hidden properties](#hidden-properties).
 - `layout: [new Fieldset('basics', ['name', new Row(['sku', 'category'])]), new Tab(...)]`: tabs, fieldsets, rows
   and columns (`new Column(8, [...])`, `new Field('sku', cols: 4)`, `new Span(lg: 8)`).
   - `new When(PaidOrder::class, [...])` shows a part only when a `LayoutCondition` says so; fields left out this way
-    aren't in the form at all.
+    aren't in the form at all. A `When` only arranges the forms and the details: the list, its search, sorting and
+    filters and the palette still have the property. To keep a property from someone, hide it (below).
   - `showIf: 'kind=company'` toggles a fieldset or tab in the browser.
 - `save: AfterSave::Show` decides where "save" leads; `afterSave: [AfterSave::Return, AfterSave::New]` adds more
   buttons. A `CrudSaveButton` service is a button of your own.
 - `formComponent: 'App:InvoiceForm'`: your own live component extending `CrudForm`.
 - `#[AsCrudFormSection]` / `#[AsCrudDetailsSection]` let another module add a section, saved in the same transaction.
 - `CrudFormExtension` changes the form for the request: disable a field for a role, or remove it.
+
+### Hidden properties
+
+`hidden: ['costPrice']` keeps a property from everyone. A hidden property is:
+
+- not a column of the list, a row of the details or the drawer, or part of a record's `title`;
+- not a field of a guessed form (Doctrine), and never prefilled by `?with[...]=` or copied by `?from=` (duplicate);
+- not searched, sorted or filtered by, even when the source names it in `search`, `sortable` or `filters`. A sort
+  asked for it (`?sort=-costPrice`) is ignored. The default order (`sort:`) may still use it.
+- not named or described in the command palette, nor found by it.
+
+A record still carries it, for guards, actions and `fields`. A form type of your own, or the fields you list in a
+`DoctrineForm`, is yours: a hidden property you put there is still edited (only `?with`/`?from=` don't fill it). Take
+it out of the form with a `CrudFormExtension`. The `dto` driver's forms are always your own.
+
+To hide a property from some users only, hide it in a `CrudDefinitionExtension` for the request:
+
+```php
+public function extend(AsCrud $crud): AsCrud
+{
+    return $this->actor->isGranted('ROLE_FINANCE') ? $crud : $crud->with(hidden: [...$crud->hidden, 'margin']);
+}
+```
+
+Removing a column with `with(columns: ...)` only changes the list. The details, the form, search, sorting and filters
+still have the property.
 
 ## Actions of a record
 

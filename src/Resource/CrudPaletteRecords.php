@@ -14,7 +14,9 @@ use Stringable;
 
 /**
  * The records of every #[AsCrud] resource that can be read, found for the command palette by asking its list for
- * what was typed - the same way the search field of the list does, whatever the driver.
+ * what was typed - the same way the search field of the list does, whatever the driver. A hidden property
+ * (AsCrud::hides()) does not name nor describe a record - it is no column nor title field - and the list does not
+ * search it.
  */
 final readonly class CrudPaletteRecords implements ScopedRecordSource
 {

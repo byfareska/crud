@@ -11,8 +11,12 @@ namespace Byfareska\Crud\Layout;
  *     layout: [new Tab('basics', children: [...]), new When(PaidOrder::class, [new Tab('refund', children: [...])])]
  *
  * It stands for its children: they stand where it stands (a tab at the top, a field in a row) and are checked as if it
- * were not there. Not shown, its fields are not on the page - a field of the form left out of it is still drawn after
- * the layout; leave such a field out of the form too (its form type) when it must not be there.
+ * were not there. Not shown, its fields are not on the page, and the form component takes them out of the form: they
+ * cannot be sent either.
+ *
+ * It arranges the forms and the details only: the list, its search, order and filters and the command palette still
+ * have the property. To keep a property from somebody, hide it - AsCrud::$hidden, for a request by a
+ * CrudDefinitionExtension: `$crud->with(hidden: [...$crud->hidden, 'margin'])`.
  */
 final readonly class When implements LayoutNode
 {

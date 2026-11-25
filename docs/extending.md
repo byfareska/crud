@@ -54,6 +54,9 @@ final readonly class TaskNumberForAdmins implements CrudDefinitionExtension
 
 - `with()` accepts the attribute's arguments except those routes are built from (`name`, `path`, `scope`, `own`,
   `listedIn`) and `role`; see `AsCrud::CHANGEABLE`.
+- To keep a property from someone, hide it: `$crud->with(hidden: [...$crud->hidden, 'margin'])` takes it out of the
+  list, the details, the guessed form, search, sorting, filters and the palette. Removing its column only changes the
+  list. See [resources.md](resources.md#hidden-properties).
 - `$crud->refusing(CrudOperation::Delete)` takes an operation away for the request. A later extension can't give it
   back.
 - The source can change only within the same class, entity, driver and operations:

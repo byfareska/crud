@@ -360,6 +360,38 @@ final class AsCrudTest extends TestCase
         self::assertSame(['name', 'price'], array_column($crud->columns, 'field'));
     }
 
+    public function testAHiddenPropertyIsNoColumnNorWhatARecordIsNamedBy(): void
+    {
+        $crud = new AsCrud(
+            'thing',
+            '/things',
+            'box',
+            list: ListThingsDto::class,
+            columns: ['name', 'price' => 'money', 'margin' => 'money'],
+            title: ['margin', 'name'],
+            hidden: ['margin'],
+        );
+
+        self::assertSame(['name', 'price'], array_column($crud->columns, 'field'));
+        self::assertSame(['name'], $crud->titleFields());
+        self::assertSame('Lamp', $crud->titleOf(['name' => 'Lamp', 'margin' => '12.50']));
+        self::assertTrue($crud->hides('margin'));
+        self::assertTrue($crud->hides('margin.currency'), 'A path through it.');
+        self::assertFalse($crud->hides('marginal'));
+        self::assertFalse($crud->showsInDetails('margin'));
+
+        // Hidden for a request, and shown again: the column is the declaration's.
+        $hiding = $crud->with(hidden: [...$crud->hidden, 'price']);
+        self::assertSame(['name'], array_column($hiding->columns, 'field'));
+        $showing = $hiding->with(hidden: []);
+        self::assertSame(['name', 'price', 'margin'], array_column($showing->columns, 'field'));
+        self::assertSame(['margin', 'name'], $showing->titleFields());
+
+        // Named only by what is hidden: by the first column.
+        $byMargin = $crud->with(title: ['margin']);
+        self::assertSame(['name'], $byMargin->titleFields());
+    }
+
     /**
      * @return iterable<string, array{string}>
      */

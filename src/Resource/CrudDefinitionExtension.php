@@ -7,11 +7,12 @@ namespace Byfareska\Crud\Resource;
 use Byfareska\Crud\Attribute\AsCrud;
 
 /**
- * Changes what a resource shows for the request being answered: a column only somebody with a role sees, the columns
- * of a tenant, an action behind a feature flag, other page sizes for a user. A service, autoconfigured; it gets the
- * resource as declared (and as the extensions before it changed it) and returns it changed with AsCrud::with():
+ * Changes what a resource shows for the request being answered: a property only somebody with a role sees, the
+ * columns of a tenant, an action behind a feature flag, other page sizes for a user. A service, autoconfigured; it gets
+ * the resource as declared (and as the extensions before it changed it) and returns it changed with AsCrud::with():
  *
- *     final readonly class MarginColumn implements CrudDefinitionExtension
+ *     // #[AsCrud(name: 'product', ..., columns: ['name', 'price' => 'money', 'margin' => 'money'])]
+ *     final readonly class MarginForFinance implements CrudDefinitionExtension
  *     {
  *         public function __construct(private Actor $actor) {}
  *
@@ -20,10 +21,17 @@ use Byfareska\Crud\Attribute\AsCrud;
  *         public function extend(AsCrud $crud): AsCrud
  *         {
  *             return $this->actor->isGranted('ROLE_FINANCE')
- *                 ? $crud->with(columns: [...$crud->columns, $crud->column('margin', 'money')])
- *                 : $crud;
+ *                 ? $crud
+ *                 : $crud->with(hidden: [...$crud->hidden, 'margin']);
  *         }
  *     }
+ *
+ * A property kept from somebody is hidden (AsCrud::$hidden): then it is no column, no row of the details or the
+ * preview, no field of a guessed form (nor prefilled or copied into one), and the list is not searched, ordered nor
+ * filtered by it, whatever the source names. Only taking its column away - with(columns: ...) - changes the list
+ * alone: the details, the form, the search, the order and the filters still have it. A When of the layout keeps a
+ * part off the form and the details only. A form type of the application is its own: a field of it is taken away by
+ * a CrudFormExtension.
  *
  * Every way to the resource sees what it returns: the list, the details, the forms, the menu, whether the palette
  * offers it. It may also take operations away for the request, $crud->refusing(CrudOperation::Delete) - their buttons

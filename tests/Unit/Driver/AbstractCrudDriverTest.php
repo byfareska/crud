@@ -69,4 +69,46 @@ final class AbstractCrudDriverTest extends TestCase
         $this->expectException(CrudFailure::class);
         $driver->delete($crud, 'FV/1');
     }
+
+    public function testAHiddenPropertyIsNoChoiceOfTheOrder(): void
+    {
+        $driver = new class extends AbstractCrudDriver {
+            public function name(): string
+            {
+                return 'invoices_api';
+            }
+
+            public function listForm(AsCrud $crud): FormInterface
+            {
+                return $this->listFormBuilder($crud, sortable: ['number', 'margin'], sort: ['-margin'])->getForm();
+            }
+        };
+        $driver->setFormFactory(Forms::createFormFactoryBuilder()
+            ->addExtension(new CsrfExtension(new CsrfTokenManager()))
+            ->addExtension(new ValidatorExtension(Validation::createValidator()))
+            ->getFormFactory());
+        $crud = new AsCrud(
+            'invoice',
+            '/invoices',
+            'receipt',
+            source: new DoctrineSource(stdClass::class),
+            hidden: ['margin'],
+        );
+
+        $form = $driver->listForm($crud);
+        self::assertSame(
+            ['number' => 'number', '-number' => '-number', 'margin' => 'margin', '-margin' => '-margin'],
+            $form->get('sort')->getConfig()->getOption('choices'),
+            'The order nobody chose stays one the field takes.',
+        );
+
+        $form->submit(['sort' => ['margin', 'number']]);
+        self::assertTrue($form->isValid());
+        self::assertSame(['number'], $form->get('sort')->getData(), 'Not to be asked for.');
+
+        $form = $driver->listForm($crud);
+        $form->submit(['sort' => ['margin']]);
+        self::assertTrue($form->isValid());
+        self::assertSame(['-margin'], $form->get('sort')->getData(), 'The order nobody chose.');
+    }
 }

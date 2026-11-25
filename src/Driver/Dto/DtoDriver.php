@@ -119,8 +119,11 @@ final readonly class DtoDriver implements CrudDriver, PrefillsForm, CopiesRecord
         $data = $builder->getData();
         $source = $this->source($crud);
         if ($data instanceof MapsToRequest && $source->read !== null) {
-            // What "read" says of the record, onto the properties of the add DTO the form has.
-            $this->records->copyInto($data, $source->read, $id, $fields);
+            // What "read" says of the record, onto the properties of the add DTO the form has - not a hidden one.
+            $this->records->copyInto($data, $source->read, $id, array_values(array_filter(
+                $fields,
+                static fn (string $field): bool => !$crud->hides($field),
+            )));
         }
     }
 
@@ -130,10 +133,12 @@ final readonly class DtoDriver implements CrudDriver, PrefillsForm, CopiesRecord
         if (!is_object($data)) {
             return;
         }
-        // Only the fields of its form a user may fill in: nothing it keeps from the user, nothing disabled.
+        // Only the fields of its form a user may fill in: nothing it keeps from the user, nothing disabled, nothing
+        // hidden.
         $this->records->prefill($data, array_filter(
             $with,
-            static fn (int|string $field): bool => $builder->has((string) $field)
+            static fn (int|string $field): bool => !$crud->hides((string) $field)
+                && $builder->has((string) $field)
                 && !$builder->get((string) $field)->getDisabled()
                 && $builder->get((string) $field)->getMapped(),
             ARRAY_FILTER_USE_KEY,

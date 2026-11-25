@@ -41,8 +41,8 @@ that uses every feature ([`src/Crud/Doctrine/Maximal`](https://github.com/byfare
 Without a form type, the form is built from the mapping:
 
 - **Fields:** every field and owning-side relation, except the id, the `#[Version]` field, columns the database fills
-  (generated, not insertable or updatable) and names that look secret (`passwordHash`, `apiKey`; see
-  `AsCrud::SECRET`).
+  (generated, not insertable or updatable), names that look secret (`passwordHash`, `apiKey`; see
+  `AsCrud::SECRET`) and the resource's `hidden` properties.
 - **Read-only properties** (no setter, not public) are left out of the edit form. In the add form they are included
   only if they are constructor arguments. A `createdAt` set in the constructor appears in neither.
 - **Constructors:** a new entity is created with its constructor, which receives the submitted values of the fields
@@ -149,6 +149,12 @@ and either alias it globally or name it in `searchWith:`.
 
 A custom order is a `DoctrineSort` in `sortable` plus its `DoctrineSortHandler` service; select an expression as
 `HIDDEN` first.
+
+A property in the resource's `hidden` is left out of `search`, `sortable` and `filters`, by the name of the sort or
+filter or by the field it uses (`'category.name'` of a hidden `category`). If every `search` field is hidden, a typed
+text finds nothing. A `searchWith` service gets only the visible fields. The default order (`sort`) may still use a
+hidden property, but a request can't sort by it. Hiding a property in a `CrudDefinitionExtension` does all this for
+that request; see [resources.md](resources.md#hidden-properties).
 
 ## Narrowing and extending the query
 

@@ -9,7 +9,6 @@ use Byfareska\Crud\Filter\Compared;
 use Byfareska\Crud\Resource\CrudFailure;
 use Byfareska\Crud\Resource\CrudListQuery;
 use Byfareska\Crud\UseCase\Page;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -58,8 +57,9 @@ abstract class AbstractCrudDriver implements CrudDriver
 
     /**
      * The list form with what the list drives: the page, its size (1 to $maxPerPage), the fields an item has to carry
-     * and the order - a multiple choice of the $sortable fields each way, $sort when nobody chose one - and, with
-     * $search, the field of a typed text (CrudSource::searchField()). Add the filters, then getForm().
+     * and the order - a multiple choice of the $sortable fields each way, $sort when nobody chose one (SortField: not a
+     * property the resource hides) - and, with $search, the field of a typed text (CrudSource::searchField()). Add the
+     * filters, then getForm(); a filter of a hidden property (AsCrud::hides()) is for the driver to leave out.
      *
      * @param list<string> $sortable
      * @param list<string> $sort the order of a list nobody sorted, "-" in front for descending
@@ -85,19 +85,8 @@ abstract class AbstractCrudDriver implements CrudDriver
                 'empty_data' => '',
             ]);
         }
-        $sorts = [];
-        foreach ([...$sortable, ...array_map(static fn (string $one): string => ltrim($one, '-'), $sort)] as $field) {
-            $sorts[$field] = $field;
-            $sorts['-' . $field] = '-' . $field;
-        }
 
-        return $builder
-            ->add('sort', ChoiceType::class, [
-                'choices' => $sorts,
-                'multiple' => true,
-                'required' => false,
-                'empty_data' => $sort,
-            ])
+        return SortField::add($builder, $crud, $sortable, $sort)
             ->add('page', IntegerType::class, [
                 'required' => false,
                 'empty_data' => '1',

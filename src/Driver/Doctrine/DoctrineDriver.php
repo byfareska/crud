@@ -11,6 +11,7 @@ use Byfareska\Crud\Driver\CopiesRecords;
 use Byfareska\Crud\Driver\CrudDriver;
 use Byfareska\Crud\Driver\ListsIds;
 use Byfareska\Crud\Driver\PrefillsForm;
+use Byfareska\Crud\Driver\SortField;
 use Byfareska\Crud\Filter\Compared;
 use Byfareska\Crud\Resource\CrudFailure;
 use Byfareska\Crud\Resource\CrudOperation;
@@ -37,7 +38,6 @@ use LogicException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -73,6 +73,8 @@ use ReflectionParameter;
  *   equal by all of that keeps one order from page to page.
  * - A query joining what can give an entity more than one row (a collection) is paged by distinct entities.
  * - A typed text is split into words; every word has to be in one of the searched fields (in part, any case).
+ * - A hidden property of the resource (AsCrud::hides()) is not searched, filtered nor ordered by, whatever the source
+ *   names, and is no field of a guessed form - nor prefilled or copied into one.
  * - An item of the list and a record are the mapped fields and relations by name, the values made printable by the
  *   ValueNormalizers (CrudValues): a date as ISO 8601, an enum as its value, another entity as its text
  *   (__toString()) or its id, a collection as a list of those - or what one of the application's own makes of it.
@@ -151,23 +153,13 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
             $builder->add($this->filterHandler($filter)->field($filter, $name, $options));
         }
 
-        // Every sortable field each way, and what the order of a list nobody sorted names.
-        $default = $this->defaultSort($source, $metadata);
-        $sorts = [];
-        $sortable = [
-            ...array_keys($this->sorts($crud, $source, $metadata)),
-            ...array_map(static fn (string $sort): string => ltrim($sort, '-'), $default),
-        ];
-        foreach ($sortable as $field) {
-            $sorts[$field] = $field;
-            $sorts['-' . $field] = '-' . $field;
-        }
-        $builder->add('sort', ChoiceType::class, [
-            'choices' => $sorts,
-            'multiple' => true,
-            'required' => false,
-            'empty_data' => $default,
-        ]);
+        // Every sortable field each way, and what the order of a list nobody sorted names - not a hidden property.
+        SortField::add(
+            $builder,
+            $crud,
+            array_keys($this->sorts($crud, $source, $metadata)),
+            $this->defaultSort($source, $metadata),
+        );
         $builder->add('page', IntegerType::class, [
             'required' => false,
             'empty_data' => '1',
@@ -437,7 +429,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
             return $builder;
         }
 
-        $fields = $form->fields !== [] ? $form->fields : $this->formFields($source, $metadata, $id === null);
+        $fields = $form->fields !== [] ? $form->fields : $this->formFields($crud, $source, $metadata, $id === null);
         $options = $form->options;
         if ($entity === null && !array_key_exists('empty_data', $options)) {
             // A constructor with arguments: the entity is made of the fields named as its parameters.
@@ -505,6 +497,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
                 : $metadata->hasAssociation($field) && !$metadata->isAssociationInverseSide($field);
             if (
                 !$copies
+                || $crud->hides($field)
                 || !$this->propertyAccessor->isReadable($copied, $field)
                 || !$this->propertyAccessor->isWritable($entity, $field)
             ) {
@@ -546,7 +539,8 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
 
     /**
      * The filters of the source by the name of their field: those it gives, and what the guesser makes of the fields
-     * it names. A FieldFilter given without a type takes the one guessed for its field.
+     * it names. A FieldFilter given without a type takes the one guessed for its field. Not one of a hidden property
+     * (AsCrud::hides()), by its name or by the field it compares.
      *
      * @param ClassMetadata<object> $metadata
      *
@@ -556,6 +550,9 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
     {
         $filters = [];
         foreach ($source->filterTypes() as $name => $type) {
+            if ($crud->hides($name) || ($type instanceof FieldFilter && $crud->hides($type->field))) {
+                continue;
+            }
             $filters[$name] = match (true) {
                 $type instanceof FieldFilter && $type->type === null => $this->typed($crud, $metadata, $type),
                 $type instanceof DoctrineFilter => $type,
@@ -614,6 +611,10 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         return new FieldFilter($filter->field, $filter->comparisons, $guess->type, $options);
     }
 
+    /**
+     * Narrows the list to what the typed text finds in the fields of "search" - not in a hidden one (AsCrud::hides());
+     * with none left to look in (and no search of its own), it finds nothing.
+     */
     private function search(DoctrineListQuery $query, DoctrineSource $source): void
     {
         if (!$source->searches() || !$query->form->has(DoctrineSource::SEARCH_FILTER)) {
@@ -621,9 +622,19 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         }
         $text = $query->form->get(DoctrineSource::SEARCH_FILTER)->getData();
         $text = is_string($text) ? trim($text) : '';
-        if ($text !== '') {
-            $this->searches->of($source)->apply($query, $source->search, $text);
+        if ($text === '') {
+            return;
         }
+        $fields = array_values(array_filter(
+            $source->search,
+            static fn (string $field): bool => !$query->crud->hides($field),
+        ));
+        if ($fields === [] && $source->searchWith === null) {
+            $query->query->andWhere('1 = 0');
+
+            return;
+        }
+        $this->searches->of($source)->apply($query, $fields, $text);
     }
 
     private function filter(DoctrineListQuery $query, DoctrineSource $source): void
@@ -644,7 +655,8 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
      */
     private function order(DoctrineListQuery $query, DoctrineSource $source): void
     {
-        $sorts = $this->sorts($query->crud, $source, $query->metadata);
+        // A hidden one too: the "sort" field takes it only as the order of a list nobody sorted (SortField).
+        $sorts = $this->sorts($query->crud, $source, $query->metadata, hiddenToo: true);
         $asked = $query->form->has('sort') ? $query->form->get('sort')->getData() : [];
         foreach (Sort::parseAll(is_array($asked) ? $asked : []) as $sort) {
             // The order of a list nobody sorted can name a field that is not among the sortable ones.
@@ -677,18 +689,24 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
 
     /**
      * What the headings can order by, by the name of the sort: the source says (a path through a relation, a
-     * DoctrineSort), else every column that is a mapped field.
+     * DoctrineSort), else every column that is a mapped field. Not a hidden property (AsCrud::hides()), by the name of
+     * the sort or by the field it orders by - unless $hiddenToo, for the order of a list nobody sorted.
      *
      * @param ClassMetadata<object> $metadata
      *
      * @return array<string, DoctrineSort>
      */
-    private function sorts(AsCrud $crud, DoctrineSource $source, ClassMetadata $metadata): array
-    {
+    private function sorts(
+        AsCrud $crud,
+        DoctrineSource $source,
+        ClassMetadata $metadata,
+        bool $hiddenToo = false,
+    ): array {
+        $hides = static fn (string $field): bool => !$hiddenToo && $crud->hides($field);
         $sorts = [];
         if ($source->sortable === []) {
             foreach (array_column($crud->columns, 'field') as $field) {
-                if ($metadata->hasField($field)) {
+                if ($metadata->hasField($field) && !$hides($field)) {
                     $sorts[$field] = new FieldSort($field);
                 }
             }
@@ -697,6 +715,9 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         }
 
         foreach ($source->sorts() as $name => $sort) {
+            if ($hides($name) || (is_string($sort) && $hides($sort))) {
+                continue;
+            }
             $sort = is_string($sort) ? $this->fieldSort($metadata, $sort) : $sort;
             if ($sort !== null) {
                 $sorts[$name] = $sort;
@@ -858,15 +879,15 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
     /**
      * What the guessed form has: every mapped field and relation but those nobody types in - the id, the version of
      * optimistic locking, a column the database fills (generated, or not to be inserted / updated by the form's
-     * operation) - and those whose name looks secret (AsCrud::looksSecret(): a password hash, a token), which no
-     * input should show. Name them in "fields" to have them all the same. The inverse sides of relations are left
-     * out too.
+     * operation) - those whose name looks secret (AsCrud::looksSecret(): a password hash, a token), which no input
+     * should show, and the hidden ones (AsCrud::$hidden), which nobody is to see. Name them in "fields" to have them
+     * all the same. The inverse sides of relations are left out too.
      *
      * @param ClassMetadata<object> $metadata
      *
      * @return list<string>
      */
-    private function formFields(DoctrineSource $source, ClassMetadata $metadata, bool $create): array
+    private function formFields(AsCrud $crud, DoctrineSource $source, ClassMetadata $metadata, bool $create): array
     {
         $constructor = $create ? $this->constructorParameters($source) : [];
         // A property with no way to write it (set in the constructor, no setter) is shown, not edited - unless the
@@ -882,6 +903,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
                 || ($mapping->generated ?? ClassMetadata::GENERATED_NEVER) !== ClassMetadata::GENERATED_NEVER
                 || ($create ? $mapping->notInsertable === true : $mapping->notUpdatable === true)
                 || AsCrud::looksSecret($field)
+                || $crud->hides($field)
                 || !$writable($field)
             ) {
                 continue;
@@ -892,6 +914,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
             if (
                 $metadata->isAssociationInverseSide($relation)
                 || AsCrud::looksSecret($relation)
+                || $crud->hides($relation)
                 || !$writable($relation)
             ) {
                 continue;
@@ -1083,8 +1106,9 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
 
     /**
      * What the address gives a new record (?with[category]=5): only for a field of its form - nothing the form keeps
-     * from the user (an owner, a flag of approval) comes in this way - and a related entity only if the scopes of
-     * its resource leave it (DoctrineRelations). A value the field cannot take is left out.
+     * from the user (an owner, a flag of approval) comes in this way, nor a hidden property (AsCrud::hides()) - and a
+     * related entity only if the scopes of its resource leave it (DoctrineRelations). A value the field cannot take
+     * is left out.
      *
      * @param ClassMetadata<object> $metadata
      * @param FormBuilderInterface<mixed> $builder
@@ -1105,6 +1129,7 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
             $field = (string) $field;
             if (
                 !is_scalar($value)
+                || $crud->hides($field)
                 || !$builder->has($field)
                 || $builder->get($field)->getDisabled()
                 || !$builder->get($field)->getMapped()

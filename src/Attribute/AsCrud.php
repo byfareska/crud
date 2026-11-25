@@ -132,11 +132,19 @@ final readonly class AsCrud
     /** The filter of the list the palette types into; null = records are not found by typing. */
     public ?string $search;
 
-    /** @var list<Column> */
+    /** @var list<Column> the columns of the list: those given, but not one of "hidden" */
     public array $columns;
 
     /** @var list<Column> */
     public array $details;
+
+    /**
+     * The columns as given, a hidden one too: what with() starts from, so a resource that hides fewer properties for a
+     * request has their columns back.
+     *
+     * @var list<Column>
+     */
+    private array $givenColumns;
 
     /** @var list<LayoutNode|string> */
     public array $formLayout;
@@ -212,9 +220,13 @@ final readonly class AsCrud
      *     CrudList (more live actions) - see CrudList
      * @param string $formComponent the live component of the add and edit forms: Crud:Form, or one of the application's
      *     own extending CrudForm - see CrudForm
-     * @param list<string> $hidden properties the details never show, also when "details" names them: what the record
-     *     carries for a guard or an action and nobody is to see. Without "details" every property is shown but these
-     *     and those whose name looks secret (SECRET: password, token, hash...)
+     * @param list<string> $hidden properties nobody is to see, whatever else names them - what the record carries for
+     *     a guard or an action: not a column of the list, not a row of the details, not what a record is named by
+     *     ("title"), not a field of a guessed form (nor prefilled by ?with[...] or copied by ?from=), not searched,
+     *     ordered or filtered by. A form type of the application, or the fields of a form it names, are its own: a
+     *     property there is edited all the same. Without "details" every property is shown but these and those whose
+     *     name looks secret (SECRET: password, token, hash...). A CrudDefinitionExtension hides one for a request:
+     *     `$crud->with(hidden: [...$crud->hidden, 'margin'])`. See hides()
      * @param array<string, string> $pageTemplates the templates of its pages in place of the theme's, by page: "list",
      *     "show", "form" (add and edit), "page" (AsCrudPage) => a template of the application's, which may extend
      *     "@CrudTheme/crud/<page>.html.twig" and change a block of it
@@ -509,7 +521,11 @@ final readonly class AsCrud
             }
         }
 
-        $this->columns = $this->columnsFrom($columns);
+        $this->givenColumns = $this->columnsFrom($columns);
+        $this->columns = array_values(array_filter(
+            $this->givenColumns,
+            fn (Column $column): bool => !$this->hides($column->field),
+        ));
         $this->details = $this->columnsFrom($details);
         $this->formLayout = $formLayout ?? $layout;
         $this->detailsLayout = $detailsLayout ?? $layout;
@@ -525,6 +541,10 @@ final readonly class AsCrud
      *
      * Columns and details take what the constructor takes, and Column objects as they are. Only the arguments of
      * CHANGEABLE: what the routes are made of stays, and so does who the resource is for. Checked like a declaration.
+     *
+     * Taking a column away only changes the list: the details, the form, the search, the order and the filters still
+     * have the property. To keep it from the one asking, hide it - `$crud->with(hidden: [...$crud->hidden, 'margin'])`
+     * takes it out of all of them (see $hidden).
      *
      * @throws InvalidArgumentException an argument that is not to be changed, or a value the constructor refuses
      */
@@ -637,7 +657,7 @@ final readonly class AsCrud
             'path' => $this->path,
             'icon' => $this->icon,
             'source' => $this->source,
-            'columns' => $this->columns,
+            'columns' => $this->givenColumns,
             'details' => $this->details,
             'theme' => $this->theme,
             'palette' => $this->palette,
@@ -703,14 +723,16 @@ final readonly class AsCrud
     }
 
     /**
-     * The fields a record is named by: $title, else the first column.
+     * The fields a record is named by: $title, else the first column - not a hidden one (when "title" names only those,
+     * the first column).
      *
      * @return list<string>
      */
     public function titleFields(): array
     {
-        if ($this->title !== []) {
-            return $this->title;
+        $title = array_values(array_filter($this->title, fn (string $field): bool => !$this->hides($field)));
+        if ($title !== []) {
+            return $title;
         }
 
         return isset($this->columns[0]) ? [$this->columns[0]->field] : [];
@@ -782,11 +804,20 @@ final readonly class AsCrud
      */
     public function showsInDetails(string $field): bool
     {
-        if (in_array($field, $this->hidden, true)) {
+        if ($this->hides($field)) {
             return false;
         }
 
         return in_array($field, array_column($this->details, 'field'), true) || !self::looksSecret($field);
+    }
+
+    /**
+     * Whether a property is one of "hidden" - or a path through one ("customer.email" of a hidden "customer"): what is
+     * never shown, guessed into a form, prefilled, searched, ordered nor filtered by.
+     */
+    public function hides(string $field): bool
+    {
+        return in_array($field, $this->hidden, true) || in_array(explode('.', $field, 2)[0], $this->hidden, true);
     }
 
     /**
