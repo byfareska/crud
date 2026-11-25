@@ -96,6 +96,13 @@ class CrudList implements ScopedComponent
     /** The field of the list form that says what the list is ordered by - see Sort. */
     private const string SORT = 'sort';
 
+    /**
+     * The most records chosen one by one (and page by page): a bulk action reads each chosen record that is not on the
+     * page in view by itself, to check it may be shown - and the browser says which ids, as many as it likes. More is
+     * "select all N matching", read page by page by the query of the list.
+     */
+    public const int MAX_SELECTED = 1000;
+
     /** Name of the resource, as in #[AsCrud]. */
     #[LiveProp]
     public string $resource = '';
@@ -177,7 +184,8 @@ class CrudList implements ScopedComponent
     public ?string $previewId = null;
 
     /**
-     * The records chosen for a bulk action, by id; also those chosen on another page of the list.
+     * The records chosen for a bulk action, by id; also those chosen on another page of the list. At most
+     * MAX_SELECTED: the first of them are kept.
      *
      * @var list<string>
      */
@@ -948,7 +956,7 @@ class CrudList implements ScopedComponent
     #[PostHydrate]
     public function returnToFirstPageWhenFiltersChanged(): void
     {
-        $this->selected = array_values(array_unique(array_filter($this->selected, is_string(...))));
+        $this->selected = self::chosen(array_filter($this->selected, is_string(...)));
         if ($this->filters !== $this->pagedFilters) {
             $this->stateChanged = true;
             $this->page = 1;
@@ -1005,7 +1013,19 @@ class CrudList implements ScopedComponent
         $ids = array_map($this->idOf(...), $result->items);
         $this->selected = $this->pageSelection($result) === true
             ? array_values(array_diff($this->selected, $ids))
-            : array_values(array_unique([...$this->selected, ...$ids]));
+            : self::chosen([...$this->selected, ...$ids]);
+    }
+
+    /**
+     * Each id once, at most MAX_SELECTED of them.
+     *
+     * @param array<array-key, string> $ids
+     *
+     * @return list<string>
+     */
+    private static function chosen(array $ids): array
+    {
+        return array_slice(array_values(array_unique($ids)), 0, self::MAX_SELECTED);
     }
 
     #[LiveAction]
