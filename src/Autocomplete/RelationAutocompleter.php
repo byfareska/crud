@@ -277,6 +277,14 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
             if ($filter !== null && (string) $name !== $filter) {
                 continue;
             }
+            // Not one of a hidden property (AsCrud::hides()), which the list does not have: its address is signed
+            // alike for everybody, so one the resource hides from this user (CrudDefinitionExtension) still has it.
+            if (
+                $crud->hides((string) $name)
+                || ($type instanceof FieldFilter && $crud->hides($type->field))
+            ) {
+                continue;
+            }
             $path = explode('.', $type instanceof FieldFilter ? $type->field : (string) $name);
             if (end($path) !== $field) {
                 continue;

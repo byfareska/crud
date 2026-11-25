@@ -120,6 +120,25 @@ final class RelationAutocompleterTest extends TestCase
         self::assertFalse($autocompleter->isGranted(self::createStub(Security::class)));
     }
 
+    public function testAFilterOfAHiddenPropertyIsNotSearched(): void
+    {
+        // Hidden for this user (a CrudDefinitionExtension): the list has no such filter, and an address of it signed
+        // for somebody else is refused - by the name of the filter or by the field it compares.
+        foreach ([['createdBy'], ['author'], ['createdBy.team']] as $hidden) {
+            $orders = new AsCrud('order', '/orders', 'cart', source: new DoctrineSource(Order::class, filters: [
+                'author' => new FieldFilter('createdBy', Comparison::CHOICE),
+                'team' => new FieldFilter('createdBy.team', Comparison::CHOICE),
+            ]), hidden: $hidden);
+            $filter = $hidden === ['createdBy.team'] ? 'team' : 'author';
+            $field = $filter === 'team' ? 'team' : 'createdBy';
+
+            self::assertFalse(
+                $this->autocompleter($field, $filter, orders: $orders)->isGranted(self::createStub(Security::class)),
+                implode(', ', $hidden),
+            );
+        }
+    }
+
     public function testAFilterOfAnotherNameThanItsRelation(): void
     {
         $autocompleter = $this->autocompleter('createdBy');
