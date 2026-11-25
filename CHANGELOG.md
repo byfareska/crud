@@ -150,6 +150,9 @@ the bundle stricter, some can be noticed.
 - The link dialog of rich text linked an SVG or HTML file a field accepted at its public address, where its scripts
   ran on the panel's origin.
 - `crud_attrs()` let an attribute name with a space or `=` (from record data) start an attribute of its own.
+- The `role` of a `DeleteAction` only took away its button: a `BulkDeleteAction` without a role of its own deleted
+  for everybody who may delete, and a `RecordActionGuard` of `delete` was asked nowhere, so a record it refused was
+  deleted by the row, the page or in bulk.
 
 ### Fixed
 
