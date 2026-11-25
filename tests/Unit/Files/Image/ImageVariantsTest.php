@@ -147,6 +147,35 @@ final class ImageVariantsTest extends TestCase
         $this->kit->variants->make(FileReference::parse('public://ab/broken.png'), 'thumbnail');
     }
 
+    /**
+     * Imagick reads what it is given by what it looks like: an SVG or a drawing of ImageMagick named ".png" would be
+     * read with the files and addresses it refers to. What getimagesize() does not know goes by its contents.
+     */
+    public function testAFileThatOnlyCallsItselfAnImageIsNotRead(): void
+    {
+        $drawings = [
+            'ab/drawing.png' => '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">'
+                . '<image xlink:href="text:/etc/passwd" width="100" height="100"/></svg>',
+            'ab/vector.jpg' => "push graphic-context\nviewbox 0 0 640 480\n"
+                . "image over 0,0 0,0 'https://127.0.0.1/internal'\npop graphic-context\n",
+        ];
+        foreach ($drawings as $path => $contents) {
+            $this->kit->filesystem->write($path, $contents);
+            try {
+                $this->kit->variants->make(FileReference::parse('public://' . $path), 'thumbnail');
+                self::fail(sprintf('%s has no sizes.', $path));
+            } catch (ImageVariantFailed $failure) {
+                self::assertStringContainsString('no image the resizer reads', $failure->getMessage());
+            }
+        }
+
+        self::assertSame(
+            ['thumbnail', 'preview', 'large'],
+            $this->kit->variants->makeAll(FileReference::parse('public://ab/drawing.png')),
+        );
+        self::assertSame([], $this->kit->resizer->read, 'Not given to the resizer.');
+    }
+
     public function testTheSizesGoWithTheImage(): void
     {
         $image = $this->kit->image('public://ab/a.png');

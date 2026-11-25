@@ -215,8 +215,13 @@ final readonly class ImageVariants
                 $this->maxPixels,
             ));
         }
-        $mimeType = $info !== false && $info['mime'] !== '' ? $info['mime'] : $this->mimeTypeOf($image->extension());
-        if ($mimeType === null || !$this->resizer->supports($mimeType)) {
+        $mimeType = $info !== false && $info['mime'] !== '' ? $info['mime'] : $this->contentTypeOf($contents, $image);
+        if (
+            $mimeType === null
+            || !str_starts_with($mimeType, 'image/')
+            || $mimeType === 'image/svg+xml'
+            || !$this->resizer->supports($mimeType)
+        ) {
             throw new ImageVariantFailed(sprintf('"%s" is no image the resizer reads.', $image));
         }
 
@@ -313,6 +318,22 @@ final readonly class ImageVariants
             'message' => $failure->getMessage(),
             'exception' => $failure,
         ]);
+    }
+
+    /**
+     * What a file getimagesize() does not know (HEIC) is by its contents, as fileinfo tells - not by its extension:
+     * Imagick reads what it is given by what it looks like, whatever it was called, and a ".png" that is an SVG or a
+     * drawing of ImageMagick (MVG, MSL) would be read with its references to other files and addresses (ImageTragick).
+     * By the extension only without ext-fileinfo, which uploading needs anyway (symfony/mime).
+     */
+    private function contentTypeOf(string $contents, FileReference $image): ?string
+    {
+        if (!class_exists(\finfo::class)) {
+            return $this->mimeTypeOf($image->extension());
+        }
+        $mimeType = new \finfo(FILEINFO_MIME_TYPE)->buffer($contents);
+
+        return is_string($mimeType) && $mimeType !== '' ? strtolower($mimeType) : null;
     }
 
     /** An image of a kind the resizer reads, by its extension: no SVG (drawn at any size already). */
