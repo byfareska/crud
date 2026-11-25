@@ -96,7 +96,8 @@ final class FileUploaderTest extends TestCase
     public function testAScriptNamedAsAPhotoIsNoPhoto(): void
     {
         try {
-            $script = $this->file('<?php system($_GET["c"]);');
+            // A script, not a web shell: antivirus software may refuse to let finfo read one.
+            $script = $this->file('<?php echo "not a photo";');
             $this->uploader->upload($script, UploadProfile::images('public'), 'photo.jpg');
             self::fail('A script is no image.');
         } catch (FileRefused $refused) {

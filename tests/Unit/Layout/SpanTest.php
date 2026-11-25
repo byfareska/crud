@@ -23,7 +23,7 @@ final class SpanTest extends TestCase
 {
     public function testWidthsByBreakpointTheSmallestFirst(): void
     {
-        self::assertSame(['' => 12, 'md' => 6, 'xxl' => 3], (new Span(xs: 12, md: 6, xxl: 3))->widths);
+        self::assertSame(['' => 12, 'md' => 6, 'xxl' => 3], new Span(xs: 12, md: 6, xxl: 3)->widths);
         self::assertSame(['lg' => 4], Span::from(Breakpoint::Lg, 4)->widths);
         self::assertSame(['' => 4], Span::from(Breakpoint::Xs, 4)->widths);
     }
