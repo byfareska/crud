@@ -6,8 +6,13 @@ namespace Byfareska\Crud\Action;
 
 /**
  * Deleting the records chosen, once confirmed: `bulkActions: [new BulkDeleteAction()]`. Each one goes the way of one
- * deleted on its own (RecordGuard, RecordDeleting, RecordDeleted); what is refused stays and is counted in the toast.
- * Offered to a resource that can delete a record.
+ * deleted on its own (RecordDeletion: RecordGuard of Delete, RecordActionGuard of "delete", RecordDeleting,
+ * RecordDeleted); what is refused stays and is counted in the toast, the others are deleted. Offered to a resource that
+ * can delete a record.
+ *
+ * Without a $role of its own it has that of deleting one record: it is offered (and done) only for somebody offered a
+ * DeleteAction of the resource - `new DeleteAction(role: 'ROLE_ADMIN')` among AsCrud::$actions keeps both from the
+ * others. A resource with no DeleteAction (`new NoAction('delete')`: deleting in bulk only) has no role to take.
  */
 final readonly class BulkDeleteAction implements BulkAction, AsksForInput
 {
@@ -17,7 +22,8 @@ final readonly class BulkDeleteAction implements BulkAction, AsksForInput
      * @param string $message translation key of the question, given the "count" of the records
      * @param string $hint translation key of what is said under it
      * @param string $icon a Bootstrap Icons name
-     * @param string|null $role only somebody with this role is offered the action
+     * @param string|null $role only somebody with this role is offered the action; null = the role of the DeleteAction
+     *     of the resource, if it has one (see BulkActions::of())
      * @param ConfirmInput|null $input a field of the question: a reason of the delete, in RecordDeleting::$input
      */
     public function __construct(

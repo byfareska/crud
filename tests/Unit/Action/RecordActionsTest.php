@@ -394,6 +394,38 @@ final class RecordActionsTest extends TestCase
         self::assertSame(['locked'], new RecordGuards(actionGuards: [$guard])->fields($gadget));
     }
 
+    public function testAGuardOfTheActionDeleteTakesAwayTheDeleteButtonOfTheRecord(): void
+    {
+        $paid = new readonly class implements RecordActionGuard {
+            public function resource(): string
+            {
+                return 'gadget';
+            }
+
+            public function fields(): array
+            {
+                return ['paid'];
+            }
+
+            public function allowsAction(string $action, RecordView $record): bool
+            {
+                return $action !== DeleteAction::NAME || ($record->item['paid'] ?? false) !== true;
+            }
+        };
+        $actions = $this->actions([], actionGuards: [$paid]);
+        $buttons = static fn (AsCrud $crud, bool $paid): array => array_column(
+            $actions->buttons(new RecordView($crud, '7', ['paid' => $paid], RecordScreen::List)),
+            'name',
+        );
+
+        self::assertSame(['details', 'edit'], $buttons($this->gadget(), true));
+        self::assertSame(['details', 'edit', 'delete'], $buttons($this->gadget(), false));
+        // A DeleteAction of another name deletes as "delete" does: the guards of "delete" are asked.
+        $renamed = $this->gadget([new NoAction(DeleteAction::NAME), new DeleteAction(name: 'remove')]);
+        self::assertSame(['details', 'edit'], $buttons($renamed, true));
+        self::assertSame(['details', 'edit', 'remove'], $buttons($renamed, false));
+    }
+
     public function testEachActionIsMadeByTheHandlerItNames(): void
     {
         $thing = $this->thing([

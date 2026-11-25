@@ -135,8 +135,9 @@ Every record gets details, edit and delete. Add more with `actions:`:
 
 - `inline: true` puts an action on the row instead of in its menu.
 - `priority:` orders actions.
-- `role:` restricts who sees an action, and who may do it. It takes away only that action: to restrict an
-  operation, use `roles` (see [How the restrictions add up](#how-the-restrictions-add-up)).
+- `role:` restricts who sees an action, and who may do it. It takes away only that action (the `role` of a
+  `DeleteAction` also takes away a `BulkDeleteAction` without a role of its own): to restrict an operation, use
+  `roles` (see [How the restrictions add up](#how-the-restrictions-add-up)).
 - `?from=<id>` copies a record into the add form only for a user offered the `DuplicateAction` for that record (its
   `role`, a `RecordActionGuard` of `duplicate`, the guards of reading it). Without a `DuplicateAction` the address
   answers 403.
@@ -146,14 +147,23 @@ Every record gets details, edit and delete. Add more with `actions:`:
 - `tone: ActionTone::Info` colours it.
 - Its label is `crud.<resource>.action.<name>`.
 
-A `RecordActionGuard` decides which records an action is for. A kind of action of your own is a `RecordAction` plus
-its `RecordActionHandler`. `MakesButtons` gives one action several buttons, for example workflow transitions.
+A `RecordActionGuard` decides which records an action is for. Details and edit go by their `RecordGuard`s only.
+Deleting asks the guards of `delete` too, whatever your `DeleteAction` is called: a record they refuse has no delete
+button and isn't deleted, on its own or in bulk. A kind of action of your own is a `RecordAction` plus its
+`RecordActionHandler`. `MakesButtons` gives one action several buttons, for example workflow transitions.
 
 ## Bulk actions
 
 ```php
 bulkActions: [new BulkDeleteAction()],
 ```
+
+`BulkDeleteAction` deletes each record the way a record is deleted on its own: the `RecordGuard`s of `delete`, the
+`RecordActionGuard`s of the action `delete` and `RecordDeleting` listeners. A record they refuse stays, the others are
+deleted, and the toast counts the ones that couldn't be. Without a `role` of its own, it is offered only to users
+offered a `DeleteAction` of the resource: `new DeleteAction(role: 'ROLE_ADMIN')` restricts deleting in bulk too, and
+asking for it anyway does nothing. A resource with `new NoAction('delete')` deletes in bulk only, for everybody the
+resource is for (give the `BulkDeleteAction` a `role` to restrict it).
 
 When the user selects a whole page, they're offered "select all N matching". The action then receives a
 `BulkSelection` with `allMatching`, `count`, lazily-read `ids`, `each()` for streaming, and the list's `filters` and
@@ -217,7 +227,7 @@ For individual records:
 
 - `RecordGuard` (`allows($operation, $record)`) refuses an operation on a record.
 - `ExplainsRefusal` shows a disabled button with a reason instead of hiding it.
-- `VoterRecordGuard` and `VoterActionGuard` delegate to your voters.
+- `VoterRecordGuard` and `VoterActionGuard` delegate to your voters (`DELETE` is asked by `VoterRecordGuard` only).
 - `DoctrineScope` decides which records exist at all.
 - `RecordRow` adds classes or attributes to rows. The theme escapes their values (`crud_attrs()`) and leaves out a name
   that is no name of an attribute (a space, a quote, `=`, `/` or `>` in it), so names may be made of data too.
@@ -229,10 +239,10 @@ allow it. A `CrudDefinitionExtension` can't change `role` or `roles`, and what o
 later one can't give back: the bundle throws a `LogicException`.
 
 An action's `role` and its `RecordActionGuard` take away that action only. `new DeleteAction(role: 'ROLE_ADMIN')`
-removes the delete button of a row, but a `BulkDeleteAction` without a role still deletes, and an extension that
-returns `$crud->with(actions: [...])` without the declared actions brings back the built-in delete, which has no
-role. To keep an operation from someone, use `roles: ['delete' => 'ROLE_ADMIN']` or `refusing()`: every way to it
-asks that.
+removes the delete button of a row and, from a `BulkDeleteAction` without a role of its own, deleting in bulk; a
+`BulkDeleteAction` with a role keeps its own. But an extension that returns `$crud->with(actions: [...])` without the
+declared actions brings back the built-in delete, which has no role, for both. To keep an operation from someone,
+use `roles: ['delete' => 'ROLE_ADMIN']` or `refusing()`: every way to it asks that.
 
 `with()` replaces the value you give it. `with(hidden: ['margin'])` shows again what was hidden before, the declared
 `hidden` too, and `with(actions: [...])` drops the declared actions. Hide with `hiding('margin')` and show with

@@ -226,8 +226,9 @@ final readonly class RecordActions implements ResetInterface
     {
         $buttons = [];
         foreach ($this->of($record->crud) as $action) {
-            // The built-in ones are guarded by their operation (RecordGuard); the others by RecordActionGuard. One
-            // refused with a reason (ExplainsRefusal) is shown disabled, saying it; else it goes away.
+            // The built-in ones are guarded by their operation (RecordGuard; the delete also by the RecordActionGuards
+            // of "delete", which its handler asks); the others by RecordActionGuard. One refused with a reason
+            // (ExplainsRefusal) is shown disabled, saying it; else it goes away.
             $refusal = $this->isBuiltIn($action) ? null : $this->guards->actionRefusal($action->name, $record);
             if ($refusal instanceof CrudFailure && !RecordGuards::explains($refusal)) {
                 continue;

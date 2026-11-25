@@ -8,9 +8,10 @@ use Byfareska\Crud\Attribute\AsCrud;
 
 /**
  * Deletes a record the way every place does it - the list, a page of the record, the bulk delete. The bundle's is
- * {@see DefaultRecordDeletion}: the resource can, its guards allow, RecordDeleting (a listener may refuse), the driver,
- * RecordDeleted. Decorate it (#[AsDecorator(RecordDeletion::class)]) to do more around it - a transaction, an archive
- * kept before - or alias it to delete another way (marking the record deleted instead).
+ * {@see DefaultRecordDeletion}: the resource can, its guards allow (RecordGuard of Delete, RecordActionGuard of
+ * "delete"), RecordDeleting (a listener may refuse), the driver, RecordDeleted. Decorate it
+ * (#[AsDecorator(RecordDeletion::class)]) to do more around it - a transaction, an archive kept before - or alias it to
+ * delete another way (marking the record deleted instead): one of your own asks the guards as it does.
  */
 interface RecordDeletion
 {

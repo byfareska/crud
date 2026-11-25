@@ -77,6 +77,18 @@ the bundle stricter, some can be noticed.
   when `roles['update']` or `refusing(Update)` takes editing away, and running it answers 403. Give `update: false` to
   an action that people who may not edit should still run.
 - `Crud:Run` on an `own` resource knows the record by the `OwnRecordResolver`, as the page and `Crud:Form` do.
+- **A `BulkDeleteAction` without a `role` of its own takes the `role` of the resource's `DeleteAction`**: with
+  `new DeleteAction(role: 'ROLE_ADMIN')` in `actions`, only users offered that action get the bulk delete button, and
+  for the others running it does nothing. With several `DeleteAction`s, the role of one of them is enough; one without
+  a role, the built-in delete, or no `DeleteAction` at all (`new NoAction('delete')`: deleting in bulk only) leaves it
+  to everybody the resource is for. A `BulkDeleteAction` with a role keeps its own: give it one to restore the old
+  behavior.
+- **Deleting a record asks the `RecordActionGuard`s of the action `delete`**, whatever the `DeleteAction` is named: the
+  delete button is not offered for a record they refuse (shown disabled with an `ExplainsRefusal`), and
+  `RecordDeletion` refuses it with a 403, so the live delete actions refuse it and a bulk delete leaves it and deletes
+  the others, counting it in the toast. A `RecordActionGuard` that refuses every action it doesn't know now refuses
+  deleting too. `VoterActionGuard` doesn't ask `DELETE` (`VoterRecordGuard` does); an `attributeOf()` of your own that
+  returns one for `delete` now asks it.
 - Routes fail to load when the prefix or host of a panel's import has a parameter named `crud`, `id`, `page`, `name`
   or `board`, or one starting with `_` other than `_locale` and `_format`: the address would choose the resource, the
   record or the page. The bundle decorates `routing.loader`; panel routes carry the option `byfareska_crud_variables`.

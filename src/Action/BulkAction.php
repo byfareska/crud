@@ -18,7 +18,10 @@ interface BulkAction
     /** Lower-case; tells the bulk actions of a resource apart. */
     public string $name { get; }
 
-    /** Only somebody with this role is offered it; null = everybody the resource is for. */
+    /**
+     * Only somebody with this role is offered it; null = everybody the resource is for (a BulkDeleteAction: everybody
+     * offered a DeleteAction of the resource - see BulkActions::of()).
+     */
     public ?string $role { get; }
 
     /**

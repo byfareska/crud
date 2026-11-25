@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Byfareska\Crud\Resource;
 
+use Byfareska\Crud\Action\DeleteAction;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Event\RecordDeleted;
 use Byfareska\Crud\Event\RecordDeleting;
@@ -11,7 +12,9 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Deletes a record the way every place does it, all in a transaction (RecordTransaction): the record read, its guards
- * (RecordGuard), RecordDeleting (a listener may refuse), the driver, RecordDeleted (given what the record was).
+ * (RecordGuard of Delete; RecordActionGuard of the action "delete", DeleteAction::NAME, whatever the DeleteAction
+ * offering it is named and for each record of a bulk delete), RecordDeleting (a listener may refuse), the driver,
+ * RecordDeleted (given what the record was).
  */
 final readonly class DefaultRecordDeletion implements RecordDeletion
 {
@@ -42,6 +45,9 @@ final readonly class DefaultRecordDeletion implements RecordDeletion
                 $record = new RecordView($crud, $id, $this->records->read($crud, $id), $screen);
             }
             $this->guards->assertAllowed(CrudOperation::Delete, $record);
+            // The delete button of a record is not offered for what a guard of its action refuses: neither is a
+            // delete by the address of a live action, nor one record of a bulk delete.
+            $this->guards->assertActionAllowed(DeleteAction::NAME, $record);
             $input = $this->input?->get();
             $this->events?->dispatch(new RecordDeleting($record, $input));
             $this->records->delete($crud, $id);
