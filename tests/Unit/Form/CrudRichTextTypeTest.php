@@ -6,6 +6,7 @@ namespace Byfareska\Crud\Tests\Unit\Form;
 
 use Byfareska\Crud\Files\Command\ReindexFilesCommand;
 use Byfareska\Crud\Files\FileReference;
+use Byfareska\Crud\Files\StoredFile;
 use Byfareska\Crud\Form\CrudRichTextType;
 use Byfareska\Crud\Tests\Unit\Files\FilesKit;
 use Byfareska\Crud\Tests\Unit\Fixtures\Files\Article;
@@ -125,6 +126,38 @@ final class CrudRichTextTypeTest extends TestCase
             ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'],
             $this->files->browser->libraryOf($view->vars['image_token'])[0]->accept ?? null,
         );
+    }
+
+    /**
+     * The text links a file at its public address, of the site it is shown on: an SVG it takes is picked as an image
+     * (<img>, which runs no script), never for a link, which would run it as the one who clicked.
+     */
+    public function testSvgIsPickedAsAnImageNeverForALink(): void
+    {
+        $svg = new StoredFile(new FileReference('public', 'ab/logo.svg'), 'logo.svg', 'image/svg+xml');
+        $pdf = new StoredFile(new FileReference('public', 'ab/terms.pdf'), 'terms.pdf', 'application/pdf');
+        $view = $this->files->forms()
+            ->createNamed('body', CrudRichTextType::class, null, [
+                'files' => ['accept' => ['images', 'image/svg+xml', 'application/pdf']],
+            ])
+            ->createView();
+        self::assertIsString($view->vars['library_token']);
+        self::assertIsString($view->vars['image_token']);
+
+        $links = $this->files->browser->libraryOf($view->vars['library_token'])[0] ?? null;
+        $images = $this->files->browser->libraryOf($view->vars['image_token'])[0] ?? null;
+        self::assertNotNull($links);
+        self::assertNotNull($images);
+        self::assertFalse($links->acceptsFile($svg));
+        self::assertTrue($links->acceptsFile($pdf));
+        self::assertTrue($images->acceptsFile($svg));
+        self::assertFalse($images->acceptsFile($pdf));
+
+        $view = $this->files->forms()
+            ->createNamed('logo', CrudRichTextType::class, null, ['files' => ['accept' => ['image/svg+xml']]])
+            ->createView();
+        self::assertNull($view->vars['library_token'], 'Nothing to link: not any file but SVG.');
+        self::assertIsString($view->vars['image_token']);
     }
 
     public function testFilesOfTheConfigurationUnlessTheFieldSays(): void

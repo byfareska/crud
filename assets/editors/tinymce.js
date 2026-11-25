@@ -87,12 +87,14 @@ export function tinymceEditor(tinymce = globalThis.tinymce, defaults = {}) {
                 config.file_picker_types = 'file image';
                 config.file_picker_callback = (callback, value, meta) => {
                     files.pick({ images: meta.filetype === 'image' }).then(([file]) => {
-                        if (file?.url) {
-                            const image = meta.filetype === 'image';
-                            callback(
-                                image ? files.addressOf?.(file) ?? file.url : file.url,
-                                image ? { alt: file.alt ?? '' } : { text: file.name },
-                            );
+                        if (!file) {
+                            return;
+                        }
+                        const image = meta.filetype === 'image';
+                        // A link only to a file the server gives one for: none to SVG or HTML, which would run.
+                        const address = image ? files.addressOf?.(file) ?? file.url : file.link;
+                        if (address) {
+                            callback(address, image ? { alt: file.alt ?? '' } : { text: file.name });
                         }
                     });
                 };

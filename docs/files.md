@@ -150,7 +150,9 @@ byfareska_crud:
 ```
 
 With `files`, images pasted or dropped into the editor are uploaded, and the image and link dialogs pick from the
-library. This needs a storage with lasting public URLs.
+library. This needs a storage with lasting public URLs. An SVG the field accepts (`accept: ['image/svg+xml']`) is
+picked as an image only, never for a link: the link would open it at its public URL, where its script runs. An editor
+of your own should link a file at its `link`, not its `url` (`null` for SVG or HTML).
 
 The submitted HTML is what the browser sent. **Sanitize it where it is shown** (`sanitize_html` from
 symfony/html-sanitizer).
