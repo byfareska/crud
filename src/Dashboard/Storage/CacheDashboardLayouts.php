@@ -41,8 +41,18 @@ final readonly class CacheDashboardLayouts implements DashboardLayouts
         $this->cache->deleteItem($this->key($owner, $board));
     }
 
+    /**
+     * The one for everybody is under the owner "*", and a user whose id starts with "*" has one more in front ("*" is
+     * "**"): a user "*" would otherwise read and change the layout for everybody as their own.
+     */
     private function key(?string $owner, string $board): string
     {
-        return 'byfareska_crud.dashboard.' . hash('xxh128', ($owner ?? '*') . "\0" . $board);
+        $owner = match (true) {
+            $owner === null => '*',
+            str_starts_with($owner, '*') => '*' . $owner,
+            default => $owner,
+        };
+
+        return 'byfareska_crud.dashboard.' . hash('xxh128', $owner . "\0" . $board);
     }
 }

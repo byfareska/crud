@@ -22,8 +22,9 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 /**
  * The layouts in a table of the database (DashboardLayoutRecord). The one for everybody (owner null) is the row of the
  * owner "*": a unique key of (owner, board) does not keep a second NULL out on PostgreSQL or MySQL, so two shares at
- * once would leave two. A row of an owner NULL, as an older version wrote it, is still read, and goes when the layout
- * for everybody is stored again.
+ * once would leave two. A user whose id starts with "*" has one more in front ("*" is "**"): none is everybody. A row
+ * of an owner NULL, as an older version wrote it, is still read, and goes when the layout for everybody is stored
+ * again.
  *
  * Read and written by the connection of the entity manager its mapping is in, row by row (DBAL): storing a layout
  * flushes nothing else the application has pending in its entity manager, and what was stored is what is read next,
@@ -47,7 +48,7 @@ final readonly class DoctrineDashboardLayouts implements DashboardLayouts
     public function find(?string $owner, string $board): ?array
     {
         try {
-            $placements = $this->placementsOf($owner ?? self::EVERYBODY, $board)
+            $placements = $this->placementsOf($this->ownerOf($owner), $board)
                 ?? ($owner === null ? $this->placementsOf(null, $board) : null);
         } catch (TableNotFoundException $exception) {
             // Not migrated yet: everybody sees the layout of the widgets, a save says what to do.
@@ -65,7 +66,7 @@ final readonly class DoctrineDashboardLayouts implements DashboardLayouts
         [$connection, $table, $columns] = $this->table();
         $values = [$columns['placements'] => $data, $columns['updatedAt'] => new DateTimeImmutable()];
         $types = [$columns['placements'] => Types::JSON, $columns['updatedAt'] => Types::DATETIME_IMMUTABLE];
-        $key = [$columns['owner'] => $owner ?? self::EVERYBODY, $columns['board'] => $board];
+        $key = [$columns['owner'] => $this->ownerOf($owner), $columns['board'] => $board];
 
         $store = function (Connection $connection) use ($owner, $board, $table, $columns, $values, $types, $key): void {
             if ($this->placementsOf($key[$columns['owner']], $board) === null) {
@@ -93,13 +94,26 @@ final readonly class DoctrineDashboardLayouts implements DashboardLayouts
     {
         [$connection, $table, $columns] = $this->table();
         try {
-            $connection->delete($table, [$columns['owner'] => $owner ?? self::EVERYBODY, $columns['board'] => $board]);
+            $connection->delete($table, [$columns['owner'] => $this->ownerOf($owner), $columns['board'] => $board]);
             if ($owner === null) {
                 $this->forgetLegacy($connection, $table, $columns, $board);
             }
         } catch (TableNotFoundException $exception) {
             throw $this->noTable($exception);
         }
+    }
+
+    /**
+     * The owner as the table has it: EVERYBODY for null, and a user whose id starts with it one more in front - a user
+     * "*" would otherwise read and change the layout for everybody as their own.
+     */
+    private function ownerOf(?string $owner): string
+    {
+        return match (true) {
+            $owner === null => self::EVERYBODY,
+            str_starts_with($owner, self::EVERYBODY) => self::EVERYBODY . $owner,
+            default => $owner,
+        };
     }
 
     private function noTable(TableNotFoundException $exception): HttpException
