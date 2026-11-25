@@ -2,6 +2,116 @@
 
 ## Unreleased
 
+A security release: what a user may not see stays out of the forms, searches, sorting and filters, relation searches
+and choices keep to the scopes of the related resource, the live components of a panel are answered only under its
+prefix, and the media library and file fields refuse files they were not given. Read Upgrading: most changes only make
+the bundle stricter, some can be noticed.
+
+### Upgrading
+
+- **`hidden` hides a property everywhere.** `AsCrud::$hidden` now also keeps it out of the list columns
+  (`$crud->columns`), what a record is named by (`title`, also in the palette and relation labels), the guessed
+  Doctrine add and edit forms, `?with[...]` prefills and `?from=` copies, and the Doctrine `search`, `sortable` and
+  `filters` (by their name or by the field they compare). A form the application names (`DoctrineForm(fields: [...])`,
+  a form type) still edits it; to remove it there, use a `CrudFormExtension`. A hidden property that is a required
+  constructor argument makes the guessed add form fail: name the fields or give a form type.
+- If every field of `search` is hidden (and there is no `searchWith`), a typed text finds nothing. `?sort=` naming a
+  hidden field is ignored; the default `sort` may still use it. `AbstractCrudDriver::listFormBuilder()` leaves hidden
+  fields out of `sortable`; a driver of your own should leave hidden filters out too (`AsCrud::hides()`).
+- Taking a column away in a `CrudDefinitionExtension` does not hide the property (details, forms and searches still
+  have it). To hide it per user, `return $crud->with(hidden: [...$crud->hidden, 'margin'])`; the documented example
+  changed accordingly.
+- **Relations of the guessed forms keep to the scopes of the related resource** (`DoctrineScope`), for the choices and
+  for the submitted ids, and so do the guessed relation filters: an id out of the scopes is "The selected choice is
+  invalid". The value a record already has stays valid. Entities without a resource are narrowed by the `EVERY`
+  scopes. A field or filter with a `query_builder` of the application keeps it.
+- **Relation searches** (symfony/ux-autocomplete) of a user who may not see the list of the related resource look only
+  in the fields its entities are named by (its `title:`, else its first column), not in its `search:`. An entity
+  without a resource, or one without a title of text, is found only by its exact id. Hidden fields are never searched.
+  Give the related resource a `title:` or the user its list.
+- A relation search of a form answers only when the user's add form, or the edit form of that record, has the field,
+  enabled: removed or disabled by a `CrudFormExtension`, left out of `fields`, or hidden by a `When`, it is refused.
+- A relation `FieldFilter` with options of its own choices (`RelationFilterField::OWN_CHOICES`: `query_builder`,
+  `choices`, `choice_loader`, `choice_filter`, `choice_label`, `choice_value`, `options_as_html`) is a plain choice, not
+  a relation search of the bundle. A filter that set only `choice_label` loses typing and loads every entity in scope.
+- Relation labels take the title of the resource of the current panel first.
+- **Live components of a panel** (`ScopedComponent`, or anything using `DashboardWidgetProps`) are answered only under
+  the live route of that panel (`<prefix>/_crud/...`): 403 under another panel's prefix, and at `/_components/...` when
+  the panel's routes are imported (`type: byfareska_crud`). Hard-coded `/_components/...` addresses of the bundle's
+  components stop working.
+- A component of a panel drawn on another panel's page, or on a page of your own, sends its live requests to its own
+  panel's prefix: across firewalls it no longer works, and a page of your own outside a prefix with parameters
+  (`/{shop}/admin`) needs those route parameters and the `_scope` default.
+- Live dashboard widgets using `DashboardWidgetProps` are bound to the panel of their board even without
+  `implements ScopedComponent`.
+- The command palette modal is no longer `data-turbo-permanent` (drop it in an override of `CommandPaletteModal`). A
+  palette with `scope: ''` shows the panel of the request instead of every panel.
+- In live requests under a panel's prefix, `PageParameters` and the router context take the parameters of the prefix
+  from the requested address, never from `X-Live-Url`; the header adds only the path parameters of a page of the same
+  panel with the same prefix.
+- `Crud:Run` goes back to `X-Live-Url` or the `Referer` only when it is a path of the application (or the same host);
+  otherwise, and when neither is sent, to `CrudReturn::url()` of the record.
+- **The media library** deletes only files it would list (an entry of its library, of a kind the field accepts, in the
+  storage in view), none in a storage with `upload: false`, and a file in use only after the server asked about it.
+  `FileRemover::remove()` throws `InvalidArgumentException` for a file the library of its storage does not know (no
+  `crud_file` row, any file of a `library: none` storage): delete those through the storage. `StorageFileLibrary::find()`
+  returns null for the paths of image sizes and for references of another storage.
+- A file picked from the library or sent by its signature is refused when the user lacks the `role` of its storage, when
+  it is bigger than the field's `max_size`, or when it is SVG, HTML, XML or a script and the field does not name its MIME
+  type - also for `accept: []`. A path ending in `.svg`, `.html`, `.xml`, `.js`, `.php`... needs its MIME type named in
+  `accept` (`.svg` or `image/*` is not enough).
+- A refused value of a file field shows again only the files of the record and those validly signed.
+- An upload of a kind without an extension of its own is stored as `.bin`.
+- The file JSON has a `link` key and Twig a `crud_file_link()` function: a file a browser would run (SVG, HTML...) is
+  linked only through the signed download of a `url: signed` storage. Theme overrides of `crud_file_item` or
+  `file_values` should link `file.link` / `crud_file_link(value)`, not `url`.
+- The public addresses Flysystem gives (a storage without `public_url`) have their path segments percent-encoded.
+- Constructors: `FileFieldTransformer` and `FilesExtension` take `BrowserFiles`; `ScopeOfComponent` takes
+  `ComponentPanel`; `ChoiceRelationFormField` is `(?DoctrineRecordLabels $labels = null)`; optional arguments at the end
+  of `RelationAutocompleter` (`AutocompletedFormFields`), `DoctrineRecordLabels` (`RequestStack`), `CommandPalette`
+  (`Scopes`), `CrudRun` (`CrudReturn`), `NoteWidget` (`LivePanelGuard`) and `PanelLiveUrls` (`ComponentPanel`, no longer
+  `readonly`). Only code that builds these services by hand is affected.
+
+### Added
+
+- `AsCrud::hides()`, `SortField`, `ComponentPanel`, `LivePanelGuard`, `LocalUrl`, `AutocompletedFormFields`,
+  `Scopes::panelOf()`, `Scope::liveRouteOf()`, `PanelLiveUrls::hasLiveRoute()`, `DoctrineRelations::choices()`,
+  `DoctrineRecordLabels::titledBy()`, `UploadProfile::isActive()`, `StoredFile::isActive()`, `BrowserFiles::link()` and
+  the Twig function `crud_file_link()`.
+- docs/files.md: serving uploaded files (a public storage on the panel's origin, nginx and Apache settings, the
+  headers of an `offload` location).
+
+### Security
+
+- The media library deleted any path of the storage in view, also in storages only to pick from and files in use
+  (the confirmation was the browser's): anybody who could open a file field with a library could delete any object of
+  that storage.
+- A refused value of a file field described and signed every reference the browser sent: anybody who could submit a
+  form with a file field learnt whether any path existed (its size, type, name), got a signature to attach that file to
+  their record and, for a `url: signed` storage, a signed download address.
+- An SVG or HTML file accepted by a field (`accept: ['image/svg+xml']`) on a public storage served from the panel's
+  origin was linked to open in a new tab, where its scripts ran with the session of whoever clicked it.
+- The live components of a panel were answered under any prefix and at `/_components`: a panel protected by
+  `access_control` or a firewall on its prefix alone (as the documentation allowed) could be listed, edited and
+  deleted from through the address of another panel or the global one.
+- The `X-Live-Url` header chose the prefix parameters (`/{shop}/admin`) of a live request: what the firewall and
+  `access_control` saw (`acme`) was not what the scopes and guards got (`globex`).
+- `hidden` properties were in the guessed add and edit forms: any user who could edit a record read and changed them.
+- Properties hidden per request were still searched, sorted and filtered by, which told their values a character at
+  a time; so did the relation search, in the `search:` fields (or every text) of a related resource the user could not
+  list.
+- A submitted relation id was not checked against the scopes of the related resource: a user could link a record to an
+  entity of another tenant and then see its name.
+- A relation search of a form answered for a field the user's form did not have (removed or disabled by a
+  `CrudFormExtension`), and one of a filter with the application's own choices ignored them (and `options_as_html`).
+
+### Fixed
+
+- `Crud:Run` redirected back to the `X-Live-Url` or `Referer` header without checking it is an address of the
+  application.
+- The address of a stored file with `%23` or `%3F` in its name did not lead back to the file.
+- A filter of the relation search of a property hidden for the user was still answered by its signed address.
+
 ## v0.3.0
 
 Translations of the application win over the default texts, enums that translate themselves are printed translated,
