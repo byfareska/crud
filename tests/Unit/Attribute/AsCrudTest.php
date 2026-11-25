@@ -392,6 +392,64 @@ final class AsCrudTest extends TestCase
         self::assertSame(['name'], $byMargin->titleFields());
     }
 
+    public function testHidingAddsToWhatIsHiddenAndKeepsTheDeclared(): void
+    {
+        $crud = new AsCrud(
+            'thing',
+            '/things',
+            'box',
+            list: ListThingsDto::class,
+            columns: ['name', 'price' => 'money', 'margin' => 'money', 'notes'],
+            title: ['price', 'name'],
+            perPage: [10, 25],
+            hidden: ['margin'],
+        );
+
+        $hiding = $crud->hiding('price', 'margin');
+
+        self::assertSame(['margin', 'price'], $hiding->hidden, 'The declared one stays, once.');
+        self::assertTrue($hiding->hides('margin'));
+        self::assertTrue($hiding->hides('price'));
+        self::assertSame(['name', 'notes'], array_column($hiding->columns, 'field'));
+        self::assertSame(['name'], $hiding->titleFields());
+        self::assertSame([10, 25], $hiding->perPage, 'The rest as it was.');
+        self::assertTrue($crud->isSameResourceAs($hiding));
+        // An extension after it hides more: what was hidden before stays hidden.
+        self::assertSame(['margin', 'price', 'notes'], $hiding->hiding('notes')->hidden);
+        self::assertSame(['name'], array_column($hiding->hiding('notes')->columns, 'field'));
+        self::assertSame($crud, $crud->hiding('margin'), 'Nothing more hidden: the same resource.');
+        self::assertSame(['margin'], $crud->hidden, 'The declaration itself is what it was.');
+    }
+
+    public function testShowingShowsAgainOnlyWhatItNames(): void
+    {
+        $crud = new AsCrud(
+            'thing',
+            '/things',
+            'box',
+            list: ListThingsDto::class,
+            columns: ['name', 'price' => 'money', 'margin' => 'money', 'customer'],
+            title: ['margin', 'name'],
+            hidden: ['margin', 'price', 'customer'],
+        );
+
+        $showing = $crud->showing('margin');
+
+        self::assertSame(['price', 'customer'], $showing->hidden);
+        self::assertFalse($showing->hides('margin'));
+        self::assertTrue($showing->hides('price'), 'Not named: still hidden.');
+        self::assertSame(['name', 'margin'], array_column($showing->columns, 'field'));
+        self::assertSame(['margin', 'name'], $showing->titleFields());
+        self::assertTrue($showing->showsInDetails('margin'));
+        self::assertFalse($showing->showsInDetails('price'));
+        // A path through a hidden property is not the property.
+        self::assertTrue($crud->showing('customer.email')->hides('customer.email'));
+        self::assertSame($crud, $crud->showing('notes'), 'Nothing hidden of it: the same resource.');
+        // Shown and hidden again by the next extension.
+        self::assertSame(['price', 'customer', 'margin'], $showing->hiding('margin')->hidden);
+        self::assertSame(['margin', 'price', 'customer'], $crud->hidden, 'The declaration itself is what it was.');
+    }
+
     /**
      * @return iterable<string, array{string}>
      */

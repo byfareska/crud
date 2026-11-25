@@ -94,14 +94,28 @@ A record still carries it, for guards, actions and `fields`. A form type of your
 `DoctrineForm`, is yours: a hidden property you put there is still edited (only `?with`/`?from=` don't fill it). Take
 it out of the form with a `CrudFormExtension`. The `dto` driver's forms are always your own.
 
-To hide a property from some users only, hide it in a `CrudDefinitionExtension` for the request:
+To hide a property from some users only, hide it in a `CrudDefinitionExtension` for the request. `hiding()` adds to
+what is hidden, the declared `hidden` included:
 
 ```php
 public function extend(AsCrud $crud): AsCrud
 {
-    return $this->actor->isGranted('ROLE_FINANCE') ? $crud : $crud->with(hidden: [...$crud->hidden, 'margin']);
+    return $this->actor->isGranted('ROLE_FINANCE') ? $crud : $crud->hiding('margin');
 }
 ```
+
+The other way round is safer: declare it hidden (`hidden: ['margin']`) and show it to the few who may see it, with
+`showing()`. Then a request your extension doesn't recognise shows it to nobody:
+
+```php
+public function extend(AsCrud $crud): AsCrud
+{
+    return $this->actor->isGranted('ROLE_FINANCE') ? $crud->showing('margin') : $crud;
+}
+```
+
+`showing()` shows only the properties it names. `with(hidden: [...])` replaces the whole list: whatever it leaves out is
+shown again, the declared `hidden` too.
 
 Removing a column with `with(columns: ...)` only changes the list. The details, the form, search, sorting and filters
 still have the property.
@@ -221,8 +235,9 @@ role. To keep an operation from someone, use `roles: ['delete' => 'ROLE_ADMIN']`
 asks that.
 
 `with()` replaces the value you give it. `with(hidden: ['margin'])` shows again what was hidden before, the declared
-`hidden` too, and `with(actions: [...])` drops the declared actions. Add to the current value:
-`with(hidden: [...$crud->hidden, 'margin'])`, `with(actions: [...$crud->actions, $export])`.
+`hidden` too, and `with(actions: [...])` drops the declared actions. Hide with `hiding('margin')` and show with
+`showing('margin')`: they change only the properties they name. Add to the current value of the rest:
+`with(actions: [...$crud->actions, $export])`.
 
 ### What a form changes
 

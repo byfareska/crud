@@ -16,7 +16,7 @@ namespace Byfareska\Crud\Layout;
  *
  * It arranges the forms and the details only: the list, its search, order and filters and the command palette still
  * have the property. To keep a property from somebody, hide it - AsCrud::$hidden, for a request by a
- * CrudDefinitionExtension: `$crud->with(hidden: [...$crud->hidden, 'margin'])`.
+ * CrudDefinitionExtension: `$crud->hiding('margin')`.
  */
 final readonly class When implements LayoutNode
 {

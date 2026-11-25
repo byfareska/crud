@@ -229,8 +229,9 @@ final readonly class AsCrud
      *     ("title"), not a field of a guessed form (nor prefilled by ?with[...] or copied by ?from=), not searched,
      *     ordered or filtered by. A form type of the application, or the fields of a form it names, are its own: a
      *     property there is edited all the same. Without "details" every property is shown but these and those whose
-     *     name looks secret (SECRET: password, token, hash...). A CrudDefinitionExtension hides one for a request:
-     *     `$crud->with(hidden: [...$crud->hidden, 'margin'])`. See hides()
+     *     name looks secret (SECRET: password, token, hash...). A CrudDefinitionExtension hides one for a request -
+     *     `$crud->hiding('margin')` - or shows one again (declared hidden for everybody, shown to a role) -
+     *     `$crud->showing('margin')`. See hides()
      * @param array<string, string> $pageTemplates the templates of its pages in place of the theme's, by page: "list",
      *     "show", "form" (add and edit), "page" (AsCrudPage) => a template of the application's, which may extend
      *     "@CrudTheme/crud/<page>.html.twig" and change a block of it
@@ -547,8 +548,12 @@ final readonly class AsCrud
      * CHANGEABLE: what the routes are made of stays, and so does who the resource is for. Checked like a declaration.
      *
      * Taking a column away only changes the list: the details, the form, the search, the order and the filters still
-     * have the property. To keep it from the one asking, hide it - `$crud->with(hidden: [...$crud->hidden, 'margin'])`
-     * takes it out of all of them (see $hidden).
+     * have the property. To keep it from the one asking, hide it - `$crud->hiding('margin')` takes it out of all of
+     * them (see $hidden).
+     *
+     * What it is given replaces what there was: `with(hidden: ['margin'])` hides the margin and shows again whatever
+     * was hidden before - the declared $hidden, what an extension before hid. Add to what is hidden with hiding(), show
+     * a property again with showing(): both keep the rest as it is.
      *
      * @throws InvalidArgumentException an argument that is not to be changed, or a value the constructor refuses
      */
@@ -627,6 +632,41 @@ final readonly class AsCrud
         }
 
         return $refused === $this->refused ? $this : $this->rebuilt(['refused' => $refused]);
+    }
+
+    /**
+     * The same resource with more properties hidden (see $hidden) - what a
+     * {@see \Byfareska\Crud\Resource\CrudDefinitionExtension} returns to keep one from the one asking:
+     * `$crud->hiding('margin')`. What was hidden, as declared or by an extension before, stays hidden; the columns,
+     * the title and the rest are made again as with() makes them.
+     */
+    public function hiding(string ...$fields): self
+    {
+        $hidden = $this->hidden;
+        foreach ($fields as $field) {
+            if (!in_array($field, $hidden, true)) {
+                $hidden[] = $field;
+            }
+        }
+
+        return $hidden === $this->hidden ? $this : $this->with(hidden: $hidden);
+    }
+
+    /**
+     * The same resource showing again properties it hides (see $hidden) - what a
+     * {@see \Byfareska\Crud\Resource\CrudDefinitionExtension} returns for those who may see what is declared hidden
+     * from everybody else: `$crud->showing('margin')`. Only the properties named, as they are in $hidden: what it does
+     * not name stays hidden, and a path through a hidden one ("customer.email" of a hidden "customer") is not shown
+     * without it. Columns and title as with() makes them.
+     */
+    public function showing(string ...$fields): self
+    {
+        $hidden = array_values(array_filter(
+            $this->hidden,
+            static fn (string $field): bool => !in_array($field, $fields, true),
+        ));
+
+        return $hidden === $this->hidden ? $this : $this->with(hidden: $hidden);
     }
 
     /** Whether the request refuses it (see refusing()). */

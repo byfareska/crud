@@ -32,9 +32,6 @@ final readonly class HiddenByAddress implements CrudDefinitionExtension
             return $crud;
         }
 
-        return $crud->with(
-            hidden: [...$crud->hidden, ...explode(',', $hidden)],
-            source: $crud->source->with(search: ['name', 'number']),
-        );
+        return $crud->hiding(...explode(',', $hidden))->with(source: $crud->source->with(search: ['name', 'number']));
     }
 }

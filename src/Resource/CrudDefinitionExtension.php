@@ -7,9 +7,10 @@ namespace Byfareska\Crud\Resource;
 use Byfareska\Crud\Attribute\AsCrud;
 
 /**
- * Changes what a resource shows for the request being answered: a property only somebody with a role sees, the
- * columns of a tenant, an action behind a feature flag, other page sizes for a user. A service, autoconfigured; it gets
- * the resource as declared (and as the extensions before it changed it) and returns it changed with AsCrud::with():
+ * Changes what a resource shows for the request being answered: a property only somebody with a role sees, the columns
+ * of a tenant, an action behind a feature flag, other page sizes for a user. A service, autoconfigured; it gets the
+ * resource as declared (and as the extensions before it changed it) and returns it changed with AsCrud::with(),
+ * hiding() and showing():
  *
  *     // #[AsCrud(name: 'product', ..., columns: ['name', 'price' => 'money', 'margin' => 'money'])]
  *     final readonly class MarginForFinance implements CrudDefinitionExtension
@@ -20,31 +21,30 @@ use Byfareska\Crud\Attribute\AsCrud;
  *
  *         public function extend(AsCrud $crud): AsCrud
  *         {
- *             return $this->actor->isGranted('ROLE_FINANCE')
- *                 ? $crud
- *                 : $crud->with(hidden: [...$crud->hidden, 'margin']);
+ *             return $this->actor->isGranted('ROLE_FINANCE') ? $crud : $crud->hiding('margin');
  *         }
  *     }
  *
- * A property kept from somebody is hidden (AsCrud::$hidden): then it is no column, no row of the details or the
- * preview, no field of a guessed form (nor prefilled or copied into one), and the list is not searched, ordered nor
- * filtered by it, whatever the source names. Only taking its column away - with(columns: ...) - changes the list
- * alone: the details, the form, the search, the order and the filters still have it. A When of the layout keeps a
- * part off the form and the details only. A form type of the application is its own: a field of it is taken away by
- * a CrudFormExtension.
+ * A property kept from somebody is hidden (AsCrud::$hidden, hiding()): then it is no column, no row of the details or
+ * the preview, no field of a guessed form (nor prefilled or copied into one), and the list is not searched, ordered nor
+ * filtered by it, whatever the source names. The other way round is the safer one where a property is for a few:
+ * declare it hidden and show it to them - `$crud->showing('margin')` - so a request no extension answered shows it to
+ * nobody. Only taking its column away - with(columns: ...) - changes the list alone: the details, the form, the search,
+ * the order and the filters still have it. A When of the layout keeps a part off the form and the details only. A form
+ * type of the application is its own: a field of it is taken away by a CrudFormExtension.
  *
  * Every way to the resource sees what it returns: the list, the details, the forms, the menu, whether the palette
  * offers it. It may also take operations away for the request, $crud->refusing(CrudOperation::Delete) - their buttons
  * go and their pages answer 403 - but never give back what an extension before it refused.
  *
- * with() replaces what it is given, as declared or as an extension before changed it: `with(hidden: ['margin'])`
- * shows again what was hidden before, `with(actions: [...])` takes the declared actions away - and with them a
- * NoAction or the role of a built-in one, so the built-in action is back for everybody the operation is for. Add to
- * the value it has (`[...$crud->hidden, 'margin']`); restrict an operation by its role (AsCrud::$roles) or
- * refusing(), which nothing after gives back, not by the role of its action. What the routes are made
- * of (name, path, scope, own, source, listedIn), the role and the roles stay as declared - the routes are built once
- * for everybody. Asked once a request per resource, by the priority of its tag; it must not depend on
- * CrudRegistry (it is what asks it).
+ * with() replaces what it is given, as declared or as an extension before changed it: `with(hidden: ['margin'])` shows
+ * again what was hidden before, `with(actions: [...])` takes the declared actions away - and with them a NoAction or
+ * the role of a built-in one, so the built-in action is back for everybody the operation is for. Hide and show with
+ * hiding() and showing(), which change only what they name; add to the value of the rest
+ * (`[...$crud->actions, $export]`); restrict an operation by its role (AsCrud::$roles) or refusing(), which nothing
+ * after gives back, not by the role of its action. What the routes are made of (name, path, scope, own, source,
+ * listedIn), the role and the roles stay as declared - the routes are built once for everybody. Asked once a request
+ * per resource, by the priority of its tag; it must not depend on CrudRegistry (it is what asks it).
  */
 interface CrudDefinitionExtension
 {

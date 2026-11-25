@@ -19,8 +19,7 @@ the bundle stricter, some can be noticed.
   hidden field is ignored; the default `sort` may still use it. `AbstractCrudDriver::listFormBuilder()` leaves hidden
   fields out of `sortable`; a driver of your own should leave hidden filters out too (`AsCrud::hides()`).
 - Taking a column away in a `CrudDefinitionExtension` does not hide the property (details, forms and searches still
-  have it). To hide it per user, `return $crud->with(hidden: [...$crud->hidden, 'margin'])`; the documented example
-  changed accordingly.
+  have it). To hide it per user, `return $crud->hiding('margin')`; the documented example changed accordingly.
 - **Relations of the guessed forms keep to the scopes of the related resource** (`DoctrineScope`), for the choices and
   for the submitted ids, and so do the guessed relation filters: an id out of the scopes is "The selected choice is
   invalid". The value a record already has stays valid. Entities without a resource are narrowed by the `EVERY`
@@ -96,6 +95,8 @@ the bundle stricter, some can be noticed.
 
 ### Added
 
+- `AsCrud::hiding()` and `AsCrud::showing()`: a `CrudDefinitionExtension` hides a property for the request, or shows
+  one declared hidden, and keeps the rest of `hidden` as it is (`with(hidden: [...])` replaces the whole list).
 - `AsCrud::hides()`, `SortField`, `ComponentPanel`, `LivePanelGuard`, `LocalUrl`, `AutocompletedFormFields`,
   `Scopes::panelOf()`, `Scope::liveRouteOf()`, `PanelLiveUrls::hasLiveRoute()`, `DoctrineRelations::choices()`,
   `DoctrineRecordLabels::titledBy()`, `UploadProfile::isActive()`, `StoredFile::isActive()`, `BrowserFiles::link()` and
