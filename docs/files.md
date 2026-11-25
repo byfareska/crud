@@ -94,6 +94,10 @@ location /uploads/ {
 </Directory>
 ```
 
+Send `X-Content-Type-Options: nosniff` for the whole upload directory, as above, even if no field accepts SVG or HTML:
+the browser then keeps to the `Content-Type` the extension gives (a `.txt` with markup in it stays text) and never
+guesses a page from a file's bytes.
+
 No upload ends in `.php` by accident: it gets the extension of its bytes, and scripts are refused unless a field
 names their MIME type.
 
