@@ -9,6 +9,7 @@ use Byfareska\Crud\Autocomplete\RelationAutocompleter;
 use Byfareska\Crud\Autocomplete\RelationChoiceLabel;
 use Byfareska\Crud\Autocomplete\RelationChoiceLabels;
 use Byfareska\Crud\Driver\Doctrine\DoctrineEntityNormalizer;
+use Byfareska\Crud\Driver\Doctrine\DoctrineRecordLabels;
 use Byfareska\Crud\Driver\Doctrine\DoctrineRelations;
 use Byfareska\Crud\Driver\Doctrine\DoctrineScopes;
 use Byfareska\Crud\Driver\Doctrine\DoctrineSearches;
@@ -38,6 +39,7 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\UX\Autocomplete\Controller\AutocompleteController;
 
 final class RelationAutocompleterTest extends TestCase
@@ -55,9 +57,67 @@ final class RelationAutocompleterTest extends TestCase
         new SchemaTool($this->entities)->createSchema($this->entities->getMetadataFactory()->getAllMetadata());
         $sales = new Team('Sprzedaż');
         $this->entities->persist($sales);
-        $this->entities->persist(new Person('Anna', $sales));
+        $anna = new Person('Anna', $sales);
+        $anna->phone = '+48 601 200 300';
+        $this->entities->persist($anna);
         $this->entities->persist(new Person('Adam'));
         $this->entities->flush();
+    }
+
+    public function testWhatTheOneAskingMayNotSearchIsNotSearched(): void
+    {
+        // The list of people searches their phones too, but only an administrator sees it: anybody else typing the
+        // start of a phone would learn it, a digit at a time, from whether Anna is found.
+        $people = new AsCrud(
+            'person',
+            '/people',
+            'person',
+            source: new DoctrineSource(Person::class, search: ['name', 'phone']),
+            columns: ['name'],
+        );
+
+        $staff = $this->autocompleter('createdBy', resources: [$people], denied: ['person']);
+        self::assertSame([], $this->found($staff, '+48 60'), 'Not by the phone.');
+        self::assertCount(1, $this->found($staff, 'ann'), 'By the name it is shown by.');
+
+        $admin = $this->autocompleter('createdBy', resources: [$people]);
+        self::assertCount(1, $this->found($admin, '+48 60'), 'As the list of people finds her.');
+    }
+
+    public function testAFieldTheResourceHidesIsNotSearched(): void
+    {
+        $people = new AsCrud(
+            'person',
+            '/people',
+            'person',
+            source: new DoctrineSource(Person::class, search: ['name', 'phone']),
+            columns: ['name'],
+            hidden: ['phone'],
+        );
+
+        self::assertSame([], $this->found($this->autocompleter('createdBy', resources: [$people]), '+48'));
+    }
+
+    public function testAnEntityNamedByNothingKnownIsFoundByItsIdOnly(): void
+    {
+        // The teams have no resource: no title to search, and their other texts are nobody's to search.
+        $autocompleter = $this->autocompleter('team');
+        $team = $this->entities->getRepository(Team::class)->findOneBy([]);
+        self::assertInstanceOf(Team::class, $team);
+
+        self::assertSame([], $this->found($autocompleter, 'Sprz'));
+        self::assertEquals([$team->id], $this->found($autocompleter, (string) $team->id));
+    }
+
+    public function testAFilterOfTheApplicationsOwnChoiceIsNotSearchedHere(): void
+    {
+        $orders = new AsCrud('order', '/orders', 'cart', source: new DoctrineSource(Order::class, filters: [
+            'author' => new FieldFilter('createdBy', Comparison::CHOICE, options: ['options_as_html' => true]),
+        ]));
+
+        $autocompleter = $this->autocompleter('createdBy', 'author', orders: $orders);
+
+        self::assertFalse($autocompleter->isGranted(self::createStub(Security::class)));
     }
 
     public function testAFilterOfAnotherNameThanItsRelation(): void
@@ -130,42 +190,55 @@ final class RelationAutocompleterTest extends TestCase
         }
     }
 
+    /**
+     * @param list<AsCrud> $resources besides the orders
+     * @param list<string> $denied the resources whose list the one asking may not see
+     */
     private function autocompleter(
         string $field,
         ?string $filter = null,
         ?RelationChoiceLabels $labels = null,
         ?int $perPage = null,
         ?Request $request = null,
+        array $resources = [],
+        array $denied = [],
+        ?AsCrud $orders = null,
     ): RelationAutocompleter {
-        $crud = new AsCrud('order', '/orders', 'cart', source: new DoctrineSource(Order::class, filters: [
+        $crud = $orders ?? new AsCrud('order', '/orders', 'cart', source: new DoctrineSource(Order::class, filters: [
             'author' => new FieldFilter('createdBy', Comparison::CHOICE),
             'team' => new FieldFilter('createdBy.team', Comparison::CHOICE),
         ]));
-        $registry = new CrudRegistry(providers: [new readonly class ($crud) implements CrudResourceProvider {
-            public function __construct(private AsCrud $crud)
+        $provider = new readonly class ([$crud, ...$resources]) implements CrudResourceProvider {
+            /** @param list<AsCrud> $resources */
+            public function __construct(private array $resources)
             {
             }
 
             public function resources(): iterable
             {
-                yield $this->crud;
+                yield from $this->resources;
             }
-        }]);
+        };
+        $registry = new CrudRegistry(providers: [$provider]);
         $doctrine = self::createStub(ManagerRegistry::class);
         $doctrine->method('getManagerForClass')->willReturn($this->entities);
         $access = self::createStub(CrudAccess::class);
-        $access->method('isGranted')->willReturn(true);
+        $access->method('isGranted')->willReturnCallback(
+            static fn (AsCrud $resource): bool => !in_array($resource->name, $denied, true),
+        );
 
         $normalizer = new DoctrineEntityNormalizer($doctrine);
+        $values = new CrudValues([$normalizer, new PlainValueNormalizer()]);
         $autocompleter = new RelationAutocompleter(
             $registry,
             $access,
             $doctrine,
-            new CrudValues([$normalizer, new PlainValueNormalizer()]),
+            $values,
             $normalizer,
             new DoctrineRelations($registry, $doctrine, new DoctrineScopes()),
             new DoctrineSearches(new WordsSearch(), new ServiceLocator([])),
             $labels,
+            new DoctrineRecordLabels($doctrine, $registry, PropertyAccess::createPropertyAccessor(), $values),
             requests: $this->requests($request ?? new Request(attributes: [
                 // Asked through the autocomplete route of the panel of the resource (CrudRouteLoader).
                 CrudRouteLoader::AUTOCOMPLETE => true,
@@ -193,8 +266,8 @@ final class RelationAutocompleterTest extends TestCase
     /**
      * @return list<mixed>
      */
-    private function found(RelationAutocompleter $autocompleter): array
+    private function found(RelationAutocompleter $autocompleter, string $query = ''): array
     {
-        return array_column($autocompleter->fetchResults('', 1)->results, 'value');
+        return array_column($autocompleter->fetchResults($query, 1)->results, 'value');
     }
 }

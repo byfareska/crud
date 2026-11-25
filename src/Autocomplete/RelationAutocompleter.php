@@ -13,6 +13,8 @@ use Byfareska\Crud\Driver\Doctrine\DoctrineRecordLabels;
 use Byfareska\Crud\Attribute\AsCrud;
 use Byfareska\Crud\Driver\Doctrine\DoctrineEntityNormalizer;
 use Byfareska\Crud\Driver\Doctrine\DoctrineRelations;
+use Byfareska\Crud\Driver\Doctrine\DoctrineQuery;
+use Byfareska\Crud\Driver\Doctrine\DoctrineSearch;
 use Byfareska\Crud\Driver\Doctrine\DoctrineSearches;
 use Byfareska\Crud\Driver\Doctrine\DoctrineSource;
 use Byfareska\Crud\Driver\Doctrine\FieldFilter;
@@ -38,15 +40,24 @@ use Symfony\UX\Autocomplete\Controller\AutocompleteController;
 use Symfony\UX\Autocomplete\OptionsAwareAutocompleterInterface;
 
 /**
- * The entities a relation filter of a list can be set to, found by what is typed (symfony/ux-autocomplete, alias
- * "byfareska_crud_relation"); the field says which resource and relation it is about
- * ({@see AutocompleteRelationFilterField}). Only for those who may see that list.
+ * The entities a relation filter of a list or a relation of a guessed form can be set to, found by what is typed
+ * (symfony/ux-autocomplete, alias "byfareska_crud_relation"); the field says which resource and relation it is about
+ * ({@see AutocompleteRelationFilterField}, {@see AutocompleteRelationFormField}). A filter: only for those who may see
+ * that list, and only one the bundle made a field to search in (not one given options of the application's own,
+ * RelationFilterField::OWN_CHOICES). A form: only for those whose add or edit form of the record has that field, not
+ * disabled ({@see AutocompletedFormFields}).
  *
- * Every word typed has to be in one of the fields the list of the related entity searches (its #[AsCrud] with a
- * DoctrineSource, of the same panel first), else in one of its texts. An entity is shown as its text (__toString()).
- * Only those the DoctrineScopes of the related entity's resource (of the same panel first) leave are offered; for an
- * entity without a resource, those the scopes of every resource (DoctrineScope::EVERY) leave - see DoctrineRelations.
- * Without a list to go by, no text that looks secret (AsCrud::looksSecret()) is searched.
+ * Only those the DoctrineScopes of the related entity's resource (DoctrineSource::$relations, else the first of the
+ * same panel first) leave are offered; for an entity without a resource, those the scopes of every resource
+ * (DoctrineScope::EVERY) leave - see DoctrineRelations. An entity is shown as the lists name it
+ * (DoctrineRecordLabels).
+ *
+ * What is typed is never looked for where the one asking could not look or see themselves - matching or not would
+ * tell it, a letter at a time: every word has to be in one of the fields the list of that related resource searches
+ * ("search", with its DoctrineSearch) if they may see that list; else in one of the fields its entities are named by
+ * (the title of their resource, DoctrineRecordLabels::titledBy()), which the results show anyway; with neither, the
+ * text has to be an id. Never in a field "hidden" by that resource, nor one whose name looks secret
+ * (AsCrud::looksSecret()), nor one of a related entity of its own ("parent.name").
  */
 final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
 {
@@ -72,6 +83,9 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
     /** @var array<string, mixed> */
     private array $options = [];
 
+    /** Whether the form of the options has the field (AutocompletedFormFields), once a request; null = not asked. */
+    private ?bool $inForm = null;
+
     public function __construct(
         private readonly CrudRegistry $registry,
         private readonly CrudAccess $access,
@@ -84,6 +98,7 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         private readonly ?DoctrineRecordLabels $recordLabels = null,
         private readonly DoctrineIdCodec $ids = new DefaultDoctrineIdCodec(),
         private readonly ?RequestStack $requests = null,
+        private readonly ?AutocompletedFormFields $formFields = null,
     ) {
     }
 
@@ -94,6 +109,7 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
     {
         $extra = $options[AutocompleteController::EXTRA_OPTIONS] ?? [];
         $this->options = [];
+        $this->inForm = null;
         foreach (is_array($extra) ? $extra : [] as $name => $value) {
             $this->options[(string) $name] = $value;
         }
@@ -121,15 +137,20 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
             && $request->attributes->get(Scope::ATTRIBUTE) === $crud->scope;
     }
 
-    /** A filter: who may see the list; a form: who may add or edit its records. */
+    /**
+     * A filter: who may see the list; a form: who has the field in the add form, or in the edit form of the record
+     * (AutocompletedFormFields) - nobody without it.
+     */
     private function granted(AsCrud $crud): bool
     {
         if (!$this->isForm()) {
             return $this->access->isGranted($crud, CrudOperation::List);
         }
+        $field = $this->option(self::FIELD);
 
-        return $this->access->isGranted($crud, CrudOperation::Create)
-            || $this->access->isGranted($crud, CrudOperation::Update);
+        return $this->inForm ??= $field !== null
+            && $this->formFields instanceof AutocompletedFormFields
+            && $this->formFields->has($crud, $field, $this->option(self::RECORD));
     }
 
     private function isForm(): bool
@@ -149,7 +170,15 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         if (!$this->isForm()) {
             $this->access->assertGranted($crud, CrudOperation::List);
         } elseif (!$this->granted($crud)) {
-            $this->access->assertGranted($crud, CrudOperation::Update);
+            $this->access->assertGranted($crud, $this->option(self::RECORD) === null
+                ? CrudOperation::Create
+                : CrudOperation::Update);
+
+            throw new AccessDeniedHttpException(sprintf(
+                'The form of "%s" has no field "%s" to search in for the one asking.',
+                $crud->name,
+                (string) $this->option(self::FIELD),
+            ));
         }
         $target = $this->target($crud)
             ?? throw new NotFoundHttpException('No relation of a list or a form is asked for.');
@@ -159,14 +188,16 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
         $entities = $this->relations->query($crud, $target, $relation);
         $metadata = $entities->metadata;
         $builder = $entities->query;
-        $searched = $this->searched($crud, $metadata);
-        $this->leaveOutRecord($crud, $entities->query, $metadata);
         $related = $this->relations->resourceOf($crud, $target, $relation);
-        // Found as its own list finds it: with the search of the list (DoctrineSearch).
+        [$searched, $search] = $this->searched($related, $metadata);
+        $this->leaveOutRecord($crud, $entities->query, $metadata);
         $text = trim($query);
-        if ($searched !== [] && $text !== '') {
-            $source = $related?->source;
-            $this->searches->of($source instanceof DoctrineSource ? $source : null)->apply($entities, $searched, $text);
+        if ($text !== '') {
+            if ($searched !== []) {
+                $search->apply($entities, $searched, $text);
+            } elseif (!$this->isId($entities, $text)) {
+                return new AutocompleteResults([], false);
+            }
         }
         foreach ([...array_slice($searched, 0, 1), ...$metadata->getIdentifierFieldNames()] as $ordered) {
             $builder->addOrderBy('e.' . $ordered, DoctrineOrder::of(false));
@@ -250,6 +281,14 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
             if (end($path) !== $field) {
                 continue;
             }
+            // One the application chooses or names the entities of itself: a plain choice, not searched here
+            // (DoctrineDriver) - an address signed before it was one would offer what it does not.
+            $own = $type instanceof FieldFilter
+                ? array_intersect_key($type->options, array_flip(RelationFilterField::OWN_CHOICES))
+                : [];
+            if ($own !== []) {
+                continue;
+            }
             $entity = $source->entity;
             foreach ($path as $relation) {
                 $metadata = $this->metadata($entity);
@@ -266,32 +305,62 @@ final class RelationAutocompleter implements OptionsAwareAutocompleterInterface
     }
 
     /**
-     * What the typed words are looked for in: the search of the related entity's own list, else its texts.
+     * What the typed words are looked for in, and how: the search of the related resource's own list (its fields, its
+     * DoctrineSearch) for one who may see that list - they could search it there; else the fields its entities are
+     * named by, which every result shows, with the application's DoctrineSearch. Only fields of the entity itself, of
+     * text; none "hidden" by those resources, none that looks secret.
      *
      * @param ClassMetadata<object> $target
      *
-     * @return list<string>
+     * @return array{list<string>, DoctrineSearch}
      */
-    private function searched(AsCrud $crud, ClassMetadata $target): array
+    private function searched(?AsCrud $related, ClassMetadata $target): array
     {
-        $lists = array_filter(
-            $this->relations->resourcesOf($crud, $target->getName()),
-            static fn (AsCrud $other): bool => $other->source instanceof DoctrineSource
-                && $other->source->search !== [],
-        );
-        $source = (array_values($lists)[0] ?? null)?->source;
-        // A field of a related entity of its own ("parent.name") is not looked into here. Without a list to go by,
-        // its texts - but none that looks secret (a password hash, a token): typing would tell what they start with.
-        $fields = $source instanceof DoctrineSource
-            ? $source->search
-            : array_values(array_filter(
-                $target->getFieldNames(),
-                static fn (string $field): bool => !AsCrud::looksSecret($field),
-            ));
+        $source = $related?->source;
+        $hidden = $related->hidden ?? [];
+        if (
+            $related instanceof AsCrud
+            && $source instanceof DoctrineSource
+            && $source->search !== []
+            && $this->access->isGranted($related, CrudOperation::List)
+        ) {
+            $fields = $source->search;
+            $search = $this->searches->of($source);
+        } else {
+            $titled = $this->recordLabels?->titledBy($target->getName());
+            $fields = $titled?->titleFields() ?? [];
+            $hidden = [...$hidden, ...($titled->hidden ?? [])];
+            $search = $this->searches->of(null);
+        }
 
-        return array_values(array_filter($fields, static fn (string $field): bool => $target->hasField($field)
-            && in_array($target->getTypeOfField($field), self::TEXT_TYPES, true)
-            && $target->getFieldMapping($field)->enumType === null));
+        $fields = array_values(array_filter(
+            $fields,
+            static fn (string $field): bool => $target->hasField($field)
+                && in_array($target->getTypeOfField($field), self::TEXT_TYPES, true)
+                && $target->getFieldMapping($field)->enumType === null
+                && !in_array($field, $hidden, true)
+                && !AsCrud::looksSecret($field),
+        ));
+
+        return [$fields, $search];
+    }
+
+    /**
+     * Narrows the query to the entity of the id typed - what every result carries anyway; false = no id of it.
+     */
+    private function isId(DoctrineQuery $query, string $text): bool
+    {
+        $criteria = $this->ids->decode($query->metadata, $text);
+        if ($criteria === null || $criteria === []) {
+            return false;
+        }
+        foreach ($criteria as $field => $value) {
+            $parameter = $query->parameter('id');
+            $type = $query->metadata->hasField($field) ? $query->metadata->getTypeOfField($field) : null;
+            $query->query->andWhere(sprintf('e.%s = :%s', $field, $parameter))->setParameter($parameter, $value, $type);
+        }
+
+        return true;
     }
 
     /** How many entities a page has: "per_page" of the filter's extra_options, 1 to 100. */

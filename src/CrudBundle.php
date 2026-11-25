@@ -15,6 +15,7 @@ use Byfareska\Crud\Attribute\AsCrudPage;
 use Byfareska\Crud\Attribute\AsDashboardWidget;
 use Byfareska\Crud\Attribute\AsTopbarWidget;
 use Byfareska\Crud\Autocomplete\AutocompleteRelationFilterField;
+use Byfareska\Crud\Autocomplete\AutocompletedFormFields;
 use Byfareska\Crud\Autocomplete\RelationAutocompleter;
 use Byfareska\Crud\Autocomplete\RelationChoiceLabels;
 use Byfareska\Crud\Chart\DayBucket;
@@ -1204,6 +1205,8 @@ final class CrudBundle extends AbstractBundle
         if ($hasAutocomplete) {
             $services->set(RelationAutocompleter::class)
                 ->tag('ux.autocompleter', ['alias' => RelationAutocompleter::ALIAS]);
+            // Whether the form of the one asking has the relation it searches.
+            $services->set(AutocompletedFormFields::class);
             $services->set(RelationChoiceLabels::class);
             $services->set(AutocompleteRelationFilterField::class);
             $services->alias(RelationFilterField::class, AutocompleteRelationFilterField::class);

@@ -38,6 +38,7 @@ use LogicException;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
@@ -447,8 +448,10 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
             $options = ['label' => $crud->key(sprintf('field.%s.name', $field))];
             if ($metadata->hasAssociation($field)) {
                 // A choice of every related entity, or a field to search in with symfony/ux-autocomplete.
-                $options += ($this->relationFields ?? new ChoiceRelationFormField($this->doctrine, $this->labels))
-                    ->options($crud, $field, $metadata->getAssociationTargetClass($field), $entity, $id);
+                $target = $metadata->getAssociationTargetClass($field);
+                $options += ($this->relationFields ?? new ChoiceRelationFormField($this->labels))
+                    ->options($crud, $field, $target, $entity, $id);
+                $options = $this->scopedRelation($crud, $metadata, $field, $target, $entity, $options);
             }
             // A text field left empty is null; a column that cannot be null takes it as "" (its constraints judge it).
             if (
@@ -464,6 +467,52 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         $this->carryVersion($source, $metadata, $builder, $entity, $id);
 
         return $builder;
+    }
+
+    /**
+     * A relation of a guessed form offers - and takes when sent - only the entities the scopes of the related resource
+     * leave (DoctrineRelations::choices()), never the record being edited (not its own parent), unless the
+     * RelationFormField gives a query_builder of its own. What the record has in the relation now stays its value even
+     * if the scopes no longer leave it: it is shown, and kept when sent back, but cannot be newly chosen.
+     *
+     * @param ClassMetadata<object> $metadata
+     * @param class-string $target
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    private function scopedRelation(
+        AsCrud $crud,
+        ClassMetadata $metadata,
+        string $field,
+        string $target,
+        ?object $entity,
+        array $options,
+    ): array {
+        if (array_key_exists('query_builder', $options)) {
+            return $options;
+        }
+        try {
+            $kept = $entity === null ? null : $metadata->getFieldValue($entity, $field);
+        } catch (Throwable) {
+            // Not set yet (a typed property of a new entity).
+            $kept = null;
+        }
+        $kept = match (true) {
+            $kept instanceof Collection => array_filter($kept->toArray(), is_object(...)),
+            is_object($kept) => [$kept],
+            default => [],
+        };
+        $relations = $this->relations;
+        $options['query_builder'] = static fn (): QueryBuilder => $relations->choices(
+            $crud,
+            $target,
+            $field,
+            $kept,
+            $entity,
+        );
+
+        return $options;
     }
 
     public function prefill(AsCrud $crud, FormBuilderInterface $builder, array $with): void
@@ -558,6 +607,10 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
                 $type instanceof DoctrineFilter => $type,
                 default => $this->filterGuesser->guess($crud, $metadata, $name, $type),
             };
+            // A guessed choice of related entities offers - and takes - only those the scopes leave.
+            if (!$type instanceof DoctrineFilter || $type !== $filters[$name]) {
+                $filters[$name] = $this->scopedFilter($crud, $name, $filters[$name]);
+            }
             // A field searched as one types (RelationFilterField) is told the filter it is of: two filters may end
             // with the same relation ("parent" and "category.parent").
             $filter = $filters[$name];
@@ -576,8 +629,35 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
     }
 
     /**
+     * A guessed filter of a relation (an EntityType of the related entity) with the query_builder of the entities the
+     * scopes of the related resource leave (DoctrineRelations; the one the source names for the filter), unless it
+     * has one: the choices, and what an address may filter by.
+     */
+    private function scopedFilter(AsCrud $crud, string $name, DoctrineFilter $filter): DoctrineFilter
+    {
+        $entity = $filter instanceof FieldFilter ? $filter->options['class'] ?? null : null;
+        if (
+            !$filter instanceof FieldFilter
+            || $filter->type === null
+            || !is_a($filter->type, EntityType::class, true)
+            || !is_string($entity)
+            || !class_exists($entity)
+            || array_key_exists('query_builder', $filter->options)
+        ) {
+            return $filter;
+        }
+        $relations = $this->relations;
+
+        return new FieldFilter($filter->field, $filter->comparisons, $filter->type, [
+            'query_builder' => static fn (): QueryBuilder => $relations->choices($crud, $entity, $name),
+        ] + $filter->options);
+    }
+
+    /**
      * A FieldFilter with the form type (and its options) guessed for its field - of a related entity too; the options
-     * it was given are kept over the guessed ones.
+     * it was given are kept over the guessed ones. A relation given options of its own choosing or naming the entities
+     * (RelationFilterField::OWN_CHOICES) is a plain choice by them, not a field searched as one types: that would
+     * follow none of them.
      *
      * @param ClassMetadata<object> $metadata
      */
@@ -599,13 +679,24 @@ final readonly class DoctrineDriver implements CrudDriver, ListsIds, PrefillsFor
         if (!$guess instanceof FieldFilter) {
             return $filter;
         }
+        $guessed = $guess->options;
+        if (
+            $guess->type !== null
+            && is_a($guess->type, EntityType::class, true)
+            && array_intersect_key($filter->options, array_flip(RelationFilterField::OWN_CHOICES)) !== []
+        ) {
+            $guessed = array_intersect_key($guessed, ['class' => true]);
+            if ($this->labels instanceof DoctrineRecordLabels) {
+                $guessed['choice_label'] = $this->labels->of(...);
+            }
+        }
         // The options given win over those guessed: a query_builder, a choice_label of the application's - and its
         // "extra_options" (per_page of a field searched as one types) go next to the guessed ones, not instead.
-        $options = $filter->options + $guess->options;
+        $options = $filter->options + $guessed;
         $given = $filter->options['extra_options'] ?? null;
-        $guessed = $guess->options['extra_options'] ?? null;
-        if (is_array($given) && is_array($guessed)) {
-            $options['extra_options'] = $given + $guessed;
+        $guessedExtra = $guessed['extra_options'] ?? null;
+        if (is_array($given) && is_array($guessedExtra)) {
+            $options['extra_options'] = $given + $guessedExtra;
         }
 
         return new FieldFilter($filter->field, $filter->comparisons, $guess->type, $options);
