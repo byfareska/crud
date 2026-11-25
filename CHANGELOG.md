@@ -104,6 +104,31 @@ the bundle stricter, some can be noticed.
 - Twig names `components/...` or `@CrudTheme...` with a `..` segment are not found by the panel's loader.
 - On the extra boards of a panel, the quick-actions widget offers that panel's actions.
 - `CrudRun` takes an optional `?OwnRecords` at the end of its constructor. New: `RecordActions::duplicateAction()`.
+- **Requests from other sites.** The panel's live route, its file upload and the dashboard's changes answer 403 when
+  `Sec-Fetch-Site` is `cross-site`, `same-site` (another subdomain) or `none`; the live route also needs
+  `X-Requested-With: XMLHttpRequest` (400 without it; the scripts of LiveComponent 2.20 and later send it), a child
+  `tag` that is an element name, and accepts only `GET` and `POST` (405 for `HEAD`). A component served from another
+  origin or subdomain than its page stops working. Routes carry the new default `_crud_same_origin`.
+- **Panel responses carry `X-Frame-Options: SAMEORIGIN`** (`byfareska_crud.frame_options`: `SAMEORIGIN`, `DENY` or
+  `false`), unless the response has its own `X-Frame-Options` or a `frame-ancestors`. A site that frames the panel
+  from another origin needs `frame_options: false` or a header of its own.
+- On a list embedded with `fixedFilters`, the delete, the actions and the preview of a row take only records those
+  filters match. A `LiveListAction` of your own should go through `CrudList::isInList()` and `RecordChanges`.
+- A `RunAction` for users who may not read records reads its record in the scopes: 404 for an id out of them. Guards
+  and listeners get the whole item instead of `[]`.
+- A list keeps at most 1000 records chosen by hand (`CrudList::MAX_SELECTED`); more is "select all N matching". The
+  command palette looks for at most 200 characters (`CommandPalette::MAX_QUERY`).
+- **The guessed form of an `own` resource leaves out what looks privileged** (`AsCrud::PRIVILEGED`: roles,
+  permissions, admin, enabled, active, verified, approved, banned, locked, tenant, owner, team, organization, rate,
+  balance, credit, salary, discount, plan, quota... as words of the name) and relations to a Symfony Security user.
+  List one in `DoctrineSource(fields: [...])` to keep it. Other resources are unchanged: whoever may edit a `User` may
+  give it `ROLE_ADMIN` (see "What a form changes").
+- A Doctrine `?from=` copy leaves out the related entities the user's scopes leave out now.
+- An image whose content `getimagesize()` can't read gets sizes only when fileinfo tells by its content that it is an
+  image the resizer takes; its name no longer counts. SVG never reaches the resizer.
+- A dashboard owner id starting with `*` is stored with one more `*` in front: such a user starts again from the
+  shared layout.
+- `FileReferenceSigner` throws with an empty `kernel.secret`.
 
 ### Added
 
@@ -113,6 +138,8 @@ the bundle stricter, some can be noticed.
   `Scopes::panelOf()`, `Scope::liveRouteOf()`, `PanelLiveUrls::hasLiveRoute()`, `DoctrineRelations::choices()`,
   `DoctrineRecordLabels::titledBy()`, `UploadProfile::isActive()`, `StoredFile::isActive()`, `BrowserFiles::link()` and
   the Twig function `crud_file_link()`.
+- `SameOriginGuard`, `PanelFrameOptions`, `CrudList::isInList()`, `AsCrud::PRIVILEGED`, `AsCrud::looksPrivileged()`,
+  `DoctrineRelations::within()`, the option `frame_options`.
 - docs/files.md: serving uploaded files (a public storage on the panel's origin, nginx and Apache settings, the
   headers of an `offload` location).
 
@@ -153,6 +180,21 @@ the bundle stricter, some can be noticed.
 - The `role` of a `DeleteAction` only took away its button: a `BulkDeleteAction` without a role of its own deleted
   for everybody who may delete, and a `RecordActionGuard` of `delete` was asked nowhere, so a record it refused was
   deleted by the row, the page or in bulk.
+- The forms of the panel have no CSRF token and LiveComponent before 2.36 / 3.1 checked only the CORS-safelisted
+  `Accept` header: with a cookie that is not `SameSite=Lax` (or from a sibling subdomain), another site could save,
+  delete and run actions in the name of a signed-in user. A `HEAD` request ran the `onUpdated` hooks of a component
+  (the note widget saved its text); a child `tag` sent by the browser was printed as HTML.
+- The panel could be framed by any site, and its one-click actions clicked unseen (clickjacking).
+- A live action of a list embedded with `fixedFilters` (delete, run, preview) took the id of any record of the
+  resource; a `RunAction` of a user who may not read records took an id out of the scopes, another tenant's too.
+- The guessed form of an `own` resource ("my account") let a user set their own `roles`, `enabled`, `verified`,
+  `tenant`, `team`, rate... and the relation that made the record theirs.
+- A `?from=` copy kept related entities the user's scopes no longer allow (access taken away since).
+- A file named like an image but holding SVG or MVG was handed to Imagick to resize, which reads what such a file
+  points to (local files, URLs).
+- A user whose id is `*` read, changed and deleted the dashboard layout shared by everybody.
+- Any number of hand-chosen ids in a list cost a query each on a bulk action; any length of text was matched against
+  every entry of the command palette.
 
 ### Fixed
 
