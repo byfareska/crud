@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Byfareska\Crud\Tests\Functional;
 
 use Byfareska\Crud\Panel\Scope;
+use Byfareska\Crud\Routing\PanelLiveUrls;
 use Byfareska\Crud\Routing\PanelRoutesCheck;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
@@ -28,6 +29,11 @@ final class PanelRoutesTest extends PanelTestCase
         }
 
         self::assertArrayHasKey(Scope::liveRouteOf('partner'), $partner);
+        // LiveComponent 2.36.3 / 3.8.1 and later answer a component without a route of its own only at its route.
+        self::assertSame(
+            PanelLiveUrls::LIVE_COMPONENT_ROUTE,
+            $router->getRouteCollection()->get(Scope::liveRouteOf('partner'))?->getDefault('_canonical_route'),
+        );
         self::assertArrayHasKey(Scope::firstListRoute('partner'), $partner);
         foreach ($partner as $name => $path) {
             self::assertStringStartsWith('/{shop}/partner', $path, $name);

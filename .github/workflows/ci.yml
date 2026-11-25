@@ -25,13 +25,13 @@ jobs:
           - php: '8.4'
             dependencies: lowest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: intl, pdo_sqlite, gd, exif, imagick
           coverage: none
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
         with:
           dependency-versions: ${{ matrix.dependencies }}
       # The lowest versions of some dependencies (event-dispatcher-contracts 3.4, league/mime-type-detection 1.x) trigger
@@ -42,14 +42,14 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: intl
           coverage: none
       - run: composer validate --strict
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
       - name: Optional dependencies (deptrac)
         run: vendor/bin/deptrac --no-progress
       - name: Code style (phpcs)

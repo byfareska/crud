@@ -33,6 +33,9 @@ abstract class PanelTestCase extends TestCase
 
     private ?TestKernel $kernel = null;
 
+    /** The exception handler before the test: FrameworkBundle sets its own on boot and on requests. */
+    private mixed $exceptionHandler = null;
+
     public static function tearDownAfterClass(): void
     {
         foreach (self::$kernels as $kernel) {
@@ -47,6 +50,12 @@ abstract class PanelTestCase extends TestCase
         parent::tearDownAfterClass();
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->exceptionHandler = $this->currentExceptionHandler();
+    }
+
     protected function tearDown(): void
     {
         if ($this->kernel instanceof TestKernel) {
@@ -55,7 +64,20 @@ abstract class PanelTestCase extends TestCase
             $resetter->reset();
             $this->kernel = null;
         }
+        // The handlers the kernel set during the test are taken away again, as KernelTestCase does: PHPUnit counts a
+        // test that leaves one as risky.
+        for ($left = 10; $left > 0 && $this->currentExceptionHandler() !== $this->exceptionHandler; --$left) {
+            restore_exception_handler();
+        }
         parent::tearDown();
+    }
+
+    private function currentExceptionHandler(): mixed
+    {
+        $handler = set_exception_handler(null);
+        restore_exception_handler();
+
+        return $handler;
     }
 
     protected function boot(string $defaultLocale = 'pl'): ContainerInterface

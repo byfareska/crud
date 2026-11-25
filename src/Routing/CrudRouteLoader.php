@@ -161,10 +161,17 @@ final class CrudRouteLoader extends Loader
             ));
         }
         // The live components of its pages, under its prefix: in the firewall of the panel (PanelLiveUrls). Its own
-        // components are answered only here (LivePanelGuard), to a page of the same origin (SameOriginGuard).
+        // components are answered only here (LivePanelGuard), to a page of the same origin (SameOriginGuard). It is
+        // LiveComponent's own route under another address: "_canonical_route" says so to LiveComponent 2.36.3 / 3.8.1
+        // and later, which answer a component without a route of its own only at the route "ux_live_component".
         $routes->add($scope->liveRoute(), new Route(
             '/_crud/{_live_component}/{_live_action}',
-            ['_live_action' => 'get', self::LIVE => true, self::SAME_ORIGIN => true],
+            [
+                '_live_action' => 'get',
+                '_canonical_route' => PanelLiveUrls::LIVE_COMPONENT_ROUTE,
+                self::LIVE => true,
+                self::SAME_ORIGIN => true,
+            ],
         ));
         $routes->addDefaults([Scope::ATTRIBUTE => $scope->name]);
         foreach ($routes->all() as $route) {
