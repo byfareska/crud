@@ -180,6 +180,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use Symfony\UX\Autocomplete\OptionsAwareAutocompleterInterface;
+use Byfareska\Crud\Routing\PanelFrameOptions;
 use Byfareska\Crud\Routing\PanelLiveUrls;
 use Symfony\Component\DependencyInjection\Reference;
 use Byfareska\Crud\Chart\ChartTimezone;
@@ -279,6 +280,15 @@ final class CrudBundle extends AbstractBundle
                     )
                     ->values(['auto', 'builtin', 'reprise', 'encore', 'importmap', 'none'])
                     ->defaultValue('auto')
+                ->end()
+                ->enumNode('frame_options')
+                    ->info(
+                        'The X-Frame-Options of the answers of the panels: "SAMEORIGIN" (only pages of the same '
+                        . 'origin may show them in a frame), "DENY" (none may) or false (not sent). A response that '
+                        . 'has one already, or a Content-Security-Policy with frame-ancestors, keeps its own.',
+                    )
+                    ->values([PanelFrameOptions::SAMEORIGIN, 'DENY', false])
+                    ->defaultValue(PanelFrameOptions::SAMEORIGIN)
                 ->end()
                 ->arrayNode('entries')
                     ->info(
@@ -1049,6 +1059,7 @@ final class CrudBundle extends AbstractBundle
         );
         $parameters->set('byfareska_crud.entries', $config['entries']);
         $parameters->set('byfareska_crud.assets', $config['assets']);
+        $parameters->set('byfareska_crud.frame_options', $config['frame_options']);
         $parameters->set('byfareska_crud.paths', $config['paths']);
         $parameters->set('byfareska_crud.theme', $config['theme']);
         $themes = [

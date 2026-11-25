@@ -17,6 +17,7 @@ byfareska_crud:
     layout: '@CrudTheme/panel/layout.html.twig'   # what the pages extend
     icon_template: '@CrudTheme/crud/icon.html.twig'  # the Twig template of every icon: another set (see panels.md#icons)
     paths: { new: new, edit: edit, page: page }   # /products/new, /products/7/edit, /products/page/3
+    frame_options: SAMEORIGIN   # X-Frame-Options of the panels' responses: SAMEORIGIN | DENY | false (see panels.md)
 
     preview: true            # a click on a row opens the preview drawer; AsCrud "preview" per resource
     per_page: [15, 30, 50, 100]

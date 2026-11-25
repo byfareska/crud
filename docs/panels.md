@@ -45,6 +45,15 @@ its prefix covers its live requests as it covers its pages: an admin panel on `^
 - A panel whose routes aren't imported with `type: byfareska_crud` has no live route: its components are served at
   `/_components/...`, outside any prefix.
 
+### Frames
+
+Every response of a panel's routes (pages, live requests, files) is sent with `X-Frame-Options: SAMEORIGIN`, so a
+page of another site can't show the panel in an invisible frame and have its buttons ("delete", "approve") clicked
+unseen. `frame_options: DENY` forbids frames of your own site too; `frame_options: false` sends nothing. A response
+that already has an `X-Frame-Options`, or a `Content-Security-Policy` with `frame-ancestors` (set by your listener or
+by NelmioSecurityBundle), keeps its own. Your own pages outside the panel's routes - the sign-in page among them - get
+nothing from the bundle.
+
 ### Parameters in the prefix
 
 `prefix: /{shop}/admin` gives one panel per shop (name the parameter like none of the bundle's, see

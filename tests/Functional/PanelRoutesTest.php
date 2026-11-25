@@ -6,6 +6,7 @@ namespace Byfareska\Crud\Tests\Functional;
 
 use Byfareska\Crud\Panel\Scope;
 use Byfareska\Crud\Routing\PanelRoutesCheck;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
@@ -31,6 +32,17 @@ final class PanelRoutesTest extends PanelTestCase
         foreach ($partner as $name => $path) {
             self::assertStringStartsWith('/{shop}/partner', $path, $name);
         }
+    }
+
+    public function testAPageOfAPanelIsNotShownInAFrameOfAnotherSite(): void
+    {
+        $this->boot();
+        $this->seed();
+
+        $response = $this->handle(Request::create('/customers'));
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('SAMEORIGIN', $response->headers->get('X-Frame-Options'));
     }
 
     public function testTheRoutesOfTheApplicationAreCheckedOnceLoaded(): void
