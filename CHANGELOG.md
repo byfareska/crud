@@ -71,6 +71,28 @@ the bundle stricter, some can be noticed.
   of `RelationAutocompleter` (`AutocompletedFormFields`), `DoctrineRecordLabels` (`RequestStack`), `CommandPalette`
   (`Scopes`), `CrudRun` (`CrudReturn`), `NoteWidget` (`LivePanelGuard`) and `PanelLiveUrls` (`ComponentPanel`, no longer
   `readonly`). Only code that builds these services by hand is affected.
+- **`?from=<id>` copies a record only through its `DuplicateAction`**: for a user it is offered to for that record
+  (its `role`, a `RecordActionGuard` of `duplicate`), besides Create, Read and the guards of reading it. A resource
+  without a `DuplicateAction` answers 403 to `?from=`; declare `new DuplicateAction()` to keep it.
+- A `RunAction` with `update: true` (the default), or another action whose handler says it updates, is not offered
+  when `roles['update']` or `refusing(Update)` takes editing away, and running it answers 403. Give `update: false` to
+  an action that people who may not edit should still run.
+- `Crud:Run` on an `own` resource knows the record by the `OwnRecordResolver`, as the page and `Crud:Form` do.
+- Routes fail to load when the prefix or host of a panel's import has a parameter named `crud`, `id`, `page`, `name`
+  or `board`, or one starting with `_` other than `_locale` and `_format`: the address would choose the resource, the
+  record or the page. The bundle decorates `routing.loader`; panel routes carry the option `byfareska_crud_variables`.
+- A board named like another panel's board, or like a panel only resources name, throws when the routes load.
+- A custom `PathGenerator` must give a path ending in `.<the extension it is given>`, of at most 255 bytes, with no
+  empty part, no part starting with `.` and not in the directory of the image sizes; otherwise the upload fails
+  (`FileStorageFailed`, logged, "file.refused.failed"). `FileUploader` takes an optional `ImageVariants` (autowired).
+- A rich text field that names `image/svg+xml` (or another type a browser runs) offers those files in its image dialog,
+  never in its link dialog; one that accepts nothing else gets no library for links. An editor adapter of your own
+  should link at `file.link` (null for SVG, HTML...), not `file.url`.
+- `crud_attrs()` (RecordRow, action buttons, icons) leaves out an attribute whose name has white space, a quote, `<`,
+  `>`, `/`, `=`, a control character or invalid UTF-8.
+- Twig names `components/...` or `@CrudTheme...` with a `..` segment are not found by the panel's loader.
+- On the extra boards of a panel, the quick-actions widget offers that panel's actions.
+- `CrudRun` takes an optional `?OwnRecords` at the end of its constructor. New: `RecordActions::duplicateAction()`.
 
 ### Added
 
@@ -104,6 +126,17 @@ the bundle stricter, some can be noticed.
   entity of another tenant and then see its name.
 - A relation search of a form answered for a field the user's form did not have (removed or disabled by a
   `CrudFormExtension`), and one of a filter with the application's own choices ignored them (and `options_as_html`).
+- `?from=<id>` copied a record into the add form for any resource and user that may create and read, also where no
+  `DuplicateAction` is offered (its `role`, a `RecordActionGuard`), showing values its details do not.
+- A `RunAction` that updates the record (the default) was offered to users whose editing `roles` or `refusing()` took
+  away: they could still approve, archive... what they could not edit.
+- A parameter of a panel's prefix or host named like a default of its routes (`/{id}/admin`, `{crud}.example.com`)
+  chose the record, resource or page from the address while `access_control` saw another path.
+- A `PathGenerator` of the application was written to as it said: `..`, an absolute path, `.htaccess`, another
+  extension, a path among the image sizes.
+- The link dialog of rich text linked an SVG or HTML file a field accepted at its public address, where its scripts
+  ran on the panel's origin.
+- `crud_attrs()` let an attribute name with a space or `=` (from record data) start an attribute of its own.
 
 ### Fixed
 
@@ -111,6 +144,10 @@ the bundle stricter, some can be noticed.
   application.
 - The address of a stored file with `%23` or `%3F` in its name did not lead back to the file.
 - A filter of the relation search of a property hidden for the user was still answered by its signed address.
+- Two panels with a board of the same name: the route of one and the role and panel of the other.
+- The quick-actions widget on an extra board of a panel offered none of its actions.
+- `Crud:Run` on an `own` resource with an `OwnRecordResolver` refused every action of the page.
+- `ThemeLoader` looked `components/...` names with `..` up outside the directory of the theme.
 
 ## v0.3.0
 
