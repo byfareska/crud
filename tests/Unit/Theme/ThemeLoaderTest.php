@@ -74,6 +74,20 @@ final class ThemeLoaderTest extends TestCase
         $loader->getSourceContext('@CrudTheme/panel/missing.html.twig');
     }
 
+    public function testNoWayOutOfTheDirectoryOfATheme(): void
+    {
+        $loader = new ThemeLoader($this->themes('base'));
+
+        self::assertTrue($loader->exists('components/Ui/Box.html.twig'));
+        // A file beside the theme's directory, by a name of a component or of the theme.
+        self::assertFalse($loader->exists('components/Ui/../../../other/panel/page.html.twig'));
+        self::assertFalse($loader->exists('components\\Ui\\..\\..\\..\\other\\panel\\page.html.twig'));
+        self::assertFalse($loader->exists('@CrudTheme/panel/../../other/panel/page.html.twig'));
+        self::assertFalse($loader->exists('@CrudTheme.base/../other/panel/page.html.twig'));
+        $this->expectException(LoaderError::class);
+        $loader->getSourceContext('components/Ui/../../../other/panel/page.html.twig');
+    }
+
     public function testAThemeThatIsNotThere(): void
     {
         $this->expectException(InvalidArgumentException::class);
