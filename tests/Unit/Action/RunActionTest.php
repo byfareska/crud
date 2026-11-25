@@ -154,6 +154,42 @@ final class RunActionTest extends TestCase
         self::assertSame('approved 9', $actions->run($crud, 'remind', '9')?->title);
     }
 
+    public function testAnActionThatAsksTheGuardsOfUpdateIsNotForSomebodyTheRequestRefusesEditing(): void
+    {
+        $runs = [
+            new RunAction('approve', 'check2', ApproveInvoice::class),
+            new RunAction('remind', 'bell', ApproveInvoice::class, update: false),
+        ];
+        // roles: ['update' => 'ROLE_MANAGER'] for a clerk, or an extension's refusing().
+        $crud = $this->invoices($runs)->refusing(CrudOperation::Update);
+        $actions = $this->actions();
+
+        self::assertSame(['remind'], array_map(
+            static fn (RecordAction $action): string => $action->name,
+            array_values(array_filter($actions->of($crud), static fn (RecordAction $action): bool
+                => $action instanceof RunAction)),
+        ));
+        try {
+            $actions->run($crud, 'approve', '7');
+            self::fail('What may not be edited was changed by an action.');
+        } catch (CrudFailure $failure) {
+            self::assertSame(403, $failure->status);
+        }
+        self::assertSame([], $this->runner->done);
+        // Not a change of what may be edited: only the guards of the action.
+        self::assertSame('approved 7', $actions->run($crud, 'remind', '7')?->title);
+
+        // Records nobody edits (no "update" at all) keep their actions: nothing is refused for the request.
+        $readOnly = new AsCrud(
+            'invoice',
+            '/invoices',
+            'receipt',
+            source: new DoctrineSource(stdClass::class, operations: [CrudOperation::List, CrudOperation::Read]),
+            actions: $runs,
+        );
+        self::assertSame('approved 8', $this->actions()->run($readOnly, 'approve', '8')?->title);
+    }
+
     public function testAListenerRefuses(): void
     {
         $crud = $this->invoices([new RunAction('approve', 'check2', ApproveInvoice::class)]);

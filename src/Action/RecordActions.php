@@ -66,7 +66,9 @@ final readonly class RecordActions implements ResetInterface
 
     /**
      * What the one asking is offered, in order: details and edit, those of #[AsCrud], the pages, delete. A built-in
-     * action declared in #[AsCrud] is where it is declared instead.
+     * action declared in #[AsCrud] is where it is declared instead. Not one whose role they have not, nor one done on
+     * the server that asks the guards of Update (RunAction with "update") when the request refuses them editing
+     * (AsCrud::$roles, refusing()).
      *
      * @return list<RecordAction>
      */
@@ -101,7 +103,8 @@ final readonly class RecordActions implements ResetInterface
 
         $actions = array_values(array_filter(
             $actions,
-            fn (RecordAction $action): bool => $action->role === null || $this->actor->isGranted($action->role, $crud),
+            fn (RecordAction $action): bool => ($action->role === null || $this->actor->isGranted($action->role, $crud))
+                && !$this->changesRefused($crud, $action),
         ));
         // By priority; of the same one, in the order above (usort keeps it).
         usort(
@@ -145,9 +148,10 @@ final readonly class RecordActions implements ResetInterface
 
     /**
      * Does the action of that name to a record, on the server (RunAction, or another whose handler RunsRecordAction):
-     * only one offered to the one asking (its role) and for this record (its button), what its dialog asks for checked
-     * (AsksForInput), in RecordChanges - a transaction, the guards of the action (and of Update, unless the handler
-     * says otherwise), RecordChanging and RecordChanged.
+     * only one offered to the one asking (its role; for one asking the guards of Update, not when the request refuses
+     * editing - see of()) and for this record (its button), what its dialog asks for checked (AsksForInput), in
+     * RecordChanges - a transaction, the guards of the action (and of Update, unless the handler says otherwise),
+     * RecordChanging and RecordChanged.
      *
      * @throws CrudFailure 403 when it is not offered or is no action done on the server, 422 for what its dialog asks
      *     for, 404 when the record is not there, or what a guard, a listener or the action refused
@@ -242,6 +246,22 @@ final readonly class RecordActions implements ResetInterface
         }
 
         return $buttons;
+    }
+
+    /**
+     * Whether an action done on the server that asks the guards of Update (RunsRecordAction::updates()) is one the
+     * request refuses editing for (AsCrud::$roles, AsCrud::refusing()): what may not be edited may not be changed
+     * this way either. Not merely because the source has no update: a resource of records nobody edits keeps its
+     * actions, which only ask its guards.
+     */
+    private function changesRefused(AsCrud $crud, RecordAction $action): bool
+    {
+        if (!$crud->isRefused(CrudOperation::Update) || !$this->handlers->has($action->handler())) {
+            return false;
+        }
+        $handler = $this->handlers->get($action->handler());
+
+        return $handler instanceof RunsRecordAction && $handler->updates($action);
     }
 
     private function reason(CrudFailure $refusal): string
