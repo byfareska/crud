@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v0.4.1
+
+Panels work with the newest `symfony/ux-live-component`.
+
 ### Fixed
 
 - With `symfony/ux-live-component` 2.36.3 / 3.8.1 or later, every live request of a panel answered 404 ("Component
