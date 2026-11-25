@@ -60,7 +60,8 @@ A Doctrine field with `enumType` holds its enum here too, also a list of them (`
 }) }}
 ```
 
-`fixedFilters` are always applied and never shown. The list keeps its state in the URL (`?filters[...]`, `/page/2`,
+`fixedFilters` are always applied and never shown. The preview, the delete and the actions of a row and the bulk
+actions keep to the records they match, whatever id the browser sends. The list keeps its state in the URL (`?filters[...]`, `/page/2`,
 `?size=`, `?sort=`, `?preview=`); `inUrl: false` keeps it out. `ListDefaults` sets the initial filters and order, and
 `ListStateChanged` is dispatched when the user changes them.
 

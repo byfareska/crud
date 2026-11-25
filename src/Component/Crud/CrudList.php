@@ -429,6 +429,30 @@ class CrudList implements ScopedComponent
     }
 
     /**
+     * Whether the record of an id the browser sent - an argument of a live action (the delete or an action of a row,
+     * the preview, a LiveListAction of a list of the application's own) or the preview in the address - is one of
+     * this list: on a list embedded with fixedFilters (the lines of one order), one they match, not a record of
+     * another order the browser names. Whether it is there, in the scopes of the resource and allowed by its guards
+     * is asked by what is done to it (RecordDeletion, RecordChanges, CrudRecords) - as the bulk actions keep to the
+     * records the list could show (visibleOf()).
+     *
+     * @throws CrudFailure the list cannot be read
+     */
+    protected function isInList(string $id): bool
+    {
+        if ($this->fixedFilters === []) {
+            return true;
+        }
+        foreach ($this->listQuery()->ids($this->getDefinition(), $this->fixedFilters) as $listed) {
+            if ($listed === $id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Of the ids chosen, those of records the list could show: there, in its scopes (a DoctrineScope, a tenant, a
      * parameter of the address), and allowed to be read by the guards of the resource. A resource that cannot be read
      * by id (no "read" operation) keeps them as they are - its bulk actions check them themselves.
@@ -829,6 +853,10 @@ class CrudList implements ScopedComponent
         $crud = $this->getDefinition();
 
         try {
+            // Of the list: the address and the browser can name any record.
+            if (!$this->isInList($this->previewId)) {
+                return null;
+            }
             $details = $this->records->details($crud, $this->previewId);
         } catch (CrudFailure) {
             // Deleted in the meantime: the drawer has nothing to show.
@@ -1092,6 +1120,10 @@ class CrudList implements ScopedComponent
     ): ?RedirectResponse {
         $crud = $this->getDefinition();
         try {
+            // A record of this list only: the browser can send any id.
+            if (!$this->isInList($id)) {
+                throw CrudFailure::notFound();
+            }
             $result = $this->actions->run($crud, $name, $id, $input, RecordScreen::List);
         } catch (CrudFailure $failure) {
             $this->dispatchBrowserEvent('toast:show', [
@@ -1199,8 +1231,11 @@ class CrudList implements ScopedComponent
         $crud = $this->getDefinition();
 
         try {
-            // Only a delete the buttons offer the one asking: the browser can send any action.
+            // Only a delete the buttons offer the one asking: the browser can send any action, and any id.
             $action = $this->actions->deleteAction($crud, $name) ?? throw CrudFailure::forbidden();
+            if (!$this->isInList($id)) {
+                throw CrudFailure::notFound();
+            }
             // A reason asked for (DeleteAction::$input), checked here: RecordDeleting and RecordDeleted carry it.
             $this->confirmation?->set($action->input?->accepted($input) ?? $input);
             $this->deletion->delete($crud, $id, RecordScreen::List);
